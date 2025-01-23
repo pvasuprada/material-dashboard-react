@@ -14,6 +14,8 @@ import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import Map from "./components/Map";
+import NetworkGenie from "./components/NetworkGenie";
 
 function Dashboard() {
   const { reportsLine, reportsBar, statistics } = useSelector((state) => state.dashboard);
@@ -64,6 +66,11 @@ function Dashboard() {
                       {
                         label: reportsBar?.datasets?.label || "",
                         data: reportsBar?.datasets?.data || [],
+                        backgroundColor: "rgba(255, 255, 255, 0.8)",
+                        borderColor: "transparent",
+                        borderWidth: 0,
+                        borderRadius: 4,
+                        maxBarThickness: 6,
                       },
                     ],
                   }}
@@ -83,6 +90,12 @@ function Dashboard() {
                       {
                         label: reportsLine?.sales?.datasets?.label || "Sales",
                         data: reportsLine?.sales?.datasets?.data || [],
+                        tension: 0,
+                        pointRadius: 3,
+                        borderWidth: 4,
+                        backgroundColor: "transparent",
+                        borderColor: "rgba(255, 255, 255, .8)",
+                        maxBarThickness: 6,
                       },
                     ],
                   }}
@@ -102,6 +115,12 @@ function Dashboard() {
                       {
                         label: reportsLine?.tasks?.datasets?.label || "Tasks",
                         data: reportsLine?.tasks?.datasets?.data || [],
+                        tension: 0,
+                        pointRadius: 3,
+                        borderWidth: 4,
+                        backgroundColor: "transparent",
+                        borderColor: "rgba(255, 255, 255, .8)",
+                        maxBarThickness: 6,
                       },
                     ],
                   }}
@@ -113,10 +132,11 @@ function Dashboard() {
         <MDBox>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6} lg={8}>
-              <Projects />
+              <Map />
             </Grid>
             <Grid item xs={12} md={6} lg={4}>
-              <OrdersOverview />
+              {/* <OrdersOverview /> */}
+              <NetworkGenie />
             </Grid>
           </Grid>
         </MDBox>
