@@ -13,7 +13,7 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // react-router-dom components
 import { useLocation, NavLink } from "react-router-dom";
@@ -52,6 +52,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
   const location = useLocation();
   const collapseName = location.pathname.replace("/", "");
+  const [activeSection, setActiveSection] = useState("dashboards");
 
   let textColor = "white";
 
@@ -82,6 +83,15 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     // Remove event listener on cleanup
     return () => window.removeEventListener("resize", handleMiniSidenav);
   }, [dispatch, location]);
+
+  useEffect(() => {
+    const handleSectionChange = (event) => {
+      setActiveSection(event.detail);
+    };
+
+    window.addEventListener("sidenavSectionChange", handleSectionChange);
+    return () => window.removeEventListener("sidenavSectionChange", handleSectionChange);
+  }, []);
 
   // Render all the routes from the routes.js (All the visible items on the Sidenav)
   const renderRoutes = routes.map(({ type, name, icon, title, noCollapse, key, href, route }) => {
@@ -140,6 +150,49 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     return returnValue;
   });
 
+  // Create separate route renderers for each section
+  const renderFilterSection = () => (
+    <>
+      <MDTypography
+        color={textColor}
+        display="block"
+        variant="caption"
+        fontWeight="bold"
+        textTransform="uppercase"
+        pl={3}
+        mt={2}
+        mb={1}
+        ml={1}
+      >
+        Filter Options
+      </MDTypography>
+      <SidenavCollapse name="Date Range" icon={<Icon>calendar_today</Icon>} active={false} />
+      <SidenavCollapse name="Network Type" icon={<Icon>network_check</Icon>} active={false} />
+      <SidenavCollapse name="Status" icon={<Icon>toggle_on</Icon>} active={false} />
+    </>
+  );
+
+  const renderInsightsSection = () => (
+    <>
+      <MDTypography
+        color={textColor}
+        display="block"
+        variant="caption"
+        fontWeight="bold"
+        textTransform="uppercase"
+        pl={3}
+        mt={2}
+        mb={1}
+        ml={1}
+      >
+        Network Insights
+      </MDTypography>
+      <SidenavCollapse name="Performance" icon={<Icon>speed</Icon>} active={false} />
+      <SidenavCollapse name="Analytics" icon={<Icon>analytics</Icon>} active={false} />
+      <SidenavCollapse name="Reports" icon={<Icon>assessment</Icon>} active={false} />
+    </>
+  );
+
   return (
     <SidenavRoot
       {...rest}
@@ -178,20 +231,12 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
           (darkMode && !transparentSidenav && whiteSidenav)
         }
       />
-      <List>{renderRoutes}</List>
-      {/* <MDBox p={2} mt="auto">
-        <MDButton
-          component="a"
-          href="https://www.creative-tim.com/product/material-dashboard-pro-react"
-          target="_blank"
-          rel="noreferrer"
-          variant="gradient"
-          color={sidenavColor}
-          fullWidth
-        >
-          upgrade to pro
-        </MDButton>
-      </MDBox> */}
+
+      <List>
+        {activeSection === "dashboards" && renderRoutes}
+        {activeSection === "filters" && renderFilterSection()}
+        {activeSection === "insights" && renderInsightsSection()}
+      </List>
     </SidenavRoot>
   );
 }

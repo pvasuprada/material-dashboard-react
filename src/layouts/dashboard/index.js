@@ -1,8 +1,12 @@
-import Grid from "@mui/material/Grid";
-import MDBox from "components/MDBox";
+import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
+import MDBox from "components/MDBox";
+import MDButton from "components/MDButton";
+import { useMaterialUIController } from "context";
+import Grid from "@mui/material/Grid";
 import ReportsBarChart from "examples/Charts/BarCharts/ReportsBarChart";
 import ReportsLineChart from "examples/Charts/LineCharts/ReportsLineChart";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
@@ -13,11 +17,13 @@ import { dashboardData } from "layouts/dashboard/data/dashboardData";
 import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
 import Map from "./components/Map";
 import NetworkGenie from "./components/NetworkGenie";
 
-function Dashboard() {
+function Dashboard({ children }) {
+  const [controller] = useMaterialUIController();
+  const { sidenavColor } = controller;
+  const [activeSection, setActiveSection] = useState("dashboards");
   const { reportsLine, reportsBar, statistics } = useSelector((state) => state.dashboard);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
@@ -31,9 +37,44 @@ function Dashboard() {
     return null;
   }
 
+  // Function to update sidenav content via context or state management
+  const handleSectionChange = (section) => {
+    setActiveSection(section);
+    // You can dispatch this to your context or state management if needed
+    window.dispatchEvent(new CustomEvent("sidenavSectionChange", { detail: section }));
+  };
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
+      <MDBox py={3}>
+        <MDBox>
+          <MDBox display="flex" gap={2}>
+            <MDButton
+              variant={activeSection === "dashboards" ? "contained" : "outlined"}
+              color={sidenavColor}
+              onClick={() => handleSectionChange("dashboards")}
+            >
+              Dashboards
+            </MDButton>
+            <MDButton
+              variant={activeSection === "filters" ? "contained" : "outlined"}
+              color={sidenavColor}
+              onClick={() => handleSectionChange("filters")}
+            >
+              Filters
+            </MDButton>
+            <MDButton
+              variant={activeSection === "insights" ? "contained" : "outlined"}
+              color={sidenavColor}
+              onClick={() => handleSectionChange("insights")}
+            >
+              Insights
+            </MDButton>
+          </MDBox>
+        </MDBox>
+        {children}
+      </MDBox>
       <MDBox py={3}>
         <Grid container spacing={3}>
           {statistics.map((stat, index) => (
@@ -152,5 +193,10 @@ function Dashboard() {
     </DashboardLayout>
   );
 }
+
+// Add prop-types validation
+Dashboard.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export default Dashboard;
