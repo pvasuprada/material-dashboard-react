@@ -26,6 +26,9 @@ import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
 import Link from "@mui/material/Link";
 import Icon from "@mui/material/Icon";
+import Switch from "@mui/material/Switch";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -46,6 +49,10 @@ import {
   setTransparentSidenav,
   setWhiteSidenav,
 } from "context";
+
+// Add these imports at the top with other imports
+import { dashboardData } from "layouts/dashboard/data/dashboardData";
+import { useInsights } from "context/insightsContext";
 
 function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
@@ -172,26 +179,53 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     </>
   );
 
-  const renderInsightsSection = () => (
-    <>
-      <MDTypography
-        color={textColor}
-        display="block"
-        variant="caption"
-        fontWeight="bold"
-        textTransform="uppercase"
-        pl={3}
-        mt={2}
-        mb={1}
-        ml={1}
-      >
-        Network Insights
-      </MDTypography>
-      <SidenavCollapse name="Performance" icon={<Icon>speed</Icon>} active={false} />
-      <SidenavCollapse name="Analytics" icon={<Icon>analytics</Icon>} active={false} />
-      <SidenavCollapse name="Reports" icon={<Icon>assessment</Icon>} active={false} />
-    </>
-  );
+  const renderInsightsSection = () => {
+    const { dashboardData, updateInsightVisibility } = useInsights();
+
+    return (
+      <>
+        <MDTypography
+          color={textColor}
+          display="block"
+          variant="caption"
+          fontWeight="bold"
+          textTransform="uppercase"
+          pl={3}
+          mt={2}
+          mb={1}
+          ml={1}
+        >
+          Network Insights
+        </MDTypography>
+        <MDBox px={3}>
+          <FormGroup>
+            {dashboardData.statistics.map((stat) => (
+              <FormControlLabel
+                key={stat.title}
+                control={
+                  <Switch
+                    size="small"
+                    checked={stat.visible}
+                    onChange={(e) => updateInsightVisibility(stat.title, e.target.checked)}
+                    sx={{
+                      "& .MuiSwitch-track": {
+                        backgroundColor: textColor === "white" ? "#ffffff40" : "#00000040",
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <MDTypography variant="button" color={textColor}>
+                    {stat.title}
+                  </MDTypography>
+                }
+              />
+            ))}
+          </FormGroup>
+        </MDBox>
+      </>
+    );
+  };
 
   return (
     <SidenavRoot

@@ -12,20 +12,20 @@ import ReportsLineChart from "examples/Charts/LineCharts/ReportsLineChart";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
 import reportsBarChartData from "layouts/dashboard/data/reportsBarChartData";
 import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
-import { dashboardData } from "layouts/dashboard/data/dashboardData";
+import { useInsights } from "context/insightsContext";
 
 import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
-import { useSelector } from "react-redux";
 import Map from "./components/Map";
 import NetworkGenie from "./components/NetworkGenie";
-
+import { useSelector } from "react-redux";
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
   const { sidenavColor } = controller;
   const [activeSection, setActiveSection] = useState("dashboards");
   const { reportsLine, reportsBar, statistics } = useSelector((state) => state.dashboard);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const { dashboardData } = useInsights();
 
   useEffect(() => {
     if (reportsLine && reportsBar && statistics) {
@@ -77,19 +77,21 @@ function Dashboard({ children }) {
       </MDBox>
       <MDBox py={3}>
         <Grid container spacing={3}>
-          {statistics.map((stat, index) => (
-            <Grid item xs={12} md={6} lg={3} key={index}>
-              <MDBox mb={1.5}>
-                <ComplexStatisticsCard
-                  color={stat.color}
-                  icon={stat.icon}
-                  title={stat.title}
-                  count={stat.count}
-                  percentage={stat.percentage}
-                />
-              </MDBox>
-            </Grid>
-          ))}
+          {dashboardData.statistics
+            .filter((stat) => stat.visible)
+            .map((stat, index) => (
+              <Grid item xs={12} md={6} lg={3} key={stat.title}>
+                <MDBox mb={1.5}>
+                  <ComplexStatisticsCard
+                    color={stat.color}
+                    icon={stat.icon}
+                    title={stat.title}
+                    count={stat.count}
+                    percentage={stat.percentage}
+                  />
+                </MDBox>
+              </Grid>
+            ))}
         </Grid>
 
         <MDBox mt={4.5}>

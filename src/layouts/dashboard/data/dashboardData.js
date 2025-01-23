@@ -5,6 +5,7 @@ export const dashboardData = {
       icon: "weekend",
       title: "Bookings",
       count: 281,
+      visible: true,
       percentage: {
         color: "success",
         amount: "+55%",
@@ -15,6 +16,7 @@ export const dashboardData = {
       icon: "leaderboard",
       title: "Today's Users",
       count: "2,300",
+      visible: true,
       percentage: {
         color: "success",
         amount: "+3%",
@@ -26,6 +28,7 @@ export const dashboardData = {
       icon: "store",
       title: "Revenue",
       count: "34k",
+      visible: true,
       percentage: {
         color: "success",
         amount: "+1%",
@@ -37,6 +40,7 @@ export const dashboardData = {
       icon: "person_add",
       title: "Followers",
       count: "+91",
+      visible: true,
       percentage: {
         color: "success",
         amount: "",
