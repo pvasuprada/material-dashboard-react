@@ -79,7 +79,7 @@ function NetworkGenie() {
   return (
     <Card sx={{ height: "100%" }}>
       <MDBox pt={3} px={3}>
-        <MDTypography variant="h6" fontWeight="medium">
+        <MDTypography variant="h6" fontWeight="medium" color="text">
           NetworkGenie AI
         </MDTypography>
         <MDBox mt={0} mb={2}>
@@ -120,17 +120,19 @@ function NetworkGenie() {
                 maxWidth: "70%",
                 p: 2,
                 borderRadius: 2,
-                backgroundColor: message.type === "user" ? "info.main" : "grey.100",
-                color: message.type === "user" ? "white" : "text.primary",
+                backgroundColor: message.type === "user" ? "info.main" : "background.default",
+                color: message.type === "user" ? "white" : "inherit",
               }}
             >
-              <MDTypography variant="body2">{message.content}</MDTypography>
+              <MDTypography variant="body2" color={message.type === "user" ? "white" : "text"}>
+                {message.content}
+              </MDTypography>
               <MDTypography
                 variant="caption"
                 sx={{
                   display: "block",
                   mt: 0.5,
-                  color: message.type === "user" ? "grey.100" : "grey.500",
+                  color: message.type === "user" ? "grey.100" : "text.secondary",
                 }}
               >
                 {message.timestamp.toLocaleTimeString()}

@@ -51,18 +51,18 @@ import Icon from "@mui/material/Icon";
 const routes = [
   {
     type: "collapse",
-    name: "Dashboard",
-    key: "dashboard",
+    name: "Sector 360",
+    key: "sector360",
     icon: <Icon fontSize="small">dashboard</Icon>,
-    route: "/dashboard",
+    route: "/sector360",
     component: <Dashboard />,
   },
   {
     type: "collapse",
-    name: "Tables",
-    key: "tables",
+    name: "UG Insights",
+    key: "uginsights",
     icon: <Icon fontSize="small">table_view</Icon>,
-    route: "/tables",
+    route: "/uginsights",
     component: <Tables />,
   },
   // {
