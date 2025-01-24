@@ -213,7 +213,8 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   };
 
   const renderInsightsSection = () => {
-    const { dashboardData, updateInsightVisibility } = useInsights();
+    const { dashboardData, updateInsightVisibility, chartsData, updateChartVisibility } =
+      useInsights();
 
     return (
       <>
@@ -228,9 +229,9 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
           mb={1}
           ml={1}
         >
-          Network Insights
+          Statistics Insights
         </MDTypography>
-        <MDBox px={3}>
+        <MDBox px={3} py={1}>
           <FormGroup>
             {dashboardData.statistics.map((stat) => (
               <FormControlLabel
@@ -244,12 +245,65 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
                       "& .MuiSwitch-track": {
                         backgroundColor: textColor === "white" ? "#ffffff40" : "#00000040",
                       },
+                      "& .MuiSwitch-thumb": {
+                        backgroundColor: textColor,
+                      },
                     }}
                   />
                 }
                 label={
                   <MDTypography variant="button" color={textColor}>
                     {stat.title}
+                  </MDTypography>
+                }
+              />
+            ))}
+          </FormGroup>
+        </MDBox>
+
+        <Divider
+          sx={{
+            my: 2,
+            backgroundColor: textColor === "white" ? "#ffffff40" : "#00000040",
+          }}
+        />
+
+        <MDTypography
+          color={textColor}
+          display="block"
+          variant="caption"
+          fontWeight="bold"
+          textTransform="uppercase"
+          pl={3}
+          mt={2}
+          mb={1}
+          ml={1}
+        >
+          Charts Insights
+        </MDTypography>
+        <MDBox px={3} py={1}>
+          <FormGroup>
+            {chartsData.charts.map((chart) => (
+              <FormControlLabel
+                key={chart.title}
+                control={
+                  <Switch
+                    size="small"
+                    checked={chart.visible}
+                    onChange={(e) => updateChartVisibility(chart.title, e.target.checked)}
+                    sx={{
+                      "& .MuiSwitch-track": {
+                        backgroundColor: textColor === "white" ? "#ffffff40" : "#00000040",
+                      },
+                      "& .MuiSwitch-thumb": {
+                        backgroundColor: textColor,
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <MDTypography variant="button" color={textColor}>
+                    {chart.title}
                   </MDTypography>
                 }
               />

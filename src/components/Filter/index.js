@@ -3,9 +3,12 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import MDAutocomplete from "components/MDAutocomplete";
-import MDDatePicker from "components/MDDatePicker";
+import MDDateRangePicker from "components/MDDateRangePicker";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
+import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
+import { useFilterData } from "hooks/useFilterData";
 
 function Filter() {
   const [market, setMarket] = useState(null);
@@ -13,8 +16,7 @@ function Filter() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
-  const marketOptions = ["1", "2", "3", "4", "5", "6", "7", "8"];
-  const sectorOptions = ["115", "116", "117", "118"];
+  const { markets, sectors, loading, error } = useFilterData();
 
   const handleReset = () => {
     setMarket(null);
@@ -33,8 +35,23 @@ function Filter() {
       },
     };
     console.log("Applied filters:", filters);
-    // Add your filter logic here
   };
+
+  if (loading) {
+    return (
+      <Card sx={{ p: 2, display: "flex", justifyContent: "center" }}>
+        <CircularProgress />
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card sx={{ p: 2 }}>
+        <Alert severity="error">{error}</Alert>
+      </Card>
+    );
+  }
 
   return (
     <Card sx={{ p: 2 }}>
@@ -47,7 +64,7 @@ function Filter() {
             <MDAutocomplete
               value={market}
               onChange={(event, newValue) => setMarket(newValue)}
-              options={marketOptions}
+              options={markets}
               label="Market"
               color="info"
             />
@@ -56,26 +73,18 @@ function Filter() {
             <MDAutocomplete
               value={sector}
               onChange={(event, newValue) => setSector(newValue)}
-              options={sectorOptions}
+              options={sectors}
               label="Sector"
               color="info"
             />
           </Grid>
-          <Grid item xs={12} md={6}>
-            <MDDatePicker
-              label="Start"
-              value={startDate}
-              onChange={(newValue) => setStartDate(newValue)}
+          <Grid item xs={12}>
+            <MDDateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={(newValue) => setStartDate(newValue)}
+              onEndDateChange={(newValue) => setEndDate(newValue)}
               color="info"
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <MDDatePicker
-              label="End"
-              value={endDate}
-              onChange={(newValue) => setEndDate(newValue)}
-              color="info"
-              minDate={startDate}
             />
           </Grid>
           <Grid item xs={12}>

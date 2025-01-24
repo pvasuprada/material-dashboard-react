@@ -13,19 +13,21 @@ import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatist
 import reportsBarChartData from "layouts/dashboard/data/reportsBarChartData";
 import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
 import { useInsights } from "context/insightsContext";
+import { chartsConfig } from "./data/chartsConfig";
 
 import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
 import Map from "./components/Map";
 import NetworkGenie from "./components/NetworkGenie";
 import { useSelector } from "react-redux";
+
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
   const { sidenavColor } = controller;
   const [activeSection, setActiveSection] = useState("dashboards");
   const { reportsLine, reportsBar, statistics } = useSelector((state) => state.dashboard);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const { dashboardData } = useInsights();
+  const { dashboardData, chartsData } = useInsights();
 
   useEffect(() => {
     if (reportsLine && reportsBar && statistics) {
@@ -42,6 +44,54 @@ function Dashboard({ children }) {
     setActiveSection(section);
     // You can dispatch this to your context or state management if needed
     window.dispatchEvent(new CustomEvent("sidenavSectionChange", { detail: section }));
+  };
+
+  const renderChart = (chart) => {
+    if (!chart.visible) return null;
+
+    const commonProps = {
+      color: chart.color,
+      title: chart.title,
+      description: chart.data.description,
+      date: chart.data.date,
+      chart: {
+        labels: chart.data.labels,
+        datasets: [
+          {
+            label: chart.data.datasets.label,
+            data: chart.data.datasets.data,
+            ...(chart.type === "line"
+              ? {
+                  tension: 0,
+                  pointRadius: 3,
+                  borderWidth: 4,
+                  backgroundColor: "transparent",
+                  borderColor: "rgba(255, 255, 255, .8)",
+                  maxBarThickness: 6,
+                }
+              : {
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  borderColor: "transparent",
+                  borderWidth: 0,
+                  borderRadius: 4,
+                  maxBarThickness: 6,
+                }),
+          },
+        ],
+      },
+    };
+
+    return (
+      <Grid item {...chart.gridSize} key={chart.title}>
+        <MDBox mb={3}>
+          {chart.type === "bar" ? (
+            <ReportsBarChart {...commonProps} />
+          ) : (
+            <ReportsLineChart {...commonProps} />
+          )}
+        </MDBox>
+      </Grid>
+    );
   };
 
   return (
@@ -79,7 +129,7 @@ function Dashboard({ children }) {
         <Grid container spacing={3}>
           {dashboardData.statistics
             .filter((stat) => stat.visible)
-            .map((stat, index) => (
+            .map((stat) => (
               <Grid item xs={12} md={6} lg={3} key={stat.title}>
                 <MDBox mb={1.5}>
                   <ComplexStatisticsCard
@@ -96,80 +146,7 @@ function Dashboard({ children }) {
 
         <MDBox mt={4.5}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsBarChart
-                  color="info"
-                  title="website views"
-                  description={reportsBar?.description}
-                  date={reportsBar?.date}
-                  chart={{
-                    labels: reportsBar?.labels || [],
-                    datasets: [
-                      {
-                        label: reportsBar?.datasets?.label || "",
-                        data: reportsBar?.datasets?.data || [],
-                        backgroundColor: "rgba(255, 255, 255, 0.8)",
-                        borderColor: "transparent",
-                        borderWidth: 0,
-                        borderRadius: 4,
-                        maxBarThickness: 6,
-                      },
-                    ],
-                  }}
-                />
-              </MDBox>
-            </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsLineChart
-                  color="success"
-                  title="daily sales"
-                  description={reportsLine?.sales?.description}
-                  date={reportsLine?.sales?.date}
-                  chart={{
-                    labels: reportsLine?.sales?.labels || [],
-                    datasets: [
-                      {
-                        label: reportsLine?.sales?.datasets?.label || "Sales",
-                        data: reportsLine?.sales?.datasets?.data || [],
-                        tension: 0,
-                        pointRadius: 3,
-                        borderWidth: 4,
-                        backgroundColor: "transparent",
-                        borderColor: "rgba(255, 255, 255, .8)",
-                        maxBarThickness: 6,
-                      },
-                    ],
-                  }}
-                />
-              </MDBox>
-            </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsLineChart
-                  color="dark"
-                  title="completed tasks"
-                  description={reportsLine?.tasks?.description}
-                  date={reportsLine?.tasks?.date}
-                  chart={{
-                    labels: reportsLine?.tasks?.labels || [],
-                    datasets: [
-                      {
-                        label: reportsLine?.tasks?.datasets?.label || "Tasks",
-                        data: reportsLine?.tasks?.datasets?.data || [],
-                        tension: 0,
-                        pointRadius: 3,
-                        borderWidth: 4,
-                        backgroundColor: "transparent",
-                        borderColor: "rgba(255, 255, 255, .8)",
-                        maxBarThickness: 6,
-                      },
-                    ],
-                  }}
-                />
-              </MDBox>
-            </Grid>
+            {chartsData.charts.map(renderChart)}
           </Grid>
         </MDBox>
         <MDBox>
