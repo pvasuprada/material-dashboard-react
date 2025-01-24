@@ -14,6 +14,7 @@ import reportsBarChartData from "layouts/dashboard/data/reportsBarChartData";
 import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
 import { useInsights } from "context/insightsContext";
 import { chartsConfig } from "./data/chartsConfig";
+import { ChartComponents } from "examples/Charts";
 
 import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
@@ -46,34 +47,120 @@ function Dashboard({ children }) {
     window.dispatchEvent(new CustomEvent("sidenavSectionChange", { detail: section }));
   };
 
-  const renderChart = (chart) => {
-    if (!chart.visible) return null;
-
-    const commonProps = {
+  const formatChartData = (chart) => {
+    const baseProps = {
       color: chart.color,
       title: chart.title,
       description: chart.data.description,
       date: chart.data.date,
-      chart: {
-        labels: chart.data.labels,
-        datasets:
-          chart.type === "bar"
-            ? chart.data.datasets
-            : {
-                label: chart.data.datasets.label,
-                data: chart.data.datasets.data,
-              },
-      },
     };
+
+    switch (chart.type) {
+      case "bar":
+        return {
+          ...baseProps,
+          chart: {
+            labels: chart.data.labels,
+            datasets: chart.data.datasets,
+          },
+        };
+
+      case "line":
+        return {
+          ...baseProps,
+          chart: {
+            labels: chart.data.labels,
+            datasets: {
+              label: chart.data.datasets.label,
+              data: chart.data.datasets.data,
+            },
+          },
+        };
+
+      case "doughnut":
+      case "pie":
+        return {
+          ...baseProps,
+          chart: {
+            labels: chart.data.labels,
+            datasets: {
+              label: chart.data.datasets.label,
+              data: chart.data.datasets.data,
+              backgroundColors: chart.data.datasets.backgroundColors,
+            },
+          },
+        };
+
+      case "bubble":
+        return {
+          ...baseProps,
+          chart: {
+            labels: chart.data.labels,
+            datasets: chart.data.datasets,
+          },
+        };
+
+      case "radar":
+      case "polar":
+        return {
+          ...baseProps,
+          chart: {
+            labels: chart.data.labels,
+            datasets: chart.data.datasets,
+          },
+        };
+
+      case "progressLine":
+      case "gradientLine":
+        return {
+          ...baseProps,
+          chart: {
+            labels: chart.data.labels,
+            datasets: {
+              label: chart.data.datasets.label,
+              data: chart.data.datasets.data,
+            },
+          },
+        };
+
+      case "mixed":
+        return {
+          ...baseProps,
+          chart: {
+            labels: chart.data.labels,
+            datasets: chart.data.datasets,
+          },
+        };
+
+      default:
+        return {
+          ...baseProps,
+          chart: {
+            labels: chart.data.labels,
+            datasets: Array.isArray(chart.data.datasets)
+              ? chart.data.datasets
+              : [chart.data.datasets],
+          },
+        };
+    }
+  };
+
+  const renderChart = (chart) => {
+    if (!chart.visible) return null;
+
+    const ChartComponent = ChartComponents[chart.type];
+
+    if (!ChartComponent) {
+      console.warn(`Chart type "${chart.type}" is not supported`);
+      return null;
+    }
+
+    const chartProps = formatChartData(chart);
 
     return (
       <Grid item {...chart.gridSize} key={chart.title}>
         <MDBox mb={3}>
-          {chart.type === "bar" ? (
-            <ReportsBarChart {...commonProps} />
-          ) : (
-            <ReportsLineChart {...commonProps} />
-          )}
+          <ChartComponent {...chartProps} />
         </MDBox>
       </Grid>
     );
