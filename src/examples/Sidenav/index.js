@@ -53,6 +53,8 @@ import {
 // Add these imports at the top with other imports
 import { dashboardData } from "layouts/dashboard/data/dashboardData";
 import { useInsights } from "context/insightsContext";
+import MDAutocomplete from "components/MDAutocomplete";
+import MDDateRangePicker from "components/MDDateRangePicker";
 
 function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
@@ -158,26 +160,57 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   });
 
   // Create separate route renderers for each section
-  const renderFilterSection = () => (
-    <>
-      <MDTypography
-        color={textColor}
-        display="block"
-        variant="caption"
-        fontWeight="bold"
-        textTransform="uppercase"
-        pl={3}
-        mt={2}
-        mb={1}
-        ml={1}
-      >
-        Filter Options
-      </MDTypography>
-      <SidenavCollapse name="Date Range" icon={<Icon>calendar_today</Icon>} active={false} />
-      <SidenavCollapse name="Network Type" icon={<Icon>network_check</Icon>} active={false} />
-      <SidenavCollapse name="Status" icon={<Icon>toggle_on</Icon>} active={false} />
-    </>
-  );
+  const renderFilterSection = () => {
+    const marketOptions = ["1", "2", "3", "4", "5", "6", "7", "8"];
+    const sectorOptions = ["115", "116", "117", "118"];
+
+    return (
+      <>
+        <MDTypography
+          color={textColor}
+          display="block"
+          variant="caption"
+          fontWeight="bold"
+          textTransform="uppercase"
+          pl={3}
+          mt={2}
+          mb={1}
+          ml={1}
+        >
+          Filter Options
+        </MDTypography>
+        <MDBox px={3} py={1}>
+          <MDBox mb={2}>
+            <MDAutocomplete
+              size="small"
+              options={marketOptions}
+              label="Market"
+              color={textColor === "white" ? "light" : "dark"}
+            />
+          </MDBox>
+          <MDBox mb={2}>
+            <MDAutocomplete
+              size="small"
+              options={sectorOptions}
+              label="Sector"
+              color={textColor === "white" ? "light" : "dark"}
+            />
+          </MDBox>
+          <MDBox mb={2}>
+            <MDDateRangePicker size="small" color={textColor === "white" ? "light" : "dark"} />
+          </MDBox>
+          <MDBox display="flex" gap={1}>
+            <MDButton variant="outlined" color="secondary" size="small" fullWidth>
+              Reset
+            </MDButton>
+            <MDButton variant="gradient" color="info" size="small" fullWidth>
+              Apply
+            </MDButton>
+          </MDBox>
+        </MDBox>
+      </>
+    );
+  };
 
   const renderInsightsSection = () => {
     const { dashboardData, updateInsightVisibility } = useInsights();
