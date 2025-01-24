@@ -21,6 +21,7 @@ import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
 import Map from "./components/Map";
 import NetworkGenie from "./components/NetworkGenie";
 import { useSelector } from "react-redux";
+import SiteGrid from "./components/SiteGrid";
 
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
@@ -235,7 +236,8 @@ function Dashboard({ children }) {
         <MDBox mt={4.5}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={12} lg={12}>
-              <Projects />
+              {/* <Projects /> */}
+              <SiteGrid />
             </Grid>
           </Grid>
         </MDBox>
