@@ -56,102 +56,102 @@ ChartJS.register(
 );
 
 function ReportsLineChart({ color, title, description, date, chart }) {
-  const chartData = {
-    labels: chart?.labels || [],
-    datasets: chart?.datasets
-      ? [
-          {
-            ...chart.datasets,
-            tension: 0,
-            pointRadius: 3,
-            borderWidth: 4,
-            backgroundColor: "transparent",
-            fill: true,
-            data: chart.datasets.data || [],
-          },
-        ]
-      : [],
-  };
+  const chartData = useMemo(
+    () => ({
+      labels: chart?.labels || [],
+      datasets: [
+        {
+          label: chart?.datasets?.label || "",
+          tension: 0,
+          pointRadius: 3,
+          borderWidth: 4,
+          backgroundColor: "transparent",
+          borderColor: "rgba(255, 255, 255, .8)",
+          fill: true,
+          data: chart?.datasets?.data || [],
+        },
+      ],
+    }),
+    [chart]
+  );
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    interaction: {
-      intersect: false,
-      mode: "index",
-    },
-    scales: {
-      y: {
-        grid: {
-          drawBorder: false,
-          display: true,
-          drawOnChartArea: true,
-          drawTicks: false,
-          borderDash: [5, 5],
-          color: "rgba(255, 255, 255, .2)",
-        },
-        ticks: {
-          display: true,
-          color: "#f8f9fa",
-          padding: 10,
-          font: {
-            size: 14,
-            weight: 300,
-            family: "Roboto",
-            style: "normal",
-            lineHeight: 2,
-          },
-        },
-      },
-      x: {
-        grid: {
-          drawBorder: false,
+  const options = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
           display: false,
-          drawOnChartArea: false,
-          drawTicks: false,
-          borderDash: [5, 5],
         },
-        ticks: {
-          display: true,
-          color: "#f8f9fa",
-          padding: 10,
-          font: {
-            size: 14,
-            weight: 300,
-            family: "Roboto",
-            style: "normal",
-            lineHeight: 2,
+      },
+      interaction: {
+        intersect: false,
+        mode: "index",
+      },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "rgba(255, 255, 255, .2)",
+          },
+          ticks: {
+            display: true,
+            color: "#f8f9fa",
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2,
+            },
+          },
+        },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: false,
+            drawOnChartArea: false,
+            drawTicks: false,
+            borderDash: [5, 5],
+          },
+          ticks: {
+            display: true,
+            color: "#f8f9fa",
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2,
+            },
           },
         },
       },
-    },
-  };
+    }),
+    []
+  ); // Empty dependency array since options don't change
 
   return (
     <Card sx={{ height: "100%" }}>
       <MDBox padding="1rem">
-        {useMemo(
-          () => (
-            <MDBox
-              variant="gradient"
-              bgColor={color}
-              borderRadius="lg"
-              coloredShadow={color}
-              py={2}
-              pr={0.5}
-              mt={-5}
-              height="12.5rem"
-            >
-              <Line data={chartData} options={options} redraw />
-            </MDBox>
-          ),
-          [chart, color]
-        )}
+        <MDBox
+          variant="gradient"
+          bgColor={color}
+          borderRadius="lg"
+          coloredShadow={color}
+          py={2}
+          pr={0.5}
+          mt={-5}
+          height="12.5rem"
+        >
+          <Line data={chartData} options={options} />
+        </MDBox>
         <MDBox pt={3} pb={1} px={1}>
           <MDTypography variant="h6" textTransform="capitalize">
             {title}
@@ -194,12 +194,12 @@ ReportsLineChart.propTypes = {
   description: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   date: PropTypes.string.isRequired,
   chart: PropTypes.shape({
-    labels: PropTypes.array,
+    labels: PropTypes.arrayOf(PropTypes.string),
     datasets: PropTypes.shape({
       label: PropTypes.string,
-      data: PropTypes.array,
+      data: PropTypes.arrayOf(PropTypes.number),
     }),
-  }),
+  }).isRequired,
 };
 
 export default ReportsLineChart;

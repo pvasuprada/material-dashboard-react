@@ -10,10 +10,17 @@ export const chartsConfig = {
         description: "Last Campaign Performance",
         date: "campaign sent 2 days ago",
         labels: ["M", "T", "W", "T", "F", "S", "S"],
-        datasets: {
-          label: "Views",
-          data: [50, 20, 10, 22, 50, 10, 40],
-        },
+        datasets: [
+          {
+            label: "Views",
+            data: [50, 20, 10, 22, 50, 10, 40],
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            borderColor: "transparent",
+            borderWidth: 0,
+            borderRadius: 4,
+            maxBarThickness: 6,
+          },
+        ],
       },
     },
     {

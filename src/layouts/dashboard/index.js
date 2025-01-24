@@ -56,28 +56,13 @@ function Dashboard({ children }) {
       date: chart.data.date,
       chart: {
         labels: chart.data.labels,
-        datasets: [
-          {
-            label: chart.data.datasets.label,
-            data: chart.data.datasets.data,
-            ...(chart.type === "line"
-              ? {
-                  tension: 0,
-                  pointRadius: 3,
-                  borderWidth: 4,
-                  backgroundColor: "transparent",
-                  borderColor: "rgba(255, 255, 255, .8)",
-                  maxBarThickness: 6,
-                }
-              : {
-                  backgroundColor: "rgba(255, 255, 255, 0.8)",
-                  borderColor: "transparent",
-                  borderWidth: 0,
-                  borderRadius: 4,
-                  maxBarThickness: 6,
-                }),
-          },
-        ],
+        datasets:
+          chart.type === "bar"
+            ? chart.data.datasets
+            : {
+                label: chart.data.datasets.label,
+                data: chart.data.datasets.data,
+              },
       },
     };
 
