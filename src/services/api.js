@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://your-api-base-url.com/api"; // Replace with your actual API base URL
+const API_BASE_URL = "http://localhost:2024/minerva-service"; // Replace with your actual API base URL
 
 // Create axios instance with common config
 const apiClient = axios.create({
@@ -21,13 +21,8 @@ export const api = {
   // Markets
   getMarkets: async () => {
     try {
-      // For development with mock data
-      await mockDelay();
-      return { data: mockMarkets };
-
-      // For actual API implementation:
-      // const response = await apiClient.get('/markets');
-      // return response.data;
+      const response = await apiClient.get("/minerva-ug-dashboard/markets");
+      return response.data;
     } catch (error) {
       console.error("Error fetching markets:", error);
       throw error;
@@ -38,14 +33,46 @@ export const api = {
   getSectors: async () => {
     try {
       // For development with mock data
-      await mockDelay();
+      const mockSectors = ["115", "116", "117", "118"];
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       return { data: mockSectors };
 
-      // For actual API implementation:
+      // TODO: Replace with actual sectors endpoint when available
       // const response = await apiClient.get('/sites');
       // return response.data;
     } catch (error) {
       console.error("Error fetching sectors:", error);
+      throw error;
+    }
+  },
+
+  // Sites
+  getSiteData: async (market) => {
+    try {
+      const response = await apiClient.post("/dynamic-query-executor/sector-360/sites-mv", {
+        market: market || "131",
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching site data:", error);
+      throw error;
+    }
+  },
+
+  exportSiteDataToCSV: async (market) => {
+    try {
+      const response = await apiClient.post(
+        "/dynamic-query-executor/sector-360/sites-mv/export",
+        {
+          market: market || "131",
+        },
+        {
+          responseType: "blob",
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error exporting site data:", error);
       throw error;
     }
   },

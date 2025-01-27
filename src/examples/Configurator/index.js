@@ -137,12 +137,12 @@ function Configurator() {
         pb={0.5}
         px={3}
       >
-        <MDBox>
+        {/* <MDBox>
           <MDTypography variant="h5">Material UI Configurator</MDTypography>
           <MDTypography variant="body2" color="text">
             See our dashboard options.
           </MDTypography>
-        </MDBox>
+        </MDBox> */}
 
         <Icon
           sx={({ typography: { size }, palette: { dark, white } }) => ({
@@ -208,7 +208,7 @@ function Configurator() {
           </MDBox>
         </MDBox>
 
-        <MDBox mt={3} lineHeight={1}>
+        {/* <MDBox mt={3} lineHeight={1}>
           <MDTypography variant="h6">Sidenav Type</MDTypography>
           <MDTypography variant="button" color="text">
             Choose between different sidenav types.
@@ -277,7 +277,7 @@ function Configurator() {
           <MDTypography variant="h6">Navbar Fixed</MDTypography>
 
           <Switch checked={fixedNavbar} onChange={handleFixedNavbar} />
-        </MDBox>
+        </MDBox> */}
         <Divider />
         <MDBox display="flex" justifyContent="space-between" alignItems="center" lineHeight={1}>
           <MDTypography variant="h6">Light / Dark</MDTypography>
@@ -285,7 +285,7 @@ function Configurator() {
           <Switch checked={darkMode} onChange={handleDarkMode} />
         </MDBox>
         <Divider />
-        <MDBox mt={3} mb={2}>
+        {/* <MDBox mt={3} mb={2}>
           <MDButton
             component={Link}
             href="https://www.creative-tim.com/learning-lab/react/quick-start/material-dashboard/"
@@ -338,7 +338,7 @@ function Configurator() {
               &nbsp; Share
             </MDButton>
           </MDBox>
-        </MDBox>
+        </MDBox> */}
       </MDBox>
     </ConfiguratorRoot>
   );

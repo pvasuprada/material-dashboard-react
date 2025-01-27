@@ -28,6 +28,7 @@ import MDTypography from "components/MDTypography";
 
 // Material Dashboard 2 React examples
 import DataTable from "examples/Tables/DataTable";
+import { api } from "services/api";
 
 function SiteGrid() {
   const [menu, setMenu] = useState(null);
@@ -37,26 +38,8 @@ function SiteGrid() {
   const fetchSiteData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        "http://localhost:2024/minerva-service/dynamic-query-executor/sector-360/sites-mv",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            market: "131",
-          }),
-        }
-      );
+      const data = await api.getSiteData();
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-
-      // Transform data for DataTable
       if (data && data.length > 0) {
         const columns = Object.keys(data[0]).map((key) => ({
           Header: key.toUpperCase(),
@@ -77,6 +60,27 @@ function SiteGrid() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      const blob = await api.exportSiteDataToCSV();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `sites_export_${new Date().toISOString()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      closeMenu();
+    } catch (error) {
+      console.error("Error exporting data:", error);
+    }
+  };
+
+  const handleRefresh = () => {
+    fetchSiteData();
+    closeMenu();
   };
 
   useEffect(() => {
@@ -101,8 +105,8 @@ function SiteGrid() {
       open={Boolean(menu)}
       onClose={closeMenu}
     >
-      <MenuItem onClick={closeMenu}>Refresh Data</MenuItem>
-      <MenuItem onClick={closeMenu}>Export to CSV</MenuItem>
+      <MenuItem onClick={handleRefresh}>Refresh Data</MenuItem>
+      <MenuItem onClick={handleExportCSV}>Export to CSV</MenuItem>
       <MenuItem onClick={closeMenu}>Filter Sites</MenuItem>
     </Menu>
   );
@@ -152,8 +156,25 @@ function SiteGrid() {
           showTotalEntries={true}
           isSorted={true}
           noEndBorder
-          entriesPerPage={10}
+          entriesPerPage={20}
           canSearch={true}
+          pagination={{ variant: "contained", color: "info" }}
+          entriesPerPageText="Entries per page:"
+          searchPlaceholder="Search sites..."
+          sx={{
+            "& .MuiInputBase-input": {
+              color: "text.main",
+            },
+            "& .MuiTypography-root": {
+              color: "text.main",
+            },
+            "& .MuiTablePagination-root": {
+              color: "text.main",
+            },
+            "& .MuiSelect-icon": {
+              color: "text.main",
+            },
+          }}
         />
       </MDBox>
     </Card>

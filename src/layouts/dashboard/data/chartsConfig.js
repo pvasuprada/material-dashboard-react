@@ -3,7 +3,7 @@ export const chartsConfig = {
     {
       type: "bar",
       color: "info",
-      title: "Website Views",
+      title: "User Count",
       visible: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
@@ -26,7 +26,7 @@ export const chartsConfig = {
     {
       type: "line",
       color: "success",
-      title: "Daily Sales",
+      title: "Avg DL Latency",
       visible: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
