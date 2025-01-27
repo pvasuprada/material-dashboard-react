@@ -76,4 +76,22 @@ export const api = {
       throw error;
     }
   },
+
+  getChartData: async (params) => {
+    try {
+      const response = await apiClient.post("/dynamic-query-executor/sector-360/time-series", {
+        request_id: params?.request_id || 131,
+        market_id: params?.market_id || "131",
+        fuze_site_id: params?.fuze_site_id || "2214712",
+        sect_id: params?.sect_id || "104",
+        date_range: params?.date_range || "2024-12-27;2025-01-08",
+        traffic_type: params?.traffic_type || "132.0",
+        request_type: "Chart",
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching chart data:", error);
+      throw error;
+    }
+  },
 };

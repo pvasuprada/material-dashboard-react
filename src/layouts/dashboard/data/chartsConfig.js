@@ -1,26 +1,19 @@
-export const chartsConfig = {
+export const getChartsConfig = (chartData = [], xData = []) => ({
   charts: [
     {
-      type: "bar",
+      type: "line",
       color: "info",
       title: "User Count",
       visible: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        description: "Last Campaign Performance",
-        date: "campaign sent 2 days ago",
-        labels: ["M", "T", "W", "T", "F", "S", "S"],
-        datasets: [
-          {
-            label: "Views",
-            data: [50, 20, 10, 22, 50, 10, 40],
-            backgroundColor: "rgba(255, 255, 255, 0.8)",
-            borderColor: "transparent",
-            borderWidth: 0,
-            borderRadius: 4,
-            maxBarThickness: 10,
-          },
-        ],
+        description: "User count over time",
+        date: "updated daily",
+        labels: xData,
+        datasets: {
+          label: "Users",
+          data: chartData.find((chart) => chart.categoryName === "Users Count")?.data || [],
+        },
       },
     },
     {
@@ -30,19 +23,19 @@ export const chartsConfig = {
       visible: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        description: "15% increase in today sales",
-        date: "updated 4 min ago",
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        description: "Average download latency",
+        date: "updated daily",
+        labels: xData,
         datasets: {
-          label: "Sales",
-          data: [50, 40, 300, 320, 500, 350, 200, 230, 500],
+          label: "Latency",
+          data: chartData.find((chart) => chart.categoryName === "DL")?.data || [],
         },
       },
     },
     {
       type: "line",
       color: "dark",
-      title: "Completed Tasks",
+      title: "Total DL Volume",
       visible: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
@@ -133,4 +126,4 @@ export const chartsConfig = {
     //   },
     // },
   ],
-};
+});

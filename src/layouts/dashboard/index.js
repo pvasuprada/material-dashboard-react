@@ -15,12 +15,14 @@ import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
 import { useInsights } from "context/insightsContext";
 import { chartsConfig } from "./data/chartsConfig";
 import { ChartComponents } from "examples/Charts";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchChartData } from "store/slices/chartSlice";
+import { getChartsConfig } from "./data/chartsConfig";
 
 import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
 import Map from "./components/Map";
 import NetworkGenie from "./components/NetworkGenie";
-import { useSelector } from "react-redux";
 import SiteGrid from "./components/SiteGrid";
 
 function Dashboard({ children }) {
@@ -30,12 +32,20 @@ function Dashboard({ children }) {
   const { reportsLine, reportsBar, statistics } = useSelector((state) => state.dashboard);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { dashboardData, chartsData } = useInsights();
+  const dispatch = useDispatch();
+  const { chartData, xData, loading } = useSelector((state) => state.charts);
 
   useEffect(() => {
     if (reportsLine && reportsBar && statistics) {
       setIsDataLoaded(true);
     }
   }, [reportsLine, reportsBar, statistics]);
+
+  useEffect(() => {
+    dispatch(fetchChartData());
+  }, [dispatch]);
+
+  const chartsConfig = getChartsConfig(chartData, xData);
 
   if (!isDataLoaded) {
     return null;
@@ -48,106 +58,29 @@ function Dashboard({ children }) {
     window.dispatchEvent(new CustomEvent("sidenavSectionChange", { detail: section }));
   };
 
-  const formatChartData = (chart) => {
-    const baseProps = {
-      color: chart.color,
-      title: chart.title,
-      description: chart.data.description,
-      date: chart.data.date,
-    };
-
-    switch (chart.type) {
-      case "bar":
-        return {
-          ...baseProps,
-          chart: {
-            labels: chart.data.labels,
-            datasets: chart.data.datasets,
-          },
-        };
-
-      case "line":
-        return {
-          ...baseProps,
-          chart: {
-            labels: chart.data.labels,
-            datasets: {
-              label: chart.data.datasets.label,
-              data: chart.data.datasets.data,
-            },
-          },
-        };
-
-      case "doughnut":
-      case "pie":
-        return {
-          ...baseProps,
-          chart: {
-            labels: chart.data.labels,
-            datasets: {
-              label: chart.data.datasets.label,
-              data: chart.data.datasets.data,
-              backgroundColors: chart.data.datasets.backgroundColors,
-            },
-          },
-        };
-
-      case "bubble":
-        return {
-          ...baseProps,
-          chart: {
-            labels: chart.data.labels,
-            datasets: chart.data.datasets,
-          },
-        };
-
-      case "radar":
-      case "polar":
-        return {
-          ...baseProps,
-          chart: {
-            labels: chart.data.labels,
-            datasets: chart.data.datasets,
-          },
-        };
-
-      case "progressLine":
-      case "gradientLine":
-        return {
-          ...baseProps,
-          chart: {
-            labels: chart.data.labels,
-            datasets: {
-              label: chart.data.datasets.label,
-              data: chart.data.datasets.data,
-            },
-          },
-        };
-
-      case "mixed":
-        return {
-          ...baseProps,
-          chart: {
-            labels: chart.data.labels,
-            datasets: chart.data.datasets,
-          },
-        };
-
-      default:
-        return {
-          ...baseProps,
-          chart: {
-            labels: chart.data.labels,
-            datasets: Array.isArray(chart.data.datasets)
-              ? chart.data.datasets
-              : [chart.data.datasets],
-          },
-        };
-    }
+  const renderStatistics = () => {
+    return dashboardData
+      .filter((stat) => stat.visible)
+      .map((stat) => (
+        <Grid item xs={12} md={6} lg={3} key={stat.id}>
+          <MDBox mb={1.5}>
+            <ComplexStatisticsCard
+              icon="leaderboard"
+              title={stat.title}
+              count={`${stat.unit}${stat.value}`}
+              percentage={{
+                color: "success",
+                amount: "+3%",
+                label: "than last month",
+              }}
+            />
+          </MDBox>
+        </Grid>
+      ));
   };
 
   const renderChart = (chart) => {
-    if (!chart.visible) return null;
+    if (!chart.visible || loading) return null;
 
     const ChartComponent = ChartComponents[chart.type];
 
@@ -156,12 +89,19 @@ function Dashboard({ children }) {
       return null;
     }
 
-    const chartProps = formatChartData(chart);
-
     return (
       <Grid item {...chart.gridSize} key={chart.title}>
         <MDBox mb={3}>
-          <ChartComponent {...chartProps} />
+          <ChartComponent
+            color={chart.color}
+            title={chart.title}
+            description={chart.data.description}
+            date={chart.data.date}
+            chart={{
+              labels: chart.data.labels,
+              datasets: chart.data.datasets,
+            }}
+          />
         </MDBox>
       </Grid>
     );
@@ -199,48 +139,33 @@ function Dashboard({ children }) {
         {children}
       </MDBox>
       <MDBox py={3}>
-        <Grid container spacing={3}>
-          {dashboardData.statistics
-            .filter((stat) => stat.visible)
-            .map((stat) => (
-              <Grid item xs={12} md={6} lg={3} key={stat.title}>
-                <MDBox mb={1.5}>
-                  <ComplexStatisticsCard
-                    color={stat.color}
-                    icon={stat.icon}
-                    title={stat.title}
-                    count={stat.count}
-                    percentage={stat.percentage}
-                  />
-                </MDBox>
-              </Grid>
-            ))}
+        <Grid container spacing={2}>
+          {renderStatistics()}
         </Grid>
-
-        <MDBox mt={4.5}>
-          <Grid container spacing={3}>
-            {chartsData.charts.map(renderChart)}
+        <MDBox mt={6}>
+          <Grid container spacing={2}>
+            {chartsData.map(renderChart)}
           </Grid>
         </MDBox>
-        <MDBox>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={8}>
-              <Map />
-            </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              {/* <OrdersOverview /> */}
-              <NetworkGenie />
-            </Grid>
+      </MDBox>
+      <MDBox>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6} lg={8}>
+            <Map />
           </Grid>
-        </MDBox>
-        <MDBox mt={4.5}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={12} lg={12}>
-              {/* <Projects /> */}
-              <SiteGrid />
-            </Grid>
+          <Grid item xs={12} md={6} lg={4}>
+            {/* <OrdersOverview /> */}
+            <NetworkGenie />
           </Grid>
-        </MDBox>
+        </Grid>
+      </MDBox>
+      <MDBox mt={4.5}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={12} lg={12}>
+            {/* <Projects /> */}
+            <SiteGrid />
+          </Grid>
+        </Grid>
       </MDBox>
       <Footer />
     </DashboardLayout>

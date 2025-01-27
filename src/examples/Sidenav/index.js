@@ -62,6 +62,8 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const location = useLocation();
   const collapseName = location.pathname.replace("/", "");
   const [activeSection, setActiveSection] = useState("dashboards");
+  const { dashboardData, updateInsightVisibility, chartsData, updateChartVisibility } =
+    useInsights();
 
   let textColor = "white";
 
@@ -212,107 +214,56 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     );
   };
 
-  const renderInsightsSection = () => {
-    const { dashboardData, updateInsightVisibility, chartsData, updateChartVisibility } =
-      useInsights();
-
-    return (
-      <>
-        <MDTypography
-          color={textColor}
-          display="block"
-          variant="caption"
-          fontWeight="bold"
-          textTransform="uppercase"
-          pl={3}
-          mt={2}
-          mb={1}
-          ml={1}
-        >
-          Statistics Insights
-        </MDTypography>
-        <MDBox px={3} py={1}>
-          <FormGroup>
-            {dashboardData.statistics.map((stat) => (
-              <FormControlLabel
-                key={stat.title}
-                control={
-                  <Switch
-                    size="small"
-                    checked={stat.visible}
-                    onChange={(e) => updateInsightVisibility(stat.title, e.target.checked)}
-                    sx={{
-                      "& .MuiSwitch-track": {
-                        backgroundColor: textColor === "white" ? "#ffffff40" : "#00000040",
-                      },
-                      "& .MuiSwitch-thumb": {
-                        backgroundColor: textColor,
-                      },
-                    }}
-                  />
-                }
-                label={
-                  <MDTypography variant="button" color={textColor}>
-                    {stat.title}
-                  </MDTypography>
-                }
+  const renderInsightsSection = () => (
+    <MDBox pl={3} pr={1} mt={2}>
+      <MDTypography variant="h6" color="white">
+        Insights
+      </MDTypography>
+      <FormGroup>
+        {dashboardData.map((stat) => (
+          <FormControlLabel
+            key={stat.id}
+            control={
+              <Switch
+                checked={stat.visible}
+                onChange={() => updateInsightVisibility(stat.id)}
+                name={stat.title}
+                size="small"
               />
-            ))}
-          </FormGroup>
-        </MDBox>
-
-        <Divider
-          sx={{
-            my: 2,
-            backgroundColor: textColor === "white" ? "#ffffff40" : "#00000040",
-          }}
-        />
-
-        <MDTypography
-          color={textColor}
-          display="block"
-          variant="caption"
-          fontWeight="bold"
-          textTransform="uppercase"
-          pl={3}
-          mt={2}
-          mb={1}
-          ml={1}
-        >
-          Charts Insights
-        </MDTypography>
-        <MDBox px={3} py={1}>
-          <FormGroup>
-            {chartsData.charts.map((chart) => (
-              <FormControlLabel
-                key={chart.title}
-                control={
-                  <Switch
-                    size="small"
-                    checked={chart.visible}
-                    onChange={(e) => updateChartVisibility(chart.title, e.target.checked)}
-                    sx={{
-                      "& .MuiSwitch-track": {
-                        backgroundColor: textColor === "white" ? "#ffffff40" : "#00000040",
-                      },
-                      "& .MuiSwitch-thumb": {
-                        backgroundColor: textColor,
-                      },
-                    }}
-                  />
-                }
-                label={
-                  <MDTypography variant="button" color={textColor}>
-                    {chart.title}
-                  </MDTypography>
-                }
+            }
+            label={
+              <MDTypography variant="button" fontWeight="regular" color="white">
+                {stat.title}
+              </MDTypography>
+            }
+          />
+        ))}
+      </FormGroup>
+      <MDTypography variant="h6" color="white" mt={2}>
+        Charts
+      </MDTypography>
+      <FormGroup>
+        {chartsData.map((chart) => (
+          <FormControlLabel
+            key={chart.title}
+            control={
+              <Switch
+                checked={chart.visible}
+                onChange={() => updateChartVisibility(chart.title)}
+                name={chart.title}
+                size="small"
               />
-            ))}
-          </FormGroup>
-        </MDBox>
-      </>
-    );
-  };
+            }
+            label={
+              <MDTypography variant="button" fontWeight="regular" color="white">
+                {chart.title}
+              </MDTypography>
+            }
+          />
+        ))}
+      </FormGroup>
+    </MDBox>
+  );
 
   return (
     <SidenavRoot

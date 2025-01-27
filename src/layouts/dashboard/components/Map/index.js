@@ -214,9 +214,9 @@ function MapComponent() {
 
   return (
     <Card>
-      <MDBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
+      {/* <MDBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
         <MDTypography variant="h6">Interactive Map</MDTypography>
-      </MDBox>
+      </MDBox> */}
       <MDBox p={2}>
         <MDBox
           sx={{
