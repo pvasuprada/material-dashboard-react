@@ -24,7 +24,7 @@ import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
 import Map from "./components/Map";
 import NetworkGenie from "./components/NetworkGenie";
 import SiteGrid from "./components/SiteGrid";
-
+import { useSidenav } from "context/SidenavContext";
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
   const { sidenavColor } = controller;
@@ -34,6 +34,7 @@ function Dashboard({ children }) {
   const { dashboardData, chartsData } = useInsights();
   const dispatch = useDispatch();
   const { chartData, xData, loading } = useSelector((state) => state.charts);
+  const { showSidenav, sidenavContent, activeButton, openSidenav } = useSidenav();
 
   useEffect(() => {
     if (reportsLine && reportsBar && statistics) {
@@ -53,6 +54,7 @@ function Dashboard({ children }) {
 
   // Function to update sidenav content via context or state management
   const handleSectionChange = (section) => {
+    openSidenav(section);
     setActiveSection(section);
     // You can dispatch this to your context or state management if needed
     window.dispatchEvent(new CustomEvent("sidenavSectionChange", { detail: section }));

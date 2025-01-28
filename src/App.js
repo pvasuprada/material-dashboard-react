@@ -22,6 +22,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Icon from "@mui/material/Icon";
+import IconButton from "@mui/material/IconButton";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -49,38 +50,19 @@ import routes from "routes";
 // Material Dashboard 2 React contexts
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 import { InsightsProvider } from "context/insightsContext";
+import { SidenavProvider, useSidenav } from "context/SidenavContext";
 
 // Images
 import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
 
-export default function App() {
+function AppContent() {
   const [controller, dispatch] = useMaterialUIController();
-  const {
-    miniSidenav,
-    direction,
-    layout,
-    openConfigurator,
-    sidenavColor,
-    transparentSidenav,
-    whiteSidenav,
-    darkMode,
-  } = controller;
+  const { miniSidenav, layout, sidenavColor, transparentSidenav, whiteSidenav, darkMode } =
+    controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
-  const [rtlCache, setRtlCache] = useState(null);
-  const { pathname } = useLocation();
+  const { showSidenav, sidenavContent, activeButton } = useSidenav();
 
-  // Cache for the rtl
-  useMemo(() => {
-    const cacheRtl = createCache({
-      key: "rtl",
-      stylisPlugins: [rtlPlugin],
-    });
-
-    setRtlCache(cacheRtl);
-  }, []);
-
-  // Open sidenav when mouse enter on mini sidenav
   const handleOnMouseEnter = () => {
     if (miniSidenav && !onMouseEnter) {
       setMiniSidenav(dispatch, false);
@@ -88,27 +70,12 @@ export default function App() {
     }
   };
 
-  // Close sidenav when mouse leave mini sidenav
   const handleOnMouseLeave = () => {
     if (onMouseEnter) {
       setMiniSidenav(dispatch, true);
       setOnMouseEnter(false);
     }
   };
-
-  // Change the openConfigurator state
-  const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
-
-  // Setting the dir attribute for the body element
-  useEffect(() => {
-    document.body.setAttribute("dir", direction);
-  }, [direction]);
-
-  // Setting page scroll to 0 when changing the route
-  useEffect(() => {
-    document.documentElement.scrollTop = 0;
-    document.scrollingElement.scrollTop = 0;
-  }, [pathname]);
 
   const getRoutes = (allRoutes) =>
     allRoutes.map((route) => {
@@ -123,81 +90,102 @@ export default function App() {
       return null;
     });
 
-  const configsButton = (
-    <MDBox
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      width="3.25rem"
-      height="3.25rem"
-      bgColor="white"
-      shadow="sm"
-      borderRadius="50%"
-      position="fixed"
-      right="2rem"
-      bottom="2rem"
-      zIndex={99}
-      color="dark"
-      sx={{ cursor: "pointer" }}
-      onClick={handleConfiguratorOpen}
-    >
-      <Icon fontSize="small" color="inherit">
-        settings
-      </Icon>
-    </MDBox>
-  );
-
   return (
-    <InsightsProvider>
-      {direction === "rtl" ? (
-        <CacheProvider value={rtlCache}>
-          <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
-            <CssBaseline />
-            {layout === "dashboard" && (
-              <>
-                <Sidenav
-                  color={sidenavColor}
-                  brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-                  brandName="Minerva"
-                  routes={routes}
-                  onMouseEnter={handleOnMouseEnter}
-                  onMouseLeave={handleOnMouseLeave}
-                />
-                <Configurator />
-                {configsButton}
-              </>
-            )}
-            {layout === "vr" && <Configurator />}
-            <Routes>
-              {getRoutes(routes)}
-              <Route path="*" element={<Navigate to="/sector360" />} />
-            </Routes>
-          </ThemeProvider>
-        </CacheProvider>
-      ) : (
-        <ThemeProvider theme={darkMode ? themeDark : theme}>
-          <CssBaseline />
-          {layout === "dashboard" && (
-            <>
-              <Sidenav
-                color={sidenavColor}
-                brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-                brandName="Minerva"
-                routes={routes}
-                onMouseEnter={handleOnMouseEnter}
-                onMouseLeave={handleOnMouseLeave}
-              />
-              <Configurator />
-              {configsButton}
-            </>
-          )}
-          {layout === "vr" && <Configurator />}
+    <ThemeProvider theme={darkMode ? themeDark : theme}>
+      <CssBaseline />
+      <MDBox
+        display="flex"
+        sx={{
+          overflow: "hidden",
+          height: "100vh",
+        }}
+      >
+        {layout === "dashboard" && showSidenav && (
+          <MDBox
+            sx={{
+              position: "fixed",
+              height: "100vh",
+              zIndex: 1200,
+              transition: "width 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+              //width: miniSidenav ? "120px" : "274px",
+              overflowX: "hidden",
+            }}
+          >
+            <Sidenav
+              color={sidenavColor}
+              brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
+              brandName="Minerva"
+              routes={routes}
+              onMouseEnter={handleOnMouseEnter}
+              onMouseLeave={handleOnMouseLeave}
+              activeContent={sidenavContent}
+              activeButton={activeButton}
+            />
+          </MDBox>
+        )}
+        <MDBox
+          sx={{
+            position: "relative",
+            height: "100vh",
+            overflow: "auto",
+            transition:
+              "margin-left 300ms cubic-bezier(0.4, 0, 0.2, 1), width 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+            //marginLeft: showSidenav ? (miniSidenav ? "120px" : "274px") : "0",
+            width: "100%",
+          }}
+        >
+          <MDBox
+            sx={{
+              position: "fixed",
+              top: "50%",
+              left: showSidenav ? (miniSidenav ? "120px" : "274px") : "0",
+              //transform: "translateY(-50%)",
+              zIndex: 1300,
+              transition: "left 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            <IconButton
+              onClick={() => setMiniSidenav(dispatch, !miniSidenav)}
+              sx={{
+                backgroundColor: "white",
+                boxShadow: "0 2px 12px 0 rgba(0,0,0,0.16)",
+                width: "26px",
+                height: "26px",
+                p: 0.5,
+                "&:hover": {
+                  backgroundColor: "white",
+                },
+              }}
+            >
+              <Icon
+                sx={{
+                  fontSize: "18px",
+                  transform: miniSidenav ? "rotate(0deg)" : "rotate(180deg)",
+                  transition: "transform 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              >
+                chevron_right
+              </Icon>
+            </IconButton>
+          </MDBox>
           <Routes>
             {getRoutes(routes)}
             <Route path="*" element={<Navigate to="/sector360" />} />
           </Routes>
-        </ThemeProvider>
-      )}
+        </MDBox>
+      </MDBox>
+    </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <InsightsProvider>
+      <SidenavProvider>
+        <AppContent />
+      </SidenavProvider>
     </InsightsProvider>
   );
 }
+
+export default App;
