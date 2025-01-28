@@ -30,7 +30,13 @@ import ImageWMS from "ol/source/ImageWMS";
 import { fromLonLat } from "ol/proj";
 import Control from "ol/control/Control";
 import { defaults as defaultControls } from "ol/control";
-
+import { Vector as VectorLayer } from "ol/layer";
+import { Vector as VectorSource } from "ol/source";
+import { Feature } from "ol";
+import { Polygon } from "ol/geom";
+import { Fill, Style } from "ol/style";
+import * as h3 from "h3-js";
+import { api } from "services/api";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
@@ -65,17 +71,45 @@ const basemaps = {
     source: new OSM(),
     title: "OSM",
   }),
+  streets: new TileLayer({
+    source: new XYZ({
+      url: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoicHZhc3VwcmFkYSIsImEiOiJjamllZXV4M2cwNXZ3M3ZwMXM4NzBxM2xjIn0.DhJvytW8s6yVVOFVL-Xuqg`,
+      tileSize: 512,
+      maxZoom: 22,
+    }),
+    title: "Streets",
+  }),
+  dark: new TileLayer({
+    source: new XYZ({
+      url: `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoicHZhc3VwcmFkYSIsImEiOiJjamllZXV4M2cwNXZ3M3ZwMXM4NzBxM2xjIn0.DhJvytW8s6yVVOFVL-Xuqg`,
+      tileSize: 512,
+      maxZoom: 22,
+    }),
+    title: "Dark",
+  }),
+  light: new TileLayer({
+    source: new XYZ({
+      url: `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoicHZhc3VwcmFkYSIsImEiOiJjamllZXV4M2cwNXZ3M3ZwMXM4NzBxM2xjIn0.DhJvytW8s6yVVOFVL-Xuqg`,
+      tileSize: 512,
+      maxZoom: 22,
+    }),
+    title: "Light",
+  }),
   satellite: new TileLayer({
     source: new XYZ({
-      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      url: `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoicHZhc3VwcmFkYSIsImEiOiJjamllZXV4M2cwNXZ3M3ZwMXM4NzBxM2xjIn0.DhJvytW8s6yVVOFVL-Xuqg`,
+      tileSize: 512,
+      maxZoom: 22,
     }),
     title: "Satellite",
   }),
-  terrain: new TileLayer({
+  outdoors: new TileLayer({
     source: new XYZ({
-      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}",
+      url: `https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoicHZhc3VwcmFkYSIsImEiOiJjamllZXV4M2cwNXZ3M3ZwMXM4NzBxM2xjIn0.DhJvytW8s6yVVOFVL-Xuqg`,
+      tileSize: 512,
+      maxZoom: 22,
     }),
-    title: "Terrain",
+    title: "Outdoors",
   }),
 };
 
@@ -96,6 +130,21 @@ const overlayLayers = {
     title: "GeoServer Layer",
     visible: false,
   }),
+  hexbins: new VectorLayer({
+    source: new VectorSource(),
+    title: "Hexbins",
+    visible: true,
+    style: (feature) => {
+      const userCount = feature.get("user_count");
+      // Create a color scale based on user_count
+      const opacity = Math.min(0.8, 0.2 + userCount * 0.2);
+      return new Style({
+        fill: new Fill({
+          color: `rgba(65, 105, 225, ${opacity})`,
+        }),
+      });
+    },
+  }),
 };
 
 function MapComponent() {
@@ -103,10 +152,11 @@ function MapComponent() {
   const mapInstanceRef = useRef(null);
   const [basemapAnchorEl, setBasemapAnchorEl] = useState(null);
   const [layersAnchorEl, setLayersAnchorEl] = useState(null);
-  const [currentBasemap, setCurrentBasemap] = useState("osm");
+  const [currentBasemap, setCurrentBasemap] = useState("light");
   const [layerVisibility, setLayerVisibility] = useState({
     hurricanes: true,
     geoserver: false,
+    hexbins: true,
   });
 
   const createCustomControl = (element) => {
@@ -114,6 +164,48 @@ function MapComponent() {
       element: element,
     });
     return customControl;
+  };
+
+  const updateHexbins = async () => {
+    try {
+      const response = await api.getMapData(); // Your data fetching function
+      const { data, extent } = response;
+
+      // Convert averages to features
+      const features = response.averages.map(({ geobin, user_count }) => {
+        // Get hexagon boundary coordinates
+        const hexBoundary = h3.cellToBoundary(geobin);
+
+        // Convert to OpenLayers format (longitude, latitude)
+        const coordinates = [hexBoundary.map(([lat, lng]) => fromLonLat([lng, lat]))];
+
+        // Create feature
+        const feature = new Feature({
+          geometry: new Polygon(coordinates),
+        });
+
+        feature.set("user_count", user_count);
+        return feature;
+      });
+
+      // Update vector source
+      const hexbinLayer = overlayLayers.hexbins;
+      const source = hexbinLayer.getSource();
+      source.clear();
+      source.addFeatures(features);
+
+      // Zoom to extent
+      if (mapInstanceRef.current && extent) {
+        const { xmin, ymin, xmax, ymax } = extent;
+        const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
+        mapInstanceRef.current.getView().fit(transformedExtent, {
+          padding: [50, 50, 50, 50],
+          duration: 1000,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating hexbins:", error);
+    }
   };
 
   useEffect(() => {
@@ -183,6 +275,9 @@ function MapComponent() {
         }),
         controls: defaultControls({ zoom: false }).extend([containerControl]),
       });
+
+      // Call updateHexbins after map is initialized
+      updateHexbins();
     }
 
     return () => {
@@ -242,8 +337,10 @@ function MapComponent() {
             onClose={() => setBasemapAnchorEl(null)}
           >
             <MenuItem onClick={() => handleBasemapChange("osm")}>OpenStreetMap</MenuItem>
+            <MenuItem onClick={() => handleBasemapChange("dark")}>Dark</MenuItem>
+            <MenuItem onClick={() => handleBasemapChange("light")}>Light</MenuItem>
             <MenuItem onClick={() => handleBasemapChange("satellite")}>Satellite</MenuItem>
-            <MenuItem onClick={() => handleBasemapChange("terrain")}>Terrain</MenuItem>
+            <MenuItem onClick={() => handleBasemapChange("outdoors")}>Outdoors</MenuItem>
           </Menu>
 
           {/* Layers Menu */}
@@ -272,6 +369,17 @@ function MapComponent() {
                   />
                 }
                 label="GeoServer Layer"
+              />
+            </MenuItem>
+            <MenuItem>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={layerVisibility.hexbins}
+                    onChange={() => handleLayerToggle("hexbins")}
+                  />
+                }
+                label="Hexbins"
               />
             </MenuItem>
           </Menu>
