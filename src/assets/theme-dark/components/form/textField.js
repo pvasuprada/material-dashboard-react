@@ -20,9 +20,23 @@ const { transparent } = colors;
 
 const textField = {
   styleOverrides: {
-    root: {
+    root: ({ theme }) => ({
       backgroundColor: transparent.main,
-    },
+      "& .MuiInputBase-input": {
+        color: theme.palette.dark.text,
+      },
+      "& .MuiOutlinedInput-root": {
+        "& fieldset": {
+          borderColor: theme.palette.divider,
+        },
+        "&:hover fieldset": {
+          borderColor: theme.palette.info.main,
+        },
+        "&.Mui-focused fieldset": {
+          borderColor: theme.palette.info.main,
+        },
+      },
+    }),
   },
 };
 

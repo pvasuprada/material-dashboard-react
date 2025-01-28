@@ -50,6 +50,7 @@ import {
 import MDAlert from "components/MDAlert";
 import Overlay from "ol/Overlay";
 import { unByKey } from "ol/Observable";
+import { useTheme } from "@mui/material/styles";
 
 // Custom styles for the controls
 const controlStyle = {
@@ -177,6 +178,7 @@ function MapComponent() {
   const error = useSelector(selectMapError);
   const popupRef = useRef(null);
   const popupOverlayRef = useRef(null);
+  const theme = useTheme();
 
   const createCustomControl = (element) => {
     const customControl = new Control({
@@ -492,22 +494,23 @@ function MapComponent() {
             </MenuItem>
           </Menu>
 
-          {/* Add popup element */}
+          {/* Updated popup with theme-aware styles */}
           <div
             ref={popupRef}
             style={{
               display: "none",
               position: "absolute",
-              background: "white",
+              background: theme.palette.background.paper,
+              color: theme.palette.text.primary,
               padding: "10px",
               borderRadius: "4px",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-              border: "1px solid #cccccc",
+              boxShadow: theme.shadows[2],
+              border: `1px solid ${theme.palette.divider}`,
               minWidth: "150px",
               zIndex: 1000,
             }}
           >
-            <div id="popup-content"></div>
+            <div id="popup-content" style={{ color: theme.palette.text.primary }}></div>
             <div
               style={{
                 position: "absolute",
@@ -515,6 +518,7 @@ function MapComponent() {
                 top: "5px",
                 cursor: "pointer",
                 fontSize: "16px",
+                color: theme.palette.text.primary,
               }}
               onClick={() => {
                 popupRef.current.style.display = "none";
