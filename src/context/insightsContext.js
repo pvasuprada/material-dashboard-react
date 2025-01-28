@@ -8,10 +8,10 @@ const InsightsContext = createContext();
 export function InsightsProvider({ children }) {
   const { chartData, xData } = useSelector((state) => state.charts);
   const [dashboardData, setDashboardData] = useState([
-    { id: 1, title: "Users", value: "281", unit: "", visible: true },
-    { id: 2, title: "Revenue", value: "2,300", unit: "$", visible: true },
-    { id: 3, title: "Traffic", value: "34,593", unit: "GB", visible: true },
-    { id: 4, title: "Followers", value: "+91", unit: "", visible: true },
+    { id: 1, title: "Users", value: "281", unit: "", visible: false },
+    { id: 2, title: "Revenue", value: "2,300", unit: "$", visible: false },
+    { id: 3, title: "Modifications - Active", value: "27", unit: "", visible: false },
+    { id: 4, title: "New Builds - Active", value: "91", unit: "", visible: false },
   ]);
 
   const [chartsData, setChartsData] = useState(getChartsConfig(chartData, xData).charts);

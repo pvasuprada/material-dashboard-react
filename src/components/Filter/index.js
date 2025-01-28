@@ -1,40 +1,58 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Card from "@mui/material/Card";
+import Grid from "@mui/material/Grid";
+import Alert from "@mui/material/Alert";
+import CircularProgress from "@mui/material/CircularProgress";
 import MDBox from "components/MDBox";
-import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
+import MDTypography from "components/MDTypography";
 import MDAutocomplete from "components/MDAutocomplete";
 import MDDateRangePicker from "components/MDDateRangePicker";
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import CircularProgress from "@mui/material/CircularProgress";
-import Alert from "@mui/material/Alert";
-import { useFilterData } from "hooks/useFilterData";
+import {
+  fetchFilterOptions,
+  fetchFilteredData,
+  updateSelectedFilters,
+  resetFilters,
+} from "store/slices/filterSlice";
 
 function Filter() {
-  const [market, setMarket] = useState(null);
-  const [sector, setSector] = useState(null);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const dispatch = useDispatch();
+  const { data, selectedFilters, loading, error } = useSelector((state) => state.filter);
 
-  const { markets, sectors, loading, error } = useFilterData();
+  const [market, setMarket] = useState(selectedFilters.market);
+  const [sector, setSector] = useState(selectedFilters.sector);
+  const [startDate, setStartDate] = useState(selectedFilters.dateRange.startDate);
+  const [endDate, setEndDate] = useState(selectedFilters.dateRange.endDate);
+
+  // Fetch filter options on component mount
+  useEffect(() => {
+    dispatch(fetchFilterOptions());
+  }, [dispatch]);
 
   const handleReset = () => {
-    setMarket(null);
-    setSector(null);
-    setStartDate(null);
-    setEndDate(null);
+    dispatch(resetFilters());
+    setMarket("all");
+    setSector("all");
+    setStartDate(new Date(new Date().setMonth(new Date().getMonth() - 1)));
+    setEndDate(new Date());
   };
 
   const handleApply = () => {
-    const filters = {
+    const newFilters = {
       market,
       sector,
       dateRange: {
-        start: startDate,
-        end: endDate,
+        startDate,
+        endDate,
       },
     };
-    console.log("Applied filters:", filters);
+
+    // First update the selected filters in the store
+    dispatch(updateSelectedFilters(newFilters));
+
+    // Then fetch the filtered data
+    dispatch(fetchFilteredData(newFilters));
   };
 
   if (loading) {
@@ -64,7 +82,7 @@ function Filter() {
             <MDAutocomplete
               value={market}
               onChange={(event, newValue) => setMarket(newValue)}
-              options={markets}
+              options={data.markets}
               label="Market"
               color="info"
             />
@@ -73,7 +91,7 @@ function Filter() {
             <MDAutocomplete
               value={sector}
               onChange={(event, newValue) => setSector(newValue)}
-              options={sectors}
+              options={data.sectors}
               label="Sector"
               color="info"
             />

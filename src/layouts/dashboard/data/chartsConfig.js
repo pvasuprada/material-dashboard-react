@@ -49,6 +49,22 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       },
     },
     // {
+    //   type: "line",
+    //   color: "dark",
+    //   title: "Total UL Volume",
+    //   visible: true,
+    //   gridSize: { xs: 12, md: 6, lg: 4 },
+    //   data: {
+    //     description: "Last Campaign Performance",
+    //     date: "just updated",
+    //     labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    //     datasets: {
+    //       label: "Tasks",
+    //       data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+    //     },
+    //   },
+    // },
+    // {
     //   type: "doughnut",
     //   color: "warning",
     //   title: "Traffic Sources",
