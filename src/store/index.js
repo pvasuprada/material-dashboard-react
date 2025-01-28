@@ -2,12 +2,14 @@ import dashboardReducer from "./slices/dashboardSlice";
 import { configureStore } from "@reduxjs/toolkit";
 import chartReducer from "./slices/chartSlice";
 import filterReducer from "./slices/filterSlice";
+import mapReducer from "./slices/mapSlice";
 
 export const store = configureStore({
   reducer: {
     dashboard: dashboardReducer,
     charts: chartReducer,
     filter: filterReducer,
+    map: mapReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

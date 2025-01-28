@@ -17,6 +17,41 @@ const mockSectors = ["115", "116", "117", "118"];
 // Mock API response delay
 const mockDelay = () => new Promise((resolve) => setTimeout(resolve, 1000));
 
+// Add request/response interceptors for debugging
+if (process.env.NODE_ENV === "development") {
+  apiClient.interceptors.request.use(
+    (config) => {
+      console.log("API Request:", {
+        url: config.url,
+        method: config.method,
+        headers: config.headers,
+      });
+      return config;
+    },
+    (error) => {
+      console.error("API Request Error:", error);
+      return Promise.reject(error);
+    }
+  );
+
+  apiClient.interceptors.response.use(
+    (response) => {
+      console.log("API Response:", {
+        status: response.status,
+        data: response.data,
+      });
+      return response;
+    },
+    (error) => {
+      console.error("API Response Error:", {
+        message: error.message,
+        response: error.response,
+      });
+      return Promise.reject(error);
+    }
+  );
+}
+
 export const api = {
   // Markets
   getMarkets: async () => {
@@ -104,7 +139,7 @@ export const api = {
         sect_id: params?.sect_id || "104",
         date_range: params?.date_range || "2024-12-27;2025-01-08",
         traffic_type: params?.traffic_type || "132.0",
-        request_type: "Map",
+        request_type: "Chart",
       });
       return response.data;
     } catch (error) {

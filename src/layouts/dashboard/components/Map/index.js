@@ -34,12 +34,22 @@ import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { Feature } from "ol";
 import { Polygon } from "ol/geom";
-import { Fill, Style } from "ol/style";
+import { Fill, Style, Stroke } from "ol/style";
 import * as h3 from "h3-js";
 import { api } from "services/api";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectMapAverages,
+  selectMapExtent,
+  selectMapLoading,
+  selectMapError,
+} from "store/slices/mapSlice";
+import MDAlert from "components/MDAlert";
+import Overlay from "ol/Overlay";
+import { unByKey } from "ol/Observable";
 
 // Custom styles for the controls
 const controlStyle = {
@@ -136,11 +146,14 @@ const overlayLayers = {
     visible: true,
     style: (feature) => {
       const userCount = feature.get("user_count");
-      // Create a color scale based on user_count
-      const opacity = Math.min(0.8, 0.2 + userCount * 0.2);
+      // Make hexbins more visible with stronger colors and borders
       return new Style({
         fill: new Fill({
-          color: `rgba(65, 105, 225, ${opacity})`,
+          color: `rgba(255, 0, 0, ${Math.min(0.8, 0.2 + userCount * 0.2)})`,
+        }),
+        stroke: new Stroke({
+          color: "rgba(255, 0, 0, 1)",
+          width: 1,
         }),
       });
     },
@@ -158,6 +171,12 @@ function MapComponent() {
     geoserver: false,
     hexbins: true,
   });
+  const averages = useSelector(selectMapAverages);
+  const extent = useSelector(selectMapExtent);
+  const loading = useSelector(selectMapLoading);
+  const error = useSelector(selectMapError);
+  const popupRef = useRef(null);
+  const popupOverlayRef = useRef(null);
 
   const createCustomControl = (element) => {
     const customControl = new Control({
@@ -168,40 +187,45 @@ function MapComponent() {
 
   const updateHexbins = async () => {
     try {
-      const response = await api.getMapData(); // Your data fetching function
-      const { data, extent } = response;
+      if (averages && Array.isArray(averages)) {
+        console.log("Creating hexbin features from averages:", averages); // Debug log
 
-      // Convert averages to features
-      const features = response.averages.map(({ geobin, user_count }) => {
-        // Get hexagon boundary coordinates
-        const hexBoundary = h3.cellToBoundary(geobin);
+        const features = averages.map(({ geobin, user_count }) => {
+          // Get hexagon boundary coordinates
+          const hexBoundary = h3.cellToBoundary(geobin);
+          console.log("Hex boundary for", geobin, ":", hexBoundary); // Debug log
 
-        // Convert to OpenLayers format (longitude, latitude)
-        const coordinates = [hexBoundary.map(([lat, lng]) => fromLonLat([lng, lat]))];
+          // Convert to OpenLayers format (longitude, latitude)
+          const coordinates = [hexBoundary.map(([lat, lng]) => fromLonLat([lng, lat]))];
 
-        // Create feature
-        const feature = new Feature({
-          geometry: new Polygon(coordinates),
+          // Create feature
+          const feature = new Feature({
+            geometry: new Polygon(coordinates),
+          });
+
+          feature.set("user_count", user_count);
+          feature.set("geobin", geobin);
+          return feature;
         });
 
-        feature.set("user_count", user_count);
-        return feature;
-      });
+        console.log("Created features:", features); // Debug log
 
-      // Update vector source
-      const hexbinLayer = overlayLayers.hexbins;
-      const source = hexbinLayer.getSource();
-      source.clear();
-      source.addFeatures(features);
+        const hexbinLayer = overlayLayers.hexbins;
+        const source = hexbinLayer.getSource();
+        source.clear();
+        source.addFeatures(features);
 
-      // Zoom to extent
-      if (mapInstanceRef.current && extent) {
-        const { xmin, ymin, xmax, ymax } = extent;
-        const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
-        mapInstanceRef.current.getView().fit(transformedExtent, {
-          padding: [50, 50, 50, 50],
-          duration: 1000,
-        });
+        // Ensure the layer is visible
+        hexbinLayer.setVisible(true);
+
+        if (mapInstanceRef.current && extent) {
+          const { xmin, ymin, xmax, ymax } = extent;
+          const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
+          mapInstanceRef.current.getView().fit(transformedExtent, {
+            padding: [50, 50, 50, 50],
+            duration: 1000,
+          });
+        }
       }
     } catch (error) {
       console.error("Error updating hexbins:", error);
@@ -276,6 +300,56 @@ function MapComponent() {
         controls: defaultControls({ zoom: false }).extend([containerControl]),
       });
 
+      // Initialize popup overlay
+      popupOverlayRef.current = new Overlay({
+        element: popupRef.current,
+        positioning: "bottom-center",
+        offset: [0, -10],
+        autoPan: true,
+        autoPanAnimation: {
+          duration: 250,
+        },
+      });
+
+      mapInstanceRef.current.addOverlay(popupOverlayRef.current);
+
+      // Add click handler
+      mapInstanceRef.current.on("click", (evt) => {
+        const feature = mapInstanceRef.current.forEachFeatureAtPixel(
+          evt.pixel,
+          (feature) => feature
+        );
+
+        if (feature) {
+          const coordinates = evt.coordinate;
+          const userCount = feature.get("user_count");
+          const geobin = feature.get("geobin");
+
+          // Show popup
+          popupRef.current.style.display = "block";
+          popupOverlayRef.current.setPosition(coordinates);
+
+          // Update popup content
+          const popupContent = document.getElementById("popup-content");
+          popupContent.innerHTML = `
+            <div>
+              <strong>Geobin:</strong> ${geobin}<br>
+              <strong>User Count:</strong> ${userCount}
+            </div>
+          `;
+        } else {
+          // Hide popup when clicking outside features
+          popupRef.current.style.display = "none";
+        }
+      });
+
+      // Add pointer cursor for features
+      mapInstanceRef.current.on("pointermove", (evt) => {
+        const pixel = mapInstanceRef.current.getEventPixel(evt.originalEvent);
+        const hit = mapInstanceRef.current.hasFeatureAtPixel(pixel);
+        mapInstanceRef.current.getViewport().style.cursor = hit ? "pointer" : "";
+      });
+
       // Call updateHexbins after map is initialized
       updateHexbins();
     }
@@ -287,6 +361,13 @@ function MapComponent() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    // Update hexbins when averages data changes
+    if (averages && mapInstanceRef.current) {
+      updateHexbins();
+    }
+  }, [averages]);
 
   const handleBasemapChange = (basemapKey) => {
     setBasemapAnchorEl(null);
@@ -306,6 +387,33 @@ function MapComponent() {
     }));
     overlayLayers[layerKey].setVisible(newVisibility);
   };
+
+  // Add more detailed error display
+  if (error) {
+    return (
+      <Card>
+        <MDBox p={2}>
+          <MDAlert color="error" dismissible>
+            <MDTypography variant="body2" color="white">
+              Failed to load map data: {error}
+              {process.env.NODE_ENV === "development" && (
+                <div>
+                  <small>
+                    Please check:
+                    <ul>
+                      <li>API endpoint configuration</li>
+                      <li>Network connection</li>
+                      <li>Server status</li>
+                    </ul>
+                  </small>
+                </div>
+              )}
+            </MDTypography>
+          </MDAlert>
+        </MDBox>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -383,6 +491,38 @@ function MapComponent() {
               />
             </MenuItem>
           </Menu>
+
+          {/* Add popup element */}
+          <div
+            ref={popupRef}
+            style={{
+              display: "none",
+              position: "absolute",
+              background: "white",
+              padding: "10px",
+              borderRadius: "4px",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+              border: "1px solid #cccccc",
+              minWidth: "150px",
+              zIndex: 1000,
+            }}
+          >
+            <div id="popup-content"></div>
+            <div
+              style={{
+                position: "absolute",
+                right: "5px",
+                top: "5px",
+                cursor: "pointer",
+                fontSize: "16px",
+              }}
+              onClick={() => {
+                popupRef.current.style.display = "none";
+              }}
+            >
+              ×
+            </div>
+          </div>
         </MDBox>
       </MDBox>
     </Card>
