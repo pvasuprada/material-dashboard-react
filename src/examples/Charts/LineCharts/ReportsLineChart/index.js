@@ -13,7 +13,7 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useMemo } from "react";
+import { useMemo, useState, useRef } from "react";
 
 // porp-types is a library for typechecking of props
 import PropTypes from "prop-types";
@@ -36,13 +36,17 @@ import {
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
 import Icon from "@mui/material/Icon";
-
-// Material Dashboard 2 React components
+import IconButton from "@mui/material/IconButton";
+import Dialog from "@mui/material/Dialog";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
 // ReportsLineChart configurations
 import configs from "examples/Charts/LineCharts/ReportsLineChart/configs";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import DownloadIcon from "@mui/icons-material/Download";
+import html2canvas from "html2canvas";
 
 ChartJS.register(
   CategoryScale,
@@ -56,6 +60,24 @@ ChartJS.register(
 );
 
 function ReportsLineChart({ color, title, description, date, chart }) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const chartRef = useRef(null);
+
+  const handleDownload = async () => {
+    if (chartRef.current) {
+      const canvas = await html2canvas(chartRef.current);
+      const url = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.download = `${title}.png`;
+      link.href = url;
+      link.click();
+    }
+  };
+
+  const handleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
   const chartData = useMemo(
     () => ({
       labels: chart?.labels || [],
@@ -138,39 +160,84 @@ function ReportsLineChart({ color, title, description, date, chart }) {
   ); // Empty dependency array since options don't change
 
   return (
-    <Card sx={{ height: "100%" }}>
-      <MDBox padding="1rem">
-        <MDBox
-          variant="gradient"
-          bgColor={color}
-          borderRadius="lg"
-          coloredShadow={color}
-          py={2}
-          pr={0.5}
-          mt={-5}
-          height="12.5rem"
-        >
-          <Line data={chartData} options={options} />
+    <>
+      <Card sx={{ height: "100%" }} ref={chartRef}>
+        <MDBox padding="1rem">
+          <MDBox
+            variant="gradient"
+            bgColor={color}
+            borderRadius="lg"
+            coloredShadow={color}
+            py={2}
+            pr={0.5}
+            mt={-5}
+            height="12.5rem"
+          >
+            <Line data={chartData} options={options} />
+          </MDBox>
+          <MDBox pt={3} pb={1} px={1}>
+            <MDTypography variant="h6" textTransform="capitalize">
+              {title}
+            </MDTypography>
+            <MDTypography component="div" variant="button" color="text" fontWeight="light">
+              {description}
+            </MDTypography>
+            <Divider />
+            <MDBox display="flex" alignItems="center" justifyContent="space-between">
+              <MDBox>
+                <MDTypography
+                  variant="button"
+                  color="text"
+                  lineHeight={1}
+                  sx={{ mt: 0.15, mr: 0.5 }}
+                >
+                  <Icon>schedule</Icon>
+                </MDTypography>
+                <MDTypography variant="button" color="text" fontWeight="light">
+                  {date}
+                </MDTypography>
+              </MDBox>
+              <MDBox>
+                <IconButton onClick={handleDownload} size="small">
+                  <DownloadIcon />
+                </IconButton>
+                <IconButton onClick={handleFullscreen} size="small">
+                  <FullscreenIcon />
+                </IconButton>
+              </MDBox>
+            </MDBox>
+          </MDBox>
+          {/* <MDBox display="flex" justifyContent="flex-end" mb={2}>
+            <IconButton onClick={handleDownload} size="small">
+              <DownloadIcon />
+            </IconButton>
+            <IconButton onClick={handleFullscreen} size="small">
+              <FullscreenIcon />
+            </IconButton>
+          </MDBox> */}
         </MDBox>
-        <MDBox pt={3} pb={1} px={1}>
-          <MDTypography variant="h6" textTransform="capitalize">
-            {title}
-          </MDTypography>
-          <MDTypography component="div" variant="button" color="text" fontWeight="light">
-            {description}
-          </MDTypography>
-          <Divider />
-          <MDBox display="flex" alignItems="center">
-            <MDTypography variant="button" color="text" lineHeight={1} sx={{ mt: 0.15, mr: 0.5 }}>
-              <Icon>schedule</Icon>
-            </MDTypography>
-            <MDTypography variant="button" color="text" fontWeight="light">
-              {date}
-            </MDTypography>
+      </Card>
+
+      <Dialog fullScreen open={isFullscreen} onClose={() => setIsFullscreen(false)}>
+        <MDBox display="flex" flexDirection="column" bgcolor="white" p={3} height="100%">
+          <MDBox display="flex" justifyContent="flex-end" mb={2}>
+            <IconButton onClick={() => setIsFullscreen(false)} size="small">
+              <FullscreenExitIcon />
+            </IconButton>
+          </MDBox>
+          <MDBox
+            flex={1}
+            variant="gradient"
+            bgColor={color}
+            borderRadius="lg"
+            coloredShadow={color}
+            p={2}
+          >
+            <Line data={chartData} options={options} />
           </MDBox>
         </MDBox>
-      </MDBox>
-    </Card>
+      </Dialog>
+    </>
   );
 }
 
