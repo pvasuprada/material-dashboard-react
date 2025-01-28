@@ -205,7 +205,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
             <MDButton variant="outlined" color="secondary" size="small" fullWidth>
               Reset
             </MDButton>
-            <MDButton variant="gradient" color="info" size="small" fullWidth>
+            <MDButton variant="gradient" color={sidenavColor} size="small" fullWidth>
               Apply
             </MDButton>
           </MDBox>
@@ -225,6 +225,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
             key={stat.id}
             control={
               <Switch
+                color={sidenavColor}
                 checked={stat.visible}
                 onChange={() => updateInsightVisibility(stat.id)}
                 name={stat.title}
@@ -248,6 +249,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
             key={chart.title}
             control={
               <Switch
+                color={sidenavColor}
                 checked={chart.visible}
                 onChange={() => updateChartVisibility(chart.title)}
                 name={chart.title}

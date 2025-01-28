@@ -174,6 +174,7 @@ function AppContent() {
           </Routes>
         </MDBox>
       </MDBox>
+      <Configurator />
     </ThemeProvider>
   );
 }
