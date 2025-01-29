@@ -112,7 +112,7 @@ function Dashboard({ children }) {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <MDBox py={3}>
+      <MDBox pt={1} pb={6}>
         <MDBox>
           <MDBox display="flex" gap={2}>
             <MDButton
@@ -140,11 +140,11 @@ function Dashboard({ children }) {
         </MDBox>
         {children}
       </MDBox>
-      <MDBox py={3}>
+      <MDBox pt={1} pb={1}>
         <Grid container spacing={2}>
           {renderStatistics()}
         </Grid>
-        <MDBox mt={6}>
+        <MDBox mt={2}>
           <Grid container spacing={2}>
             {chartsData.map(renderChart)}
           </Grid>
@@ -169,7 +169,7 @@ function Dashboard({ children }) {
           </Grid>
         </Grid>
       </MDBox>
-      <Footer />
+      {/* <Footer /> */}
     </DashboardLayout>
   );
 }

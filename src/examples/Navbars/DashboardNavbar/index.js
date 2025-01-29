@@ -14,6 +14,8 @@ Coded by www.creative-tim.com
 */
 
 import { useState, useEffect } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 // react-router components
 import { useLocation, Link } from "react-router-dom";
@@ -91,6 +93,84 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const handleOpenMenu = (event) => setOpenMenu(event.currentTarget);
   const handleCloseMenu = () => setOpenMenu(false);
 
+  // Split into two separate handler functions
+  const handleJpegScreenshot = async () => {
+    const scrollHeight = Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight
+    );
+
+    const scrollWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+    const canvas = await html2canvas(document.body, {
+      scrollY: -window.scrollY,
+      height: scrollHeight,
+      width: scrollWidth,
+      useCORS: true,
+      allowTaint: false,
+    });
+
+    const link = document.createElement("a");
+    link.download = "Dashboard_Screenshot.jpg";
+    link.href = canvas.toDataURL("image/jpeg", 0.8);
+    link.click();
+  };
+
+  const handlePdfScreenshot = async () => {
+    try {
+      // Get the full dimensions of the document
+      const fullHeight = document.documentElement.scrollHeight;
+      const fullWidth = document.documentElement.scrollWidth;
+
+      // Save current scroll position
+      const currentScrollY = window.scrollY;
+
+      // Scroll to the top to capture the entire page
+      window.scrollTo(0, 0);
+
+      // Use html2canvas to capture the entire page
+      const canvas = await html2canvas(document.documentElement, {
+        useCORS: true, // Allows cross-origin images
+        allowTaint: false, // Prevents tainted canvas issues
+        logging: true, // Logs rendering steps
+        scale: 2, // Increase the resolution
+        width: fullWidth, // Ensure full width is captured
+        height: fullHeight, // Ensure full height is captured
+        windowWidth: fullWidth,
+        windowHeight: fullHeight,
+        onclone: (clonedDoc) => {
+          // Ensure the cloned document has the correct styles
+          clonedDoc.documentElement.style.overflow = "visible";
+          clonedDoc.body.style.overflow = "visible";
+          clonedDoc.documentElement.style.height = `${fullHeight}px`;
+          clonedDoc.body.style.height = `${fullHeight}px`;
+        },
+      });
+
+      // Restore the original scroll position
+      window.scrollTo(0, currentScrollY);
+
+      // Convert the canvas to an image
+      const imgData = canvas.toDataURL("image/jpeg", 1.0);
+
+      // Initialize jsPDF
+      const pdf = new jsPDF({
+        orientation: fullWidth > fullHeight ? "landscape" : "portrait",
+        unit: "px",
+        format: [canvas.width, canvas.height],
+      });
+
+      // Add the image to the PDF
+      pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
+
+      // Save the PDF
+      pdf.save("Full_Page_Screenshot.pdf");
+    } catch (error) {
+      console.error("Error capturing the page:", error);
+      alert("An error occurred while generating the PDF. Please try again.");
+    }
+  };
+
   // Render the notifications menu
   const renderMenu = () => (
     <Menu
@@ -163,6 +243,26 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 onClick={handleConfiguratorOpen}
               >
                 <Icon sx={iconsStyle}>settings</Icon>
+              </IconButton>
+              <IconButton
+                size="small"
+                disableRipple
+                color="inherit"
+                sx={navbarIconButton}
+                onClick={handleJpegScreenshot}
+                title="Download as JPEG"
+              >
+                <Icon sx={iconsStyle}>photo_camera</Icon>
+              </IconButton>
+              <IconButton
+                size="small"
+                disableRipple
+                color="inherit"
+                sx={navbarIconButton}
+                onClick={handlePdfScreenshot}
+                title="Download as PDF"
+              >
+                <Icon sx={iconsStyle}>picture_as_pdf</Icon>
               </IconButton>
               <IconButton
                 size="small"

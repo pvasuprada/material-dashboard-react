@@ -175,14 +175,22 @@ function ReportsLineChart({ color, title, description, date, chart }) {
           >
             <Line data={chartData} options={options} />
           </MDBox>
-          <MDBox pt={3} pb={1} px={1}>
+          <MDBox pt={"10px"} px={1} display="flex" justifyContent="space-between">
             <MDTypography variant="h6" textTransform="capitalize">
               {title}
             </MDTypography>
-            <MDTypography component="div" variant="button" color="text" fontWeight="light">
+            <MDBox>
+              <IconButton onClick={handleDownload} size="small">
+                <DownloadIcon />
+              </IconButton>
+              <IconButton onClick={handleFullscreen} size="small">
+                <FullscreenIcon />
+              </IconButton>
+            </MDBox>
+            {/* <MDTypography component="div" variant="button" color="text" fontWeight="light">
               {description}
-            </MDTypography>
-            <Divider />
+            </MDTypography> */}
+            {/* <Divider />
             <MDBox display="flex" alignItems="center" justifyContent="space-between">
               <MDBox>
                 <MDTypography
@@ -197,15 +205,7 @@ function ReportsLineChart({ color, title, description, date, chart }) {
                   {date}
                 </MDTypography>
               </MDBox>
-              <MDBox>
-                <IconButton onClick={handleDownload} size="small">
-                  <DownloadIcon />
-                </IconButton>
-                <IconButton onClick={handleFullscreen} size="small">
-                  <FullscreenIcon />
-                </IconButton>
-              </MDBox>
-            </MDBox>
+            </MDBox> */}
           </MDBox>
           {/* <MDBox display="flex" justifyContent="flex-end" mb={2}>
             <IconButton onClick={handleDownload} size="small">
