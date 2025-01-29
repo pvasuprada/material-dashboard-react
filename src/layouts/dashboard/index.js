@@ -18,6 +18,7 @@ import { ChartComponents } from "examples/Charts";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchChartData } from "store/slices/chartSlice";
 import { getChartsConfig } from "./data/chartsConfig";
+import Skeleton from "@mui/material/Skeleton";
 
 import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
@@ -25,6 +26,8 @@ import Map from "./components/Map";
 import NetworkGenie from "./components/NetworkGenie";
 import SiteGrid from "./components/SiteGrid";
 import { useSidenav } from "context/SidenavContext";
+import Insights from "./components/Insights";
+
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
   const { sidenavColor } = controller;
@@ -35,6 +38,7 @@ function Dashboard({ children }) {
   const dispatch = useDispatch();
   const { chartData, xData, loading } = useSelector((state) => state.charts);
   const { showSidenav, sidenavContent, activeButton, openSidenav } = useSidenav();
+  const { loading: filterLoading } = useSelector((state) => state.filter);
 
   useEffect(() => {
     if (reportsLine && reportsBar && statistics) {
@@ -61,27 +65,60 @@ function Dashboard({ children }) {
   };
 
   const renderStatistics = () => {
-    return dashboardData
-      .filter((stat) => stat.visible)
-      .map((stat) => (
-        <Grid item xs={12} md={6} lg={3} key={stat.id}>
-          <MDBox mb={1.5}>
-            <ComplexStatisticsCard
-              icon="leaderboard"
-              title={stat.title}
-              count={`${stat.unit}${stat.value}`}
-              percentage={{
-                color: "success",
-                amount: "+3%",
-                label: "than last month",
+    if (filterLoading) {
+      return dashboardData
+        .filter((stat) => stat.visible)
+        .map((stat, index) => (
+          <Grid item xs={12} md={6} lg={3} key={index}>
+            <Skeleton
+              variant="rectangular"
+              height={160}
+              animation="wave"
+              sx={{
+                borderRadius: 2,
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
               }}
             />
-          </MDBox>
+          </Grid>
+        ));
+    }
+
+    return dashboardData
+      .filter((stat) => stat.visible)
+      .map(({ id, title, count, icon, color }) => (
+        <Grid item xs={12} md={6} lg={3} key={id}>
+          <ComplexStatisticsCard
+            color={color}
+            icon={icon}
+            title={title}
+            count={count}
+            percentage={{
+              color: "success",
+              amount: "+1%",
+              label: "than last month",
+            }}
+          />
         </Grid>
       ));
   };
 
   const renderChart = (chart) => {
+    if (filterLoading) {
+      return (
+        <Grid item xs={12} md={4} lg={3} key={chart.id}>
+          <Skeleton
+            variant="rectangular"
+            height={200}
+            width={300}
+            animation="wave"
+            sx={{
+              borderRadius: 2,
+              backgroundColor: "#eee",
+            }}
+          />
+        </Grid>
+      );
+    }
     if (!chart.visible || loading) return null;
 
     const ChartComponent = ChartComponents[chart.type];
@@ -149,6 +186,7 @@ function Dashboard({ children }) {
             {chartsData.map(renderChart)}
           </Grid>
         </MDBox>
+        {/* <Insights /> */}
       </MDBox>
       <MDBox>
         <Grid container spacing={2}>

@@ -40,17 +40,23 @@ function Filter() {
     setEndDate(dayjs(new Date()));
   };
 
-  const handleApply = () => {
+  const handleApply = async () => {
     const newFilters = {
       market,
       sector,
       dateRange: {
-        startDate: startDate.toDate(),
-        endDate: endDate.toDate(),
+        startDate,
+        endDate,
       },
     };
+
     dispatch(updateSelectedFilters(newFilters));
-    dispatch(fetchFilteredData(newFilters));
+
+    try {
+      await dispatch(fetchFilteredData(newFilters)).unwrap();
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    }
   };
 
   if (loading) {
@@ -118,7 +124,14 @@ function Filter() {
           />
         </MDBox>
         <MDBox display="flex" gap={1}>
-          <MDButton variant="outlined" color="white" size="small" fullWidth onClick={handleReset}>
+          <MDButton
+            variant="outlined"
+            color="light.main"
+            size="small"
+            fullWidth
+            onClick={handleReset}
+            disabled={loading}
+          >
             Reset
           </MDButton>
           <MDButton
@@ -127,8 +140,9 @@ function Filter() {
             size="small"
             fullWidth
             onClick={handleApply}
+            disabled={loading}
           >
-            Apply
+            {loading ? "Loading..." : "Apply"}
           </MDButton>
         </MDBox>
       </MDBox>

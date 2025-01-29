@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { api } from "../../services/api"; // Add this import assuming this is the correct path
-
+import axios from "axios";
+import { api } from "../../services/api";
 // Mock data - replace with actual API calls later
 const mockFilterOptions = {
   markets: ["1", "2", "3", "4", "5", "6", "7", "8"],
@@ -27,20 +27,36 @@ export const fetchFilterOptions = createAsyncThunk(
 
 export const fetchFilteredData = createAsyncThunk(
   "filter/fetchData",
-  async (filters, { rejectWithValue }) => {
-    try {
-      // Simulating API call
-      // Replace this with actual API call:
-      // const response = await fetch("/api/filtered-data", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(filters),
-      // });
-      // return response.json();
+  async (filters, { dispatch }) => {
+    dispatch(setLoading(true));
 
-      return { success: true, filters };
+    try {
+      const startDate = filters.dateRange.startDate.toISOString().split("T")[0];
+      const endDate = filters.dateRange.endDate.toISOString().split("T")[0];
+
+      // Fetch both chart data and statistics in parallel
+      const [chartData, statisticsData] = await Promise.all([
+        api.getChartData({
+          market_id: filters.market,
+          sect_id: filters.sector,
+          date_range: `${startDate};${endDate}`,
+        }),
+        api.getStatistics({
+          market_id: filters.market,
+          sect_id: filters.sector,
+          date_range: `${startDate};${endDate}`,
+        }),
+      ]);
+
+      // Combine the data
+      return {
+        charts: chartData,
+        statistics: statisticsData.statistics,
+      };
     } catch (error) {
-      return rejectWithValue("Failed to fetch filtered data");
+      throw error;
+    } finally {
+      dispatch(setLoading(false));
     }
   }
 );
@@ -66,6 +82,7 @@ const initialState = {
       endDate: new Date(),
     },
   },
+  filteredData: null,
   loading: false,
   error: null,
 };
@@ -79,6 +96,9 @@ const filterSlice = createSlice({
     },
     resetFilters: (state) => {
       state.selectedFilters = initialState.selectedFilters;
+    },
+    setLoading: (state, action) => {
+      state.loading = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -96,20 +116,15 @@ const filterSlice = createSlice({
         state.loading = false;
         state.error = action.payload || "Failed to fetch filter options";
       })
-      .addCase(fetchFilteredData.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(fetchFilteredData.fulfilled, (state, action) => {
-        state.loading = false;
+        state.filteredData = action.payload;
         state.error = null;
       })
       .addCase(fetchFilteredData.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Failed to fetch filtered data";
+        state.error = action.error.message;
       });
   },
 });
 
-export const { updateSelectedFilters, resetFilters } = filterSlice.actions;
+export const { updateSelectedFilters, resetFilters, setLoading } = filterSlice.actions;
 export default filterSlice.reducer;
