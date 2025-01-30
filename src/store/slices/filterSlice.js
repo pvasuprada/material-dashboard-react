@@ -34,7 +34,6 @@ export const fetchFilteredData = createAsyncThunk(
       const startDate = filters.dateRange.startDate.toISOString().split("T")[0];
       const endDate = filters.dateRange.endDate.toISOString().split("T")[0];
 
-      // Fetch both chart data and statistics in parallel
       const [chartData, statisticsData] = await Promise.all([
         api.getChartData({
           market_id: filters.market,
@@ -48,9 +47,12 @@ export const fetchFilteredData = createAsyncThunk(
         }),
       ]);
 
-      // Combine the data
+      // Structure the response to match what chartSlice expects
       return {
-        charts: chartData,
+        chartData: {
+          chartData: chartData.chartData, // y-axis data array
+          xData: chartData.xData, // x-axis data array
+        },
         statistics: statisticsData.statistics,
       };
     } catch (error) {
@@ -82,7 +84,6 @@ const initialState = {
       endDate: new Date(),
     },
   },
-  filteredData: null,
   loading: false,
   error: null,
 };
@@ -117,7 +118,6 @@ const filterSlice = createSlice({
         state.error = action.payload || "Failed to fetch filter options";
       })
       .addCase(fetchFilteredData.fulfilled, (state, action) => {
-        state.filteredData = action.payload;
         state.error = null;
       })
       .addCase(fetchFilteredData.rejected, (state, action) => {

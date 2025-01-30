@@ -44,7 +44,8 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
         labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         datasets: {
           label: "Tasks",
-          data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+          //data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+          data: chartData.find((chart) => chart.name === "Total DL Volume")?.data || [],
         },
       },
     },

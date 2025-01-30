@@ -16,7 +16,7 @@ import { useInsights } from "context/insightsContext";
 import { chartsConfig } from "./data/chartsConfig";
 import { ChartComponents } from "examples/Charts";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchChartData } from "store/slices/chartSlice";
+import { fetchFilteredData } from "../../store/slices/filterSlice";
 import { getChartsConfig } from "./data/chartsConfig";
 import Skeleton from "@mui/material/Skeleton";
 
@@ -39,6 +39,7 @@ function Dashboard({ children }) {
   const { chartData, xData, loading } = useSelector((state) => state.charts);
   const { showSidenav, sidenavContent, activeButton, openSidenav } = useSidenav();
   const { loading: filterLoading } = useSelector((state) => state.filter);
+  const selectedFilters = useSelector((state) => state.filter.selectedFilters);
 
   useEffect(() => {
     if (reportsLine && reportsBar && statistics) {
@@ -47,10 +48,10 @@ function Dashboard({ children }) {
   }, [reportsLine, reportsBar, statistics]);
 
   useEffect(() => {
-    dispatch(fetchChartData());
-  }, [dispatch]);
+    dispatch(fetchFilteredData(selectedFilters));
+  }, []);
 
-  const chartsConfig = getChartsConfig(chartData, xData);
+  //const chartsConfig = getChartsConfig(chartData, xData);
 
   if (!isDataLoaded) {
     return null;

@@ -1,10 +1,5 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { api } from "services/api";
-
-export const fetchChartData = createAsyncThunk("charts/fetchChartData", async (params) => {
-  const response = await api.getChartData(params);
-  return response;
-});
+import { createSlice } from "@reduxjs/toolkit";
+import { fetchFilteredData } from "./filterSlice";
 
 const initialState = {
   chartData: [],
@@ -19,18 +14,21 @@ const chartSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchChartData.pending, (state) => {
+      .addCase(fetchFilteredData.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchChartData.fulfilled, (state, action) => {
+      .addCase(fetchFilteredData.fulfilled, (state, action) => {
         state.loading = false;
-        state.chartData = action.payload.chartData;
-        state.xData = action.payload.xData;
+        state.chartData = action.payload.chartData.chartData || [];
+        state.xData = action.payload.chartData.xData || [];
+        state.error = null;
       })
-      .addCase(fetchChartData.rejected, (state, action) => {
+      .addCase(fetchFilteredData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+        state.chartData = [];
+        state.xData = [];
       });
   },
 });
