@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
 // @mui material components
@@ -22,6 +22,7 @@ import { updateMapView } from "store/slices/mapSlice";
 function SiteGrid() {
   const dispatch = useDispatch();
   const [menu, setMenu] = useState(null);
+  const gridRef = useRef(null);
 
   // Replace local state with Redux state
   const { gridData, loading } = useSelector((state) => state.grid);
@@ -79,6 +80,28 @@ function SiteGrid() {
     closeMenu();
   };
 
+  const handleFullscreen = () => {
+    const gridElement = gridRef.current;
+    if (!document.fullscreenElement) {
+      if (gridElement.requestFullscreen) {
+        gridElement.requestFullscreen();
+      } else if (gridElement.webkitRequestFullscreen) {
+        gridElement.webkitRequestFullscreen();
+      } else if (gridElement.msRequestFullscreen) {
+        gridElement.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+    closeMenu();
+  };
+
   const openMenu = ({ currentTarget }) => setMenu(currentTarget);
   const closeMenu = () => setMenu(null);
 
@@ -98,8 +121,9 @@ function SiteGrid() {
       onClose={closeMenu}
     >
       <MenuItem onClick={handleRefresh}>Refresh Data</MenuItem>
-      <MenuItem onClick={handleExportCSV}>Export to CSV</MenuItem>
-      <MenuItem onClick={closeMenu}>Filter Sites</MenuItem>
+      {/* <MenuItem onClick={handleExportCSV}>Export to CSV</MenuItem>
+      <MenuItem onClick={closeMenu}>Filter Sites</MenuItem> */}
+      <MenuItem onClick={handleFullscreen}>View Full Screen</MenuItem>
     </Menu>
   );
 
@@ -114,7 +138,7 @@ function SiteGrid() {
   }
 
   return (
-    <Card>
+    <Card ref={gridRef}>
       <MDBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
         <MDBox>
           <MDTypography variant="h6" gutterBottom>

@@ -289,11 +289,39 @@ function MapComponent() {
         setLayersAnchorEl(e.currentTarget);
       });
 
+      // Add fullscreen control button
+      const fullscreenButton = document.createElement("button");
+      fullscreenButton.innerHTML = '<i class="material-icons">fullscreen</i>';
+      Object.assign(fullscreenButton.style, controlStyle);
+      fullscreenButton.addEventListener("click", () => {
+        const mapElement = mapRef.current;
+        if (!document.fullscreenElement) {
+          if (mapElement.requestFullscreen) {
+            mapElement.requestFullscreen();
+          } else if (mapElement.webkitRequestFullscreen) {
+            mapElement.webkitRequestFullscreen();
+          } else if (mapElement.msRequestFullscreen) {
+            mapElement.msRequestFullscreen();
+          }
+          fullscreenButton.innerHTML = '<i class="material-icons">fullscreen_exit</i>';
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+          }
+          fullscreenButton.innerHTML = '<i class="material-icons">fullscreen</i>';
+        }
+      });
+
       // Add all controls to container
       controlsContainer.appendChild(zoomInButton);
       controlsContainer.appendChild(zoomOutButton);
       controlsContainer.appendChild(basemapButton);
       controlsContainer.appendChild(layersButton);
+      controlsContainer.appendChild(fullscreenButton);
 
       const containerControl = createCustomControl(controlsContainer);
 
@@ -506,94 +534,86 @@ function MapComponent() {
             style={{
               width: "100%",
               height: "100%",
-            }}
-          />
-
-          {/* Basemap Menu */}
-          <Menu
-            anchorEl={basemapAnchorEl}
-            open={Boolean(basemapAnchorEl)}
-            onClose={() => setBasemapAnchorEl(null)}
-          >
-            <MenuItem onClick={() => handleBasemapChange("osm")}>OpenStreetMap</MenuItem>
-            <MenuItem onClick={() => handleBasemapChange("dark")}>Dark</MenuItem>
-            <MenuItem onClick={() => handleBasemapChange("light")}>Light</MenuItem>
-            <MenuItem onClick={() => handleBasemapChange("satellite")}>Satellite</MenuItem>
-            <MenuItem onClick={() => handleBasemapChange("outdoors")}>Outdoors</MenuItem>
-          </Menu>
-
-          {/* Layers Menu */}
-          <Menu
-            anchorEl={layersAnchorEl}
-            open={Boolean(layersAnchorEl)}
-            onClose={() => setLayersAnchorEl(null)}
-          >
-            {/* <MenuItem>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={layerVisibility.hurricanes}
-                    onChange={() => handleLayerToggle("hurricanes")}
-                  />
-                }
-                label="Hurricanes"
-              />
-            </MenuItem> */}
-            <MenuItem>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={layerVisibility.geoserver}
-                    onChange={() => handleLayerToggle("geoserver")}
-                  />
-                }
-                label="GeoServer Layer"
-              />
-            </MenuItem>
-            <MenuItem>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={layerVisibility.hexbins}
-                    onChange={() => handleLayerToggle("hexbins")}
-                  />
-                }
-                label="Hexbins"
-              />
-            </MenuItem>
-          </Menu>
-
-          {/* Updated popup with theme-aware styles */}
-          <div
-            ref={popupRef}
-            style={{
-              display: "none",
-              position: "absolute",
-              background: theme.palette.background.paper,
-              color: theme.palette.text.primary,
-              padding: "10px",
-              borderRadius: "4px",
-              boxShadow: theme.shadows[2],
-              border: `1px solid ${theme.palette.divider}`,
-              minWidth: "150px",
-              zIndex: 1000,
+              position: "relative",
             }}
           >
-            <div id="popup-content" style={{ color: theme.palette.text.primary }}></div>
+            <Menu
+              container={mapRef.current}
+              anchorEl={basemapAnchorEl}
+              open={Boolean(basemapAnchorEl)}
+              onClose={() => setBasemapAnchorEl(null)}
+              style={{ zIndex: 2000 }}
+            >
+              <MenuItem onClick={() => handleBasemapChange("osm")}>OpenStreetMap</MenuItem>
+              <MenuItem onClick={() => handleBasemapChange("dark")}>Dark</MenuItem>
+              <MenuItem onClick={() => handleBasemapChange("light")}>Light</MenuItem>
+              <MenuItem onClick={() => handleBasemapChange("satellite")}>Satellite</MenuItem>
+              <MenuItem onClick={() => handleBasemapChange("outdoors")}>Outdoors</MenuItem>
+            </Menu>
+
+            <Menu
+              container={mapRef.current}
+              anchorEl={layersAnchorEl}
+              open={Boolean(layersAnchorEl)}
+              onClose={() => setLayersAnchorEl(null)}
+              style={{ zIndex: 2000 }}
+            >
+              <MenuItem>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={layerVisibility.geoserver}
+                      onChange={() => handleLayerToggle("geoserver")}
+                    />
+                  }
+                  label="GeoServer Layer"
+                />
+              </MenuItem>
+              <MenuItem>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={layerVisibility.hexbins}
+                      onChange={() => handleLayerToggle("hexbins")}
+                    />
+                  }
+                  label="Hexbins"
+                />
+              </MenuItem>
+            </Menu>
+
+            {/* Updated popup with theme-aware styles */}
             <div
+              ref={popupRef}
               style={{
+                display: "none",
                 position: "absolute",
-                right: "5px",
-                top: "5px",
-                cursor: "pointer",
-                fontSize: "16px",
+                background: theme.palette.background.paper,
                 color: theme.palette.text.primary,
-              }}
-              onClick={() => {
-                popupRef.current.style.display = "none";
+                padding: "10px",
+                borderRadius: "4px",
+                boxShadow: theme.shadows[2],
+                border: `1px solid ${theme.palette.divider}`,
+                minWidth: "150px",
+                zIndex: 1000,
               }}
             >
-              ×
+              <div id="popup-content" style={{ color: theme.palette.text.primary }}></div>
+              <div
+                style={{
+                  position: "absolute",
+                  right: "5px",
+                  top: "5px",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                  color: theme.palette.text.primary,
+                }}
+                onClick={() => {
+                  popupRef.current.style.display = "none";
+                }}
+              >
+                ×
+              </div>
             </div>
           </div>
         </MDBox>

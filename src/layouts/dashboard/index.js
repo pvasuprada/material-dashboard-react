@@ -177,6 +177,7 @@ function Dashboard({ children }) {
       <MDBox pt={1} pb={1}>
         <Grid container spacing={2}>
           {renderStatistics()}
+          {renderSummary()}
         </Grid>
         <MDBox mt={6}>
           <Grid container spacing={2}>
