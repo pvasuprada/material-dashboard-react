@@ -3,6 +3,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import chartReducer from "./slices/chartSlice";
 import filterReducer from "./slices/filterSlice";
 import mapReducer from "./slices/mapSlice";
+import gridDataReducer from "./slices/gridDataSlice";
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     charts: chartReducer,
     filter: filterReducer,
     map: mapReducer,
+    grid: gridDataReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

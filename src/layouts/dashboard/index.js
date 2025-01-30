@@ -178,7 +178,7 @@ function Dashboard({ children }) {
         <Grid container spacing={2}>
           {renderStatistics()}
         </Grid>
-        <MDBox mt={2}>
+        <MDBox mt={6}>
           <Grid container spacing={2}>
             {chartsData.map(renderChart)}
           </Grid>

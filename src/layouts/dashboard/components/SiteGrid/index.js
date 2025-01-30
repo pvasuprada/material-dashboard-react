@@ -1,19 +1,5 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 
 // @mui material components
 import Card from "@mui/material/Card";
@@ -29,37 +15,31 @@ import MDTypography from "components/MDTypography";
 // Material Dashboard 2 React examples
 import DataTable from "examples/Tables/DataTable";
 import { api } from "services/api";
+import { updateGridConfig } from "store/slices/gridDataSlice";
+import { fetchFilteredData } from "store/slices/filterSlice";
 
 function SiteGrid() {
+  const dispatch = useDispatch();
   const [menu, setMenu] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [siteData, setSiteData] = useState({ columns: [], rows: [] });
 
-  const fetchSiteData = async () => {
-    try {
-      setLoading(true);
-      const data = await api.getSiteData();
+  // Replace local state with Redux state
+  const { gridData, loading } = useSelector((state) => state.grid);
+  const gridConfig = useSelector((state) => state.grid.gridConfig);
 
-      if (data && data.length > 0) {
-        const columns = Object.keys(data[0]).map((key) => ({
-          Header: key.toUpperCase(),
-          accessor: key,
-          align: typeof data[0][key] === "number" ? "right" : "left",
-        }));
-
-        const rows = data.map((site) => ({
-          ...site,
-          latitude: parseFloat(site.latitude).toFixed(4),
-          longitude: parseFloat(site.longitude).toFixed(4),
-        }));
-
-        setSiteData({ columns, rows });
-      }
-    } catch (error) {
-      console.error("Error fetching site data:", error);
-    } finally {
-      setLoading(false);
-    }
+  const siteData = {
+    columns:
+      gridData.length > 0
+        ? Object.keys(gridData[0]).map((key) => ({
+            Header: key.toUpperCase(),
+            accessor: key,
+            align: typeof gridData[0][key] === "number" ? "right" : "left",
+          }))
+        : [],
+    rows: gridData.map((site) => ({
+      ...site,
+      latitude: parseFloat(site.latitude).toFixed(4),
+      longitude: parseFloat(site.longitude).toFixed(4),
+    })),
   };
 
   const handleExportCSV = async () => {
@@ -79,13 +59,9 @@ function SiteGrid() {
   };
 
   const handleRefresh = () => {
-    fetchSiteData();
+    dispatch(fetchFilteredData());
     closeMenu();
   };
-
-  useEffect(() => {
-    fetchSiteData();
-  }, []);
 
   const openMenu = ({ currentTarget }) => setMenu(currentTarget);
   const closeMenu = () => setMenu(null);
@@ -128,7 +104,7 @@ function SiteGrid() {
           <MDTypography variant="h6" gutterBottom>
             Site Grid
           </MDTypography>
-          <MDBox display="flex" alignItems="center" lineHeight={0}>
+          {/* <MDBox display="flex" alignItems="center" lineHeight={0}>
             <Icon
               sx={{
                 fontWeight: "bold",
@@ -141,7 +117,7 @@ function SiteGrid() {
             <MDTypography variant="button" fontWeight="regular" color="text">
               &nbsp;<strong>{siteData.rows.length} sites</strong> found
             </MDTypography>
-          </MDBox>
+          </MDBox> */}
         </MDBox>
         <MDBox color="text" px={2}>
           <Icon sx={{ cursor: "pointer", fontWeight: "bold" }} fontSize="small" onClick={openMenu}>
@@ -156,11 +132,15 @@ function SiteGrid() {
           showTotalEntries={true}
           isSorted={true}
           noEndBorder
-          entriesPerPage={20}
+          entriesPerPage={gridConfig.pageSize}
           canSearch={true}
           pagination={{ variant: "contained", color: "info" }}
           entriesPerPageText="Entries per page:"
           searchPlaceholder="Search sites..."
+          onPageChange={(page) => dispatch(updateGridConfig({ currentPage: page }))}
+          onRowsPerPageChange={(newPageSize) =>
+            dispatch(updateGridConfig({ pageSize: newPageSize }))
+          }
           sx={{
             "& .MuiInputBase-input": {
               color: "text.main",
