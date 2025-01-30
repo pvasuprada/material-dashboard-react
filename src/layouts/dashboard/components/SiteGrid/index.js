@@ -17,6 +17,7 @@ import DataTable from "examples/Tables/DataTable";
 import { api } from "services/api";
 import { updateGridConfig } from "store/slices/gridDataSlice";
 import { fetchFilteredData } from "store/slices/filterSlice";
+import { updateMapView } from "store/slices/mapSlice";
 
 function SiteGrid() {
   const dispatch = useDispatch();
@@ -25,6 +26,20 @@ function SiteGrid() {
   // Replace local state with Redux state
   const { gridData, loading } = useSelector((state) => state.grid);
   const gridConfig = useSelector((state) => state.grid.gridConfig);
+
+  const handleRowClick = (rowData) => {
+    const longitude = parseFloat(rowData.longitude);
+    const latitude = parseFloat(rowData.latitude);
+
+    if (!isNaN(longitude) && !isNaN(latitude)) {
+      dispatch(
+        updateMapView({
+          center: [longitude, latitude],
+          zoom: 13,
+        })
+      );
+    }
+  };
 
   const siteData = {
     columns:
@@ -39,6 +54,7 @@ function SiteGrid() {
       ...site,
       latitude: parseFloat(site.latitude).toFixed(4),
       longitude: parseFloat(site.longitude).toFixed(4),
+      clickEvent: () => handleRowClick(site),
     })),
   };
 
@@ -141,6 +157,7 @@ function SiteGrid() {
           onRowsPerPageChange={(newPageSize) =>
             dispatch(updateGridConfig({ pageSize: newPageSize }))
           }
+          onRowClick={handleRowClick}
           sx={{
             "& .MuiInputBase-input": {
               color: "text.main",
@@ -153,6 +170,12 @@ function SiteGrid() {
             },
             "& .MuiSelect-icon": {
               color: "text.main",
+            },
+            "& .MuiTableRow-root": {
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "action.hover",
+              },
             },
           }}
         />

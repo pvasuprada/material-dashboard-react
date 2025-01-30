@@ -16,6 +16,8 @@ const initialState = {
   ],
   loading: false,
   error: null,
+  center: [-93.31223, 32.1341], // Default center coordinates [longitude, latitude]
+  zoom: 4, // Default zoom level
 };
 
 const mapSlice = createSlice({
@@ -31,10 +33,15 @@ const mapSlice = createSlice({
       state.extent = null;
       state.averages = [];
     },
+    updateMapView: (state, action) => {
+      const { center, zoom } = action.payload;
+      if (center) state.center = center;
+      if (zoom !== undefined) state.zoom = zoom;
+    },
   },
 });
 
-export const { setMapData, clearMapData } = mapSlice.actions;
+export const { setMapData, clearMapData, updateMapView } = mapSlice.actions;
 
 // Selectors
 export const selectMapData = (state) => state.map.data;
@@ -43,5 +50,7 @@ export const selectMapExtent = (state) => state.map.extent;
 export const selectMapAverages = (state) => state.map.averages;
 export const selectMapLoading = (state) => state.map.loading;
 export const selectMapError = (state) => state.map.error;
+export const selectMapCenter = (state) => state.map.center;
+export const selectMapZoom = (state) => state.map.zoom;
 
 export default mapSlice.reducer;

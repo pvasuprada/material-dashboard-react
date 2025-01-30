@@ -146,7 +146,7 @@ function Dashboard({ children }) {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <MDBox pt={1} pb={6}>
+      <MDBox pt={1} pb={2}>
         <MDBox>
           <MDBox display="flex" gap={2}>
             <MDButton

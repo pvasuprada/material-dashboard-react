@@ -46,6 +46,9 @@ import {
   selectMapExtent,
   selectMapLoading,
   selectMapError,
+  selectMapCenter,
+  selectMapZoom,
+  updateMapView,
 } from "store/slices/mapSlice";
 import MDAlert from "components/MDAlert";
 import Overlay from "ol/Overlay";
@@ -179,6 +182,10 @@ function MapComponent() {
   const popupRef = useRef(null);
   const popupOverlayRef = useRef(null);
   const theme = useTheme();
+  const dispatch = useDispatch();
+  const center = useSelector(selectMapCenter);
+  const zoom = useSelector(selectMapZoom);
+  const [viewChangeTimeout, setViewChangeTimeout] = useState(null);
 
   const createCustomControl = (element) => {
     const customControl = new Control({
@@ -294,8 +301,8 @@ function MapComponent() {
         target: mapRef.current,
         layers: layers,
         view: new View({
-          center: fromLonLat([-98, 39]),
-          zoom: 4,
+          center: fromLonLat(center),
+          zoom: zoom,
           maxZoom: 18,
           minZoom: 2,
         }),
@@ -352,11 +359,36 @@ function MapComponent() {
         mapInstanceRef.current.getViewport().style.cursor = hit ? "pointer" : "";
       });
 
+      // Add view change listener
+      const view = mapInstanceRef.current.getView();
+      view.on("change", () => {
+        // Debounce view changes to prevent too many Redux updates
+        if (viewChangeTimeout) {
+          clearTimeout(viewChangeTimeout);
+        }
+
+        // setViewChangeTimeout(
+        //   setTimeout(() => {
+        //     const center = view.getCenter();
+        //     const [lon, lat] = center.map((coord) => parseFloat(coord.toFixed(6)));
+        //     dispatch(
+        //       updateMapView({
+        //         center: [lon, lat],
+        //         zoom: view.getZoom(),
+        //       })
+        //     );
+        //   }, 300)
+        // );
+      });
+
       // Call updateHexbins after map is initialized
       updateHexbins();
     }
 
     return () => {
+      if (viewChangeTimeout) {
+        clearTimeout(viewChangeTimeout);
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.setTarget(undefined);
         mapInstanceRef.current = null;
@@ -370,6 +402,43 @@ function MapComponent() {
       updateHexbins();
     }
   }, [averages]);
+
+  // Add effect to handle extent changes
+  useEffect(() => {
+    if (mapInstanceRef.current && extent) {
+      const { xmin, ymin, xmax, ymax } = extent;
+      const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
+      mapInstanceRef.current.getView().fit(transformedExtent, {
+        padding: [50, 50, 50, 50],
+        duration: 1000,
+      });
+    }
+  }, [extent]);
+
+  // Add effect to handle center/zoom changes from Redux
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      const view = mapInstanceRef.current.getView();
+      const currentCenter = view.getCenter();
+      const currentZoom = view.getZoom();
+
+      // Only animate if the changes are significant
+      const [currentLon, currentLat] = currentCenter;
+      const [targetLon, targetLat] = fromLonLat(center);
+
+      const centerChanged =
+        Math.abs(currentLon - targetLon) > 0.00001 || Math.abs(currentLat - targetLat) > 0.00001;
+      const zoomChanged = Math.abs(currentZoom - zoom) > 0.1;
+
+      if (centerChanged || zoomChanged) {
+        view.animate({
+          center: fromLonLat(center),
+          zoom: zoom,
+          duration: 1000,
+        });
+      }
+    }
+  }, [center, zoom]);
 
   const handleBasemapChange = (basemapKey) => {
     setBasemapAnchorEl(null);
@@ -459,7 +528,7 @@ function MapComponent() {
             open={Boolean(layersAnchorEl)}
             onClose={() => setLayersAnchorEl(null)}
           >
-            <MenuItem>
+            {/* <MenuItem>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -469,7 +538,7 @@ function MapComponent() {
                 }
                 label="Hurricanes"
               />
-            </MenuItem>
+            </MenuItem> */}
             <MenuItem>
               <FormControlLabel
                 control={
