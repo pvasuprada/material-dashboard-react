@@ -24,7 +24,6 @@ import Map from "./components/Map";
 import NetworkGenie from "./components/NetworkGenie";
 import SiteGrid from "./components/SiteGrid";
 import { useSidenav } from "context/SidenavContext";
-import Insights from "./components/Insights";
 
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
