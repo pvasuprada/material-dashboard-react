@@ -17,6 +17,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchFilteredData } from "../../store/slices/filterSlice";
 import { getChartsConfig } from "./data/chartsConfig";
 import Skeleton from "@mui/material/Skeleton";
+import { Card } from "@mui/material";
+import MDTypography from "components/MDTypography";
+import Icon from "@mui/material/Icon";
 
 import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
@@ -99,6 +102,78 @@ function Dashboard({ children }) {
       ));
   };
 
+  const renderSummary = () => {
+    return (
+      <Card sx={{ height: "100%" }}>
+        <MDBox p={2}>
+          <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <MDTypography variant="h6" fontWeight="medium">
+              Site Info
+            </MDTypography>
+            <Icon
+              sx={{
+                fontWeight: "bold",
+                color: ({ palette: { info } }) => info.main,
+                mt: -0.5,
+              }}
+            >
+              cell_tower
+            </Icon>
+          </MDBox>
+          <MDBox>
+            {[
+              { label: "New", count: 50, color: "success" },
+              { label: "Old", count: 100, color: "warning" },
+              { label: "Coming Up", count: 150, color: "info" },
+              { label: "Established", count: 290, color: "primary" },
+            ].map((item) => (
+              <MDBox
+                key={item.label}
+                display="flex"
+                justifyContent="flex-start"
+                alignItems="center"
+                mb={0.5}
+                sx={{
+                  padding: "4px 12px",
+                  borderRadius: 1,
+                  transition: "transform 0.2s ease",
+                  "&:hover": {
+                    transform: "translateX(5px)",
+                  },
+                }}
+              >
+                <MDTypography
+                  variant="h4"
+                  fontWeight="medium"
+                  sx={{
+                    color: ({ palette }) => palette[item.color].main,
+                    fontSize: "1.5rem",
+                    width: "60px",
+                    textAlign: "left",
+                  }}
+                >
+                  {item.count}
+                </MDTypography>
+                <MDBox display="flex" alignItems="center" ml={2}>
+                  <MDBox
+                    width="8px"
+                    height="8px"
+                    borderRadius="50%"
+                    backgroundColor={({ palette }) => palette[item.color].main}
+                    mr={1.5}
+                  />
+                  <MDTypography variant="button" fontWeight="regular" color="text">
+                    {item.label}
+                  </MDTypography>
+                </MDBox>
+              </MDBox>
+            ))}
+          </MDBox>
+        </MDBox>
+      </Card>
+    );
+  };
+
   const renderChart = (chart) => {
     if (filterLoading) {
       return (
@@ -177,7 +252,7 @@ function Dashboard({ children }) {
       <MDBox pt={1} pb={1}>
         <Grid container spacing={2}>
           {renderStatistics()}
-          {renderSummary()}
+          {/* {renderSummary()} */}
         </Grid>
         <MDBox mt={6}>
           <Grid container spacing={2}>
