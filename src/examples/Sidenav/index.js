@@ -51,7 +51,6 @@ import {
 } from "context";
 
 // Add these imports at the top with other imports
-import { dashboardData } from "layouts/dashboard/data/dashboardData";
 import { useInsights } from "context/insightsContext";
 import MDAutocomplete from "components/MDAutocomplete";
 import MDDateRangePicker from "components/MDDateRangePicker";
@@ -179,7 +178,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
         Insights
       </MDTypography>
       <FormGroup>
-        {dashboardData.map((stat) => (
+        {dashboardData.statistics.map((stat) => (
           <FormControlLabel
             key={stat.id}
             control={

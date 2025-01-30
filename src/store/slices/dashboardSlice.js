@@ -1,12 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import reportsBarChartData from "layouts/dashboard/data/reportsBarChartData";
-import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
-import { dashboardData } from "layouts/dashboard/data/dashboardData";
+import { fetchFilteredData } from "./filterSlice";
 
 const initialState = {
-  reportsBar: reportsBarChartData,
-  reportsLine: reportsLineChartData,
-  statistics: dashboardData.statistics,
+  statistics: [],
+  loading: false,
+  error: null,
 };
 
 const dashboardSlice = createSlice({
@@ -22,6 +20,23 @@ const dashboardSlice = createSlice({
     updateStatistics: (state, action) => {
       state.statistics = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchFilteredData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchFilteredData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.statistics = action.payload.statistics || [];
+        state.error = null;
+      })
+      .addCase(fetchFilteredData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+        state.statistics = [];
+      });
   },
 });
 

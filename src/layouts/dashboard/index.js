@@ -10,8 +10,6 @@ import Grid from "@mui/material/Grid";
 import ReportsBarChart from "examples/Charts/BarCharts/ReportsBarChart";
 import ReportsLineChart from "examples/Charts/LineCharts/ReportsLineChart";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
-import reportsBarChartData from "layouts/dashboard/data/reportsBarChartData";
-import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
 import { useInsights } from "context/insightsContext";
 import { chartsConfig } from "./data/chartsConfig";
 import { ChartComponents } from "examples/Charts";
@@ -32,7 +30,6 @@ function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
   const { sidenavColor } = controller;
   const [activeSection, setActiveSection] = useState("dashboards");
-  const { reportsLine, reportsBar, statistics } = useSelector((state) => state.dashboard);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { dashboardData, chartsData } = useInsights();
   const dispatch = useDispatch();
@@ -42,10 +39,10 @@ function Dashboard({ children }) {
   const selectedFilters = useSelector((state) => state.filter.selectedFilters);
 
   useEffect(() => {
-    if (reportsLine && reportsBar && statistics) {
+    if (dashboardData.statistics) {
       setIsDataLoaded(true);
     }
-  }, [reportsLine, reportsBar, statistics]);
+  }, [dashboardData.statistics]);
 
   useEffect(() => {
     dispatch(fetchFilteredData(selectedFilters));
@@ -67,7 +64,7 @@ function Dashboard({ children }) {
 
   const renderStatistics = () => {
     if (filterLoading) {
-      return dashboardData
+      return dashboardData.statistics
         .filter((stat) => stat.visible)
         .map((stat, index) => (
           <Grid item xs={12} md={6} lg={3} key={index}>
@@ -84,7 +81,7 @@ function Dashboard({ children }) {
         ));
     }
 
-    return dashboardData
+    return dashboardData.statistics
       .filter((stat) => stat.visible)
       .map(({ id, title, count, icon, color }) => (
         <Grid item xs={12} md={6} lg={3} key={id}>

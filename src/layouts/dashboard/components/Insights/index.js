@@ -11,15 +11,14 @@ import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatist
 import { useInsights } from "context/insightsContext";
 
 function Insights() {
-  const { loading, error, filteredData } = useSelector((state) => state.filter);
+  const { loading, error } = useSelector((state) => state.filter);
   const { dashboardData, chartsData } = useInsights();
 
   console.log("Loading state:", loading); // Debug loading state
-  console.log("filteredData:", filteredData); // Debug log
 
   const renderStatistics = () => {
     if (loading) {
-      return dashboardData
+      return dashboardData.statistics
         .filter((stat) => stat.visible)
         .map((stat, index) => (
           <Grid item xs={12} md={6} lg={3} key={index}>
@@ -36,10 +35,7 @@ function Insights() {
         ));
     }
 
-    // Use statistics from filteredData
-    const statistics = filteredData?.statistics || [];
-
-    return statistics.map(({ id, title, value, unit }) => (
+    return dashboardData.statistics.map(({ id, title, value, unit }) => (
       <Grid item xs={12} md={6} lg={3} key={id}>
         <ComplexStatisticsCard
           color="dark"
