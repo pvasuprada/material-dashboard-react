@@ -89,16 +89,29 @@ function NetworkGenie() {
         </MDBox>
       </MDBox>
 
-      {/* Chat Messages */}
+      {/* Chat Messages - Fixed height with scrollbar */}
       <MDBox
         sx={{
-          height: "calc(100% - 180px)",
+          height: "250px", // Fixed height
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
           gap: 2,
           px: 3,
           pb: 2,
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: ({ palette: { grey } }) => grey[300],
+            borderRadius: "3px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            background: ({ palette: { grey } }) => grey[400],
+          },
         }}
       >
         {messages.map((message, index) => (
