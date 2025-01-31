@@ -67,7 +67,7 @@ function Breadcrumbs({ icon, title, route, light }) {
         ))}
         <MDTypography
           variant="button"
-          fontWeight="regular"
+          fontWeight="bold"
           textTransform="capitalize"
           color={light ? "white" : "dark"}
           sx={{ lineHeight: 0 }}
@@ -75,7 +75,7 @@ function Breadcrumbs({ icon, title, route, light }) {
           {title.replace("-", " ")}
         </MDTypography>
       </MuiBreadcrumbs>
-      <MDTypography
+      {/* <MDTypography
         fontWeight="bold"
         textTransform="capitalize"
         variant="h6"
@@ -83,7 +83,7 @@ function Breadcrumbs({ icon, title, route, light }) {
         noWrap
       >
         {title.replace("-", " ")}
-      </MDTypography>
+      </MDTypography> */}
     </MDBox>
   );
 }

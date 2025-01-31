@@ -1,20 +1,4 @@
-/**
-=========================================================
-* Material Dashboard 2  React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import { useMemo } from "react";
-import PropTypes from "prop-types";
 import { Doughnut } from "react-chartjs-2";
 import Card from "@mui/material/Card";
 import Icon from "@mui/material/Icon";
@@ -26,12 +10,13 @@ import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import DownloadIcon from "@mui/icons-material/Download";
 import Dialog from "@mui/material/Dialog";
 import html2canvas from "html2canvas";
+import PropTypes from "prop-types";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
-function DefaultDoughnutChart({ color, title, description, date, chart }) {
+function DoughnutChart({ color, title, description, date, chart }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -48,20 +33,6 @@ function DefaultDoughnutChart({ color, title, description, date, chart }) {
     }
   };
 
-  const getChartColors = (colorName) => {
-    const colors = {
-      primary: "#1A73E8",
-      secondary: "#7b809a",
-      info: "#49a3f1",
-      success: "#66BB6A",
-      warning: "#FFA726",
-      error: "#EF5350",
-      dark: "#344767",
-      light: "#CED4DA",
-    };
-    return colors[colorName] || colors.info;
-  };
-
   const chartData = useMemo(
     () => ({
       labels: chart?.labels || [],
@@ -69,14 +40,10 @@ function DefaultDoughnutChart({ color, title, description, date, chart }) {
         {
           label: chart?.datasets?.label || "",
           data: chart?.datasets?.data || [],
-          backgroundColor: chart?.datasets?.backgroundColors?.map((colorName) => {
-            const baseColor = getChartColors(colorName);
-            return darkMode
-              ? `${baseColor}E6` // 90% opacity
-              : `${baseColor}CC`; // 80% opacity
-          }),
-          borderColor: darkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)",
-          borderWidth: 2,
+          backgroundColor: chart?.datasets?.backgroundColors?.map((color) =>
+            darkMode ? `rgba(255, 255, 255, 0.8)` : `rgba(0, 0, 0, 0.8)`
+          ),
+          borderWidth: 0,
         },
       ],
     }),
@@ -97,12 +64,9 @@ function DefaultDoughnutChart({ color, title, description, date, chart }) {
               size: 10,
               family: "inherit",
             },
-            padding: 15,
-            boxWidth: 10,
           },
         },
       },
-      cutout: "60%",
     }),
     [darkMode]
   );
@@ -216,7 +180,7 @@ function DefaultDoughnutChart({ color, title, description, date, chart }) {
 }
 
 // Setting default values for the props
-DefaultDoughnutChart.defaultProps = {
+DoughnutChart.defaultProps = {
   color: "info",
   description: "",
   date: "",
@@ -230,8 +194,8 @@ DefaultDoughnutChart.defaultProps = {
   },
 };
 
-// Typechecking props for the DefaultDoughnutChart
-DefaultDoughnutChart.propTypes = {
+// Typechecking props for the DoughnutChart
+DoughnutChart.propTypes = {
   color: PropTypes.oneOf([
     "primary",
     "secondary",
@@ -256,4 +220,4 @@ DefaultDoughnutChart.propTypes = {
   }),
 };
 
-export default DefaultDoughnutChart;
+export default DoughnutChart;

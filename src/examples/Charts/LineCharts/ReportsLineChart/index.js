@@ -40,6 +40,7 @@ import IconButton from "@mui/material/IconButton";
 import Dialog from "@mui/material/Dialog";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import { useMaterialUIController } from "context";
 
 // ReportsLineChart configurations
 import configs from "examples/Charts/LineCharts/ReportsLineChart/configs";
@@ -62,6 +63,8 @@ ChartJS.register(
 function ReportsLineChart({ color, title, description, date, chart }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const chartRef = useRef(null);
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
 
   const handleDownload = async () => {
     if (chartRef.current) {
@@ -84,10 +87,10 @@ function ReportsLineChart({ color, title, description, date, chart }) {
       datasets: [
         {
           label: chart?.datasets?.label || "",
-          tension: 0,
-          pointRadius: 3,
-          borderWidth: 4,
-          backgroundColor: "transparent",
+          tension: 0.4,
+          pointRadius: 2,
+          borderWidth: 2,
+          backgroundColor: "rgba(255, 255, 255, .1)",
           borderColor: "rgba(255, 255, 255, .8)",
           fill: true,
           data: chart?.datasets?.data || [],
@@ -105,6 +108,12 @@ function ReportsLineChart({ color, title, description, date, chart }) {
         legend: {
           display: false,
         },
+        tooltip: {
+          backgroundColor: "rgba(0,0,0,0.7)",
+          padding: 6,
+          titleFont: { size: 11 },
+          bodyFont: { size: 11 },
+        },
       },
       interaction: {
         intersect: false,
@@ -117,111 +126,127 @@ function ReportsLineChart({ color, title, description, date, chart }) {
             display: true,
             drawOnChartArea: true,
             drawTicks: false,
-            borderDash: [5, 5],
-            color: "rgba(255, 255, 255, .2)",
+            borderDash: [3, 3],
+            color: "rgba(255, 255, 255, .1)",
           },
           ticks: {
             display: true,
             color: "#f8f9fa",
-            padding: 10,
+            padding: 8,
             font: {
-              size: 14,
+              size: 10,
               weight: 300,
-              family: "Roboto",
-              style: "normal",
-              lineHeight: 2,
             },
           },
         },
         x: {
           grid: {
-            drawBorder: false,
             display: false,
-            drawOnChartArea: false,
-            drawTicks: false,
-            borderDash: [5, 5],
           },
           ticks: {
             display: true,
             color: "#f8f9fa",
-            padding: 10,
+            padding: 8,
             font: {
-              size: 14,
+              size: 10,
               weight: 300,
-              family: "Roboto",
-              style: "normal",
-              lineHeight: 2,
             },
           },
         },
       },
     }),
     []
-  ); // Empty dependency array since options don't change
+  );
 
   return (
     <>
       <Card sx={{ height: "100%" }} ref={chartRef}>
-        <MDBox padding="1rem">
+        <MDBox p={1}>
           <MDBox
             variant="gradient"
             bgColor={color}
             borderRadius="lg"
             coloredShadow={color}
-            py={2}
+            py={1}
             pr={0.5}
-            mt={-5}
-            height="12.5rem"
+            mt={-3}
+            height="10rem"
+            sx={{
+              transition: "all 0.3s",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: 3,
+              },
+            }}
           >
             <Line data={chartData} options={options} />
           </MDBox>
-          <MDBox pt={"10px"} px={1} display="flex" justifyContent="space-between">
-            <MDTypography variant="h6" textTransform="capitalize">
+          <MDBox pt={1} px={0.5} display="flex" alignItems="center" justifyContent="space-between">
+            <MDTypography
+              variant="caption"
+              fontWeight="medium"
+              textTransform="capitalize"
+              color={darkMode ? "white" : "dark"}
+            >
               {title}
             </MDTypography>
-            <MDBox>
-              <IconButton onClick={handleDownload} size="small">
-                <DownloadIcon />
+            <MDBox display="flex" gap={0.5}>
+              <IconButton
+                onClick={handleDownload}
+                size="small"
+                sx={{
+                  padding: "4px",
+                  color: darkMode ? "#fff" : "#344767",
+                  "&:hover": {
+                    backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                  },
+                }}
+              >
+                <DownloadIcon fontSize="small" />
               </IconButton>
-              <IconButton onClick={handleFullscreen} size="small">
-                <FullscreenIcon />
+              <IconButton
+                onClick={handleFullscreen}
+                size="small"
+                sx={{
+                  padding: "4px",
+                  color: darkMode ? "#fff" : "#344767",
+                  "&:hover": {
+                    backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                  },
+                }}
+              >
+                <FullscreenIcon fontSize="small" />
               </IconButton>
             </MDBox>
-            {/* <MDTypography component="div" variant="button" color="text" fontWeight="light">
-              {description}
-            </MDTypography> */}
-            {/* <Divider />
-            <MDBox display="flex" alignItems="center" justifyContent="space-between">
-              <MDBox>
-                <MDTypography
-                  variant="button"
-                  color="text"
-                  lineHeight={1}
-                  sx={{ mt: 0.15, mr: 0.5 }}
-                >
-                  <Icon>schedule</Icon>
-                </MDTypography>
-                <MDTypography variant="button" color="text" fontWeight="light">
-                  {date}
-                </MDTypography>
-              </MDBox>
-            </MDBox> */}
           </MDBox>
-          {/* <MDBox display="flex" justifyContent="flex-end" mb={2}>
-            <IconButton onClick={handleDownload} size="small">
-              <DownloadIcon />
-            </IconButton>
-            <IconButton onClick={handleFullscreen} size="small">
-              <FullscreenIcon />
-            </IconButton>
-          </MDBox> */}
         </MDBox>
       </Card>
 
-      <Dialog fullScreen open={isFullscreen} onClose={() => setIsFullscreen(false)}>
-        <MDBox display="flex" flexDirection="column" bgcolor="white" p={3} height="100%">
-          <MDBox display="flex" justifyContent="flex-end" mb={2}>
-            <IconButton onClick={() => setIsFullscreen(false)} size="small">
+      <Dialog
+        fullScreen
+        open={isFullscreen}
+        onClose={() => setIsFullscreen(false)}
+        sx={{
+          "& .MuiDialog-paper": {
+            bgcolor: darkMode ? "#1a2035" : "#f0f2f5",
+          },
+        }}
+      >
+        <MDBox display="flex" flexDirection="column" p={2} height="100%">
+          <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <MDTypography variant="h6" color={darkMode ? "white" : "dark"}>
+              {title}
+            </MDTypography>
+            <IconButton
+              onClick={() => setIsFullscreen(false)}
+              size="small"
+              sx={{
+                color: darkMode ? "#fff" : "#344767",
+                "&:hover": {
+                  backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                },
+              }}
+            >
               <FullscreenExitIcon />
             </IconButton>
           </MDBox>

@@ -220,74 +220,132 @@ function DashboardNavbar({ absolute, light, isMini }) {
     <AppBar
       position={absolute ? "absolute" : navbarType}
       color="inherit"
-      sx={(theme) => navbar(theme, { transparentNavbar, absolute, light, darkMode })}
+      sx={(theme) => ({
+        ...navbar(theme, { transparentNavbar, absolute, light, darkMode }),
+        height: "40px", // Reduced AppBar height
+        minHeight: "40px",
+      })}
     >
-      <Toolbar sx={(theme) => navbarContainer(theme)}>
-        <MDBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
+      <Toolbar
+        sx={(theme) => ({
+          ...navbarContainer(theme),
+          minHeight: "40px !important", // Match AppBar height
+          height: "40px",
+          py: 0,
+          px: 2,
+        })}
+      >
+        <MDBox
+          color="inherit"
+          sx={(theme) => ({
+            ...navbarRow(theme, { isMini }),
+            py: 0,
+          })}
+        >
           <Breadcrumbs icon="home" title={route[route.length - 1]} route={route} light={light} />
+          {/* <IconButton
+            size="small"
+            color="inherit"
+            sx={{
+              ...navbarMobileMenu,
+              padding: "4px",
+            }}
+            onClick={handleMiniSidenav}
+          >
+            <Icon sx={iconsStyle} fontSize="small">
+              {miniSidenav ? "menu_open" : "menu"}
+            </Icon>
+          </IconButton> */}
         </MDBox>
         {isMini ? null : (
-          <MDBox sx={(theme) => navbarRow(theme, { isMini })}>
+          <MDBox
+            sx={(theme) => ({
+              ...navbarRow(theme, { isMini }),
+              py: 0,
+            })}
+          >
             <MDBox pr={1}>
-              <MDInput label="Search here" />
+              <MDInput
+                label="Search here"
+                size="small"
+                sx={{
+                  "& .MuiInputBase-root": {
+                    height: "32px",
+                    fontSize: "0.875rem",
+                  },
+                }}
+              />
             </MDBox>
             <MDBox color={light ? "white" : "inherit"}>
               <Link to="/authentication/sign-in/basic">
-                <IconButton sx={navbarIconButton} size="small" disableRipple>
-                  <Icon sx={iconsStyle}>account_circle</Icon>
+                <IconButton
+                  sx={{
+                    ...navbarIconButton,
+                    padding: "4px",
+                  }}
+                  size="small"
+                >
+                  <Icon sx={iconsStyle} fontSize="small">
+                    account_circle
+                  </Icon>
                 </IconButton>
               </Link>
               <IconButton
                 size="small"
-                disableRipple
                 color="inherit"
-                sx={navbarMobileMenu}
-                onClick={handleMiniSidenav}
+                sx={{
+                  ...navbarIconButton,
+                  padding: "4px",
+                }}
+                onClick={handleConfiguratorOpen}
               >
-                <Icon sx={iconsStyle} fontSize="medium">
-                  {miniSidenav ? "menu_open" : "menu"}
+                <Icon sx={iconsStyle} fontSize="small">
+                  settings
                 </Icon>
               </IconButton>
               <IconButton
                 size="small"
-                disableRipple
                 color="inherit"
-                sx={navbarIconButton}
-                onClick={handleConfiguratorOpen}
-              >
-                <Icon sx={iconsStyle}>settings</Icon>
-              </IconButton>
-              <IconButton
-                size="small"
-                disableRipple
-                color="inherit"
-                sx={navbarIconButton}
+                sx={{
+                  ...navbarIconButton,
+                  padding: "4px",
+                }}
                 onClick={handleJpegScreenshot}
                 title="Download as JPEG"
               >
-                <Icon sx={iconsStyle}>photo_camera</Icon>
+                <Icon sx={iconsStyle} fontSize="small">
+                  photo_camera
+                </Icon>
               </IconButton>
               <IconButton
                 size="small"
-                disableRipple
                 color="inherit"
-                sx={navbarIconButton}
+                sx={{
+                  ...navbarIconButton,
+                  padding: "4px",
+                }}
                 onClick={handlePdfScreenshot}
                 title="Download as PDF"
               >
-                <Icon sx={iconsStyle}>picture_as_pdf</Icon>
+                <Icon sx={iconsStyle} fontSize="small">
+                  picture_as_pdf
+                </Icon>
               </IconButton>
               <IconButton
                 size="small"
-                disableRipple
                 color="inherit"
-                sx={navbarIconButton}
+                sx={{
+                  ...navbarIconButton,
+                  padding: "4px",
+                }}
                 aria-controls="notification-menu"
                 aria-haspopup="true"
                 variant="contained"
                 onClick={handleOpenMenu}
               >
-                <Icon sx={iconsStyle}>notifications</Icon>
+                <Icon sx={iconsStyle} fontSize="small">
+                  notifications
+                </Icon>
               </IconButton>
               {renderMenu()}
             </MDBox>

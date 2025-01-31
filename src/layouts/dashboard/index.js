@@ -20,6 +20,7 @@ import Skeleton from "@mui/material/Skeleton";
 import { Card } from "@mui/material";
 import MDTypography from "components/MDTypography";
 import Icon from "@mui/material/Icon";
+import MDButtonSmall from "components/MDButtonSmall";
 
 import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
@@ -221,30 +222,30 @@ function Dashboard({ children }) {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <MDBox pt={1} pb={2}>
+      <MDBox pt={2} pb={2}>
         <MDBox>
-          <MDBox display="flex" gap={2}>
-            <MDButton
+          <MDBox display="flex" gap={1}>
+            <MDButtonSmall
               variant={activeSection === "dashboards" ? "contained" : "outlined"}
               color={sidenavColor}
               onClick={() => handleSectionChange("dashboards")}
             >
               Dashboards
-            </MDButton>
-            <MDButton
+            </MDButtonSmall>
+            <MDButtonSmall
               variant={activeSection === "filters" ? "contained" : "outlined"}
               color={sidenavColor}
               onClick={() => handleSectionChange("filters")}
             >
               Filters
-            </MDButton>
-            <MDButton
+            </MDButtonSmall>
+            <MDButtonSmall
               variant={activeSection === "insights" ? "contained" : "outlined"}
               color={sidenavColor}
               onClick={() => handleSectionChange("insights")}
             >
               Insights
-            </MDButton>
+            </MDButtonSmall>
           </MDBox>
         </MDBox>
         {children}
