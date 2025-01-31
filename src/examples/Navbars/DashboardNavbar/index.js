@@ -94,26 +94,39 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const handleCloseMenu = () => setOpenMenu(false);
 
   // Split into two separate handler functions
+  // const handleJpegScreenshot = async () => {
+  //   const scrollHeight = Math.max(
+  //     document.documentElement.scrollHeight,
+  //     document.body.scrollHeight
+  //   );
+
+  //   const scrollWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+  //   const canvas = await html2canvas(document.body, {
+  //     scrollY: -window.scrollY,
+  //     height: scrollHeight,
+  //     width: scrollWidth,
+  //     useCORS: true,
+  //     allowTaint: false,
+  //   });
+
+  //   const link = document.createElement("a");
+  //   link.download = "Dashboard_Screenshot.jpg";
+  //   link.href = canvas.toDataURL("image/jpeg", 0.8);
+  //   link.click();
+  // };
+
   const handleJpegScreenshot = async () => {
-    const scrollHeight = Math.max(
-      document.documentElement.scrollHeight,
-      document.body.scrollHeight
-    );
-
-    const scrollWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
-
-    const canvas = await html2canvas(document.body, {
-      scrollY: -window.scrollY,
-      height: scrollHeight,
-      width: scrollWidth,
-      useCORS: true,
-      allowTaint: false,
-    });
+    const response = await fetch("http://localhost:2024/screenshot?url=" + window.location.href);
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
 
     const link = document.createElement("a");
-    link.download = "Dashboard_Screenshot.jpg";
-    link.href = canvas.toDataURL("image/jpeg", 0.8);
+    link.href = url;
+    link.download = "fullpage-screenshot.png";
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   const handlePdfScreenshot = async () => {

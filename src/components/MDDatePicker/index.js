@@ -6,11 +6,12 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useTheme } from "@mui/material/styles";
 
 const MDDatePicker = forwardRef(
-  ({ size = "medium", label, value, onChange, color = "info", sx, ...rest }, ref) => {
+  ({ size = "small", label, value, onChange, color = "info", sx, ...rest }, ref) => {
     const theme = useTheme();
 
     const customStyles = {
       "& .MuiOutlinedInput-root": {
+        color: theme.palette[color].main,
         "& fieldset": {
           borderColor: theme.palette[color].main,
           borderWidth: 1,
@@ -22,6 +23,9 @@ const MDDatePicker = forwardRef(
         "&.Mui-focused fieldset": {
           borderColor: theme.palette[color].main,
         },
+        "& input": {
+          color: theme.palette[color].main,
+        },
       },
       "& .MuiInputLabel-root": {
         color: theme.palette[color].main,
@@ -30,6 +34,9 @@ const MDDatePicker = forwardRef(
         },
       },
       "& .MuiSvgIcon-root": {
+        color: theme.palette[color].main,
+      },
+      "& .MuiInputBase-input": {
         color: theme.palette[color].main,
       },
       ...sx,

@@ -5,8 +5,11 @@ import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
 import MDTypography from "components/MDTypography";
 import MDAutocomplete from "components/MDAutocomplete";
-import MDDateRangePicker from "components/MDDateRangePicker";
+import MDDatePicker from "components/MDDatePicker";
 import CircularProgress from "@mui/material/CircularProgress";
+import Tooltip from "@mui/material/Tooltip";
+import Icon from "@mui/material/Icon";
+import Divider from "@mui/material/Divider";
 import {
   fetchFilterOptions,
   fetchFilteredData,
@@ -27,10 +30,21 @@ function Filter() {
     dayjs(selectedFilters.dateRange.startDate || new Date().setMonth(new Date().getMonth() - 1))
   );
   const [endDate, setEndDate] = useState(dayjs(selectedFilters.dateRange.endDate || new Date()));
+  const [isFiltersChanged, setIsFiltersChanged] = useState(false);
 
   useEffect(() => {
     dispatch(fetchFilterOptions());
   }, [dispatch]);
+
+  useEffect(() => {
+    const hasChanged =
+      market !== selectedFilters.market ||
+      sector !== selectedFilters.sector ||
+      !startDate.isSame(dayjs(selectedFilters.dateRange.startDate)) ||
+      !endDate.isSame(dayjs(selectedFilters.dateRange.endDate));
+
+    setIsFiltersChanged(hasChanged);
+  }, [market, sector, startDate, endDate, selectedFilters]);
 
   const handleReset = () => {
     dispatch(resetFilters());
@@ -59,18 +73,11 @@ function Filter() {
     }
   };
 
-  if (loading) {
-    return (
-      <MDBox px={3} py={1} display="flex" justifyContent="center">
-        <CircularProgress size={24} color={sidenavColor} />
-      </MDBox>
-    );
-  }
-
   if (error) {
     return (
-      <MDBox px={3} py={1}>
-        <MDTypography variant="caption" color="error">
+      <MDBox px={2} py={1}>
+        <MDTypography variant="caption" color="error" display="flex" alignItems="center" gap={1}>
+          <Icon fontSize="small">error</Icon>
           {error}
         </MDTypography>
       </MDBox>
@@ -78,22 +85,33 @@ function Filter() {
   }
 
   return (
-    <>
-      <MDTypography
-        color="white"
-        display="block"
-        variant="caption"
-        fontWeight="bold"
-        textTransform="uppercase"
-        pl={3}
-        mt={2}
-        mb={1}
-        ml={1}
-      >
-        Filter Options
-      </MDTypography>
-      <MDBox px={3} py={1}>
-        <MDBox mb={2}>
+    <MDBox>
+      <MDBox px={2} py={1}>
+        <MDTypography
+          color="white"
+          variant="caption"
+          fontWeight="medium"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            opacity: 0.9,
+          }}
+        >
+          <Icon fontSize="small">filter_list</Icon>
+          FILTERS
+          {/* {isFiltersChanged && (
+            <Icon fontSize="small" color="warning" sx={{ ml: "auto" }}>
+              pending
+            </Icon>
+          )} */}
+        </MDTypography>
+      </MDBox>
+
+      <Divider sx={{ backgroundColor: "rgba(255, 255, 255, 0.1)", my: 1 }} />
+
+      <MDBox px={2} py={0.5}>
+        <MDBox mb={1.5}>
           <MDAutocomplete
             size="small"
             value={market}
@@ -101,9 +119,10 @@ function Filter() {
             options={data.markets || []}
             label="Market"
             color="white"
+            loading={loading}
           />
         </MDBox>
-        <MDBox mb={2}>
+        <MDBox mb={1.5}>
           <MDAutocomplete
             size="small"
             value={sector}
@@ -111,42 +130,70 @@ function Filter() {
             options={data.sectors || []}
             label="Sector"
             color="white"
+            loading={loading}
           />
         </MDBox>
-        <MDBox mb={2}>
-          <MDDateRangePicker
-            size="small"
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={(newValue) => setStartDate(newValue)}
-            onEndDateChange={(newValue) => setEndDate(newValue)}
-            color="white"
-          />
-        </MDBox>
-        <MDBox display="flex" gap={1}>
-          <MDButton
-            variant="outlined"
-            color="light.main"
-            size="small"
-            fullWidth
-            onClick={handleReset}
-            disabled={loading}
-          >
-            Reset
-          </MDButton>
-          <MDButton
-            variant="gradient"
-            color={sidenavColor}
-            size="small"
-            fullWidth
-            onClick={handleApply}
-            disabled={loading}
-          >
-            {loading ? "Loading..." : "Apply"}
-          </MDButton>
+        <MDBox mb={1.5}>
+          <MDBox mb={1.5}>
+            <MDDatePicker
+              input={{
+                label: "Start Date",
+                size: "small",
+              }}
+              value={startDate}
+              onChange={(newValue) => setStartDate(newValue)}
+              maxDate={endDate}
+              disabled={loading}
+              color="white"
+            />
+          </MDBox>
+          <MDBox>
+            <MDDatePicker
+              input={{
+                label: "End Date",
+                size: "small",
+              }}
+              value={endDate}
+              onChange={(newValue) => setEndDate(newValue)}
+              minDate={startDate}
+              disabled={loading}
+              color="white"
+            />
+          </MDBox>
         </MDBox>
       </MDBox>
-    </>
+
+      <Divider sx={{ backgroundColor: "rgba(255, 255, 255, 0.1)", my: 1 }} />
+
+      <MDBox px={2} py={1} display="flex" gap={1}>
+        <MDButton
+          variant="text"
+          color="light"
+          size="small"
+          onClick={handleReset}
+          disabled={loading}
+          sx={{ minWidth: "auto", p: 1 }}
+        >
+          <Tooltip title="Reset filters">
+            <Icon>restart_alt</Icon>
+          </Tooltip>
+        </MDButton>
+        <MDButton
+          variant="gradient"
+          color={sidenavColor}
+          size="small"
+          onClick={handleApply}
+          disabled={loading || !isFiltersChanged}
+          fullWidth
+          sx={{
+            py: 1,
+            opacity: isFiltersChanged ? 1 : 0.7,
+          }}
+        >
+          {loading ? <CircularProgress size={16} color="inherit" /> : "Apply Filters"}
+        </MDButton>
+      </MDBox>
+    </MDBox>
   );
 }
 

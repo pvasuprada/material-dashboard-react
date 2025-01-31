@@ -10,6 +10,7 @@ const MDAutocomplete = forwardRef(
 
     const customStyles = {
       "& .MuiOutlinedInput-root": {
+        color: theme.palette[color].main,
         "& fieldset": {
           borderColor: theme.palette[color].main,
           borderWidth: 1,
@@ -20,6 +21,9 @@ const MDAutocomplete = forwardRef(
         },
         "&.Mui-focused fieldset": {
           borderColor: theme.palette[color].main,
+        },
+        "& input": {
+          color: theme.palette[color].main,
         },
       },
       "& .MuiInputLabel-root": {
@@ -32,6 +36,12 @@ const MDAutocomplete = forwardRef(
         color: theme.palette[color].main,
       },
       "& .MuiAutocomplete-popupIndicator": {
+        color: theme.palette[color].main,
+      },
+      "& .MuiInputBase-input": {
+        color: theme.palette[color].main,
+      },
+      "& .MuiAutocomplete-endAdornment": {
         color: theme.palette[color].main,
       },
       ...sx,
