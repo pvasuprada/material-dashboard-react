@@ -2,7 +2,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
   charts: [
     {
       type: "line",
-      color: "info",
+      color: "dark",
       title: "User Count",
       visible: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
@@ -18,7 +18,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     },
     {
       type: "line",
-      color: "success",
+      color: "error",
       title: "Avg DL Latency",
       visible: true,
       gridSize: { xs: 12, md: 6, lg: 4 },

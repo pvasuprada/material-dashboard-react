@@ -54,6 +54,7 @@ import MDAlert from "components/MDAlert";
 import Overlay from "ol/Overlay";
 import { unByKey } from "ol/Observable";
 import { useTheme } from "@mui/material/styles";
+import { useMaterialUIController } from "context";
 
 // Custom styles for the controls
 const controlStyle = {
@@ -186,6 +187,8 @@ function MapComponent() {
   const center = useSelector(selectMapCenter);
   const zoom = useSelector(selectMapZoom);
   const [viewChangeTimeout, setViewChangeTimeout] = useState(null);
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
 
   const createCustomControl = (element) => {
     const customControl = new Control({
@@ -467,6 +470,18 @@ function MapComponent() {
       }
     }
   }, [center, zoom]);
+
+  // Update useEffect to watch for darkMode changes
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      // Change basemap when dark mode changes
+      if (darkMode) {
+        handleBasemapChange("dark");
+      } else {
+        handleBasemapChange("light");
+      }
+    }
+  }, [darkMode, mapInstanceRef.current]);
 
   const handleBasemapChange = (basemapKey) => {
     setBasemapAnchorEl(null);

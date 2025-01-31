@@ -124,7 +124,7 @@ function NetworkGenie() {
             }}
           >
             {message.type === "bot" && (
-              <Avatar sx={{ bgcolor: "info.main", width: 32, height: 32 }}>
+              <Avatar sx={{ bgcolor: "error.main", width: 32, height: 32 }}>
                 <SmartToyIcon fontSize="small" />
               </Avatar>
             )}

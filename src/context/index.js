@@ -71,12 +71,12 @@ function reducer(state, action) {
 // Material Dashboard 2 React context provider
 function MaterialUIControllerProvider({ children }) {
   const initialState = {
-    miniSidenav: false,
+    openSidenav: typeof window !== "undefined" && window.innerWidth >= 1200,
     transparentSidenav: false,
     whiteSidenav: false,
-    sidenavColor: "info",
-    transparentNavbar: true,
-    fixedNavbar: true,
+    sidenavColor: "error",
+    transparentNavbar: false,
+    fixedNavbar: false,
     openConfigurator: false,
     direction: "ltr",
     layout: "dashboard",
