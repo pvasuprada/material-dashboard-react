@@ -1,0 +1,29 @@
+.custom-carousel-container {
+  padding-top: 20px !important;
+  padding-bottom: 20px;
+}
+
+.react-multi-carousel-item {
+  padding: 0 8px;
+}
+
+.react-multi-carousel-dot-list {
+  bottom: -20px;
+}
+
+.react-multi-carousel-dot button {
+  border-color: rgba(0, 0, 0, 0.8);
+}
+
+.react-multi-carousel-dot--active button {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Dark mode styles */
+[data-theme='dark'] .react-multi-carousel-dot button {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme='dark'] .react-multi-carousel-dot--active button {
+  background-color: rgba(255, 255, 255, 0.8);
+} 

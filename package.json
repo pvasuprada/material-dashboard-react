@@ -38,6 +38,7 @@
     "react-chartjs-2": "5.2.0",
     "react-dom": "18.2.0",
     "react-github-btn": "1.4.0",
+    "react-multi-carousel": "^2.8.5",
     "react-redux": "^9.2.0",
     "react-router-dom": "6.11.0",
     "react-scripts": "5.0.1",

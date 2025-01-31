@@ -21,7 +21,12 @@ import { Card } from "@mui/material";
 import MDTypography from "components/MDTypography";
 import Icon from "@mui/material/Icon";
 import MDButtonSmall from "components/MDButtonSmall";
-
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
+import IconButton from "@mui/material/IconButton";
+import Carousel from "react-multi-carousel";
+import "react-multi-carousel/lib/styles.css";
+import "assets/css/carousel.css";
 import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
 import Map from "./components/Map";
@@ -31,7 +36,7 @@ import { useSidenav } from "context/SidenavContext";
 
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
-  const { sidenavColor } = controller;
+  const { sidenavColor, darkMode } = controller;
   const [activeSection, setActiveSection] = useState("dashboards");
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { dashboardData, chartsData } = useInsights();
@@ -40,6 +45,26 @@ function Dashboard({ children }) {
   const { showSidenav, sidenavContent, activeButton, openSidenav } = useSidenav();
   const { loading: filterLoading } = useSelector((state) => state.filter);
   const selectedFilters = useSelector((state) => state.filter.selectedFilters);
+  const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'carousel'
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  const responsive = {
+    desktop: {
+      breakpoint: { max: 3000, min: 1024 },
+      items: 3,
+      slidesToSlide: 1,
+    },
+    tablet: {
+      breakpoint: { max: 1024, min: 464 },
+      items: 2,
+      slidesToSlide: 1,
+    },
+    mobile: {
+      breakpoint: { max: 464, min: 0 },
+      items: 1,
+      slidesToSlide: 1,
+    },
+  };
 
   useEffect(() => {
     if (dashboardData.statistics) {
@@ -50,6 +75,16 @@ function Dashboard({ children }) {
   useEffect(() => {
     dispatch(fetchFilteredData(selectedFilters));
   }, []);
+
+  useEffect(() => {
+    let interval;
+    if (viewMode === "carousel") {
+      interval = setInterval(() => {
+        setActiveSlide((prev) => (prev === chartsData.length - 3 ? 0 : prev + 1));
+      }, 5000);
+    }
+    return () => clearInterval(interval);
+  }, [viewMode, chartsData.length]);
 
   //const chartsConfig = getChartsConfig(chartData, xData);
 
@@ -219,11 +254,19 @@ function Dashboard({ children }) {
     );
   };
 
+  const toggleViewMode = () => {
+    setViewMode((prev) => (prev === "grid" ? "carousel" : "grid"));
+  };
+
+  // Add this computed value for visible charts
+  const visibleCharts = chartsData.filter((chart) => chart.visible);
+  const hasVisibleCharts = visibleCharts.length > 0;
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox pt={2} pb={2}>
-        <MDBox>
+        <MDBox display="flex" justifyContent="space-between" alignItems="center">
           <MDBox display="flex" gap={1}>
             <MDButtonSmall
               variant={activeSection === "dashboards" ? "contained" : "outlined"}
@@ -247,18 +290,78 @@ function Dashboard({ children }) {
               Insights
             </MDButtonSmall>
           </MDBox>
+
+          {hasVisibleCharts && (
+            <MDBox display="flex" alignItems="center">
+              <IconButton
+                onClick={toggleViewMode}
+                sx={{
+                  color: darkMode ? "white" : "dark",
+                  backgroundColor: viewMode === "grid" ? "rgba(0,0,0,0.05)" : "transparent",
+                  mr: 1,
+                  padding: "6px",
+                }}
+              >
+                <ViewModuleIcon sx={{ fontSize: "1.2rem" }} />
+              </IconButton>
+              <IconButton
+                onClick={toggleViewMode}
+                sx={{
+                  color: darkMode ? "white" : "dark",
+                  backgroundColor: viewMode === "carousel" ? "rgba(0,0,0,0.05)" : "transparent",
+                  padding: "6px",
+                }}
+              >
+                <ViewCarouselIcon sx={{ fontSize: "1.2rem" }} />
+              </IconButton>
+            </MDBox>
+          )}
         </MDBox>
         {children}
       </MDBox>
       <MDBox pt={1} pb={1}>
         <Grid container spacing={2}>
           {renderStatistics()}
-          {/* {renderSummary()} */}
         </Grid>
         <MDBox mt={6}>
-          <Grid container spacing={2}>
-            {chartsData.map(renderChart)}
-          </Grid>
+          {hasVisibleCharts ? (
+            viewMode === "grid" ? (
+              <Grid container spacing={2}>
+                {visibleCharts.map(renderChart)}
+              </Grid>
+            ) : (
+              <MDBox>
+                <Carousel
+                  responsive={responsive}
+                  infinite={true}
+                  autoPlay={true}
+                  autoPlaySpeed={5000}
+                  keyBoardControl={true}
+                  customTransition="transform 300ms ease-in-out"
+                  transitionDuration={300}
+                  containerClass="custom-carousel-container"
+                  removeArrowOnDeviceType={["tablet", "mobile"]}
+                  deviceType="desktop"
+                  dotListClass="custom-dot-list-style"
+                  itemClass="carousel-item-padding-40-px"
+                  selectedSlideIndex={activeSlide}
+                  afterChange={(previousSlide, { currentSlide }) => {
+                    setActiveSlide(currentSlide);
+                  }}
+                >
+                  {visibleCharts.map((chart, index) => (
+                    <MDBox key={index} px={1}>
+                      {renderChart(chart)}
+                    </MDBox>
+                  ))}
+                </Carousel>
+              </MDBox>
+            )
+          ) : (
+            <Grid container spacing={2}>
+              {chartsData.map(renderChart)}
+            </Grid>
+          )}
         </MDBox>
         {/* <Insights /> */}
       </MDBox>
