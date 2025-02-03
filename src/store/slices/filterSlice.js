@@ -34,13 +34,18 @@ export const fetchFilteredData = createAsyncThunk(
       const startDate = filters.dateRange.startDate.toISOString().split("T")[0];
       const endDate = filters.dateRange.endDate.toISOString().split("T")[0];
 
-      const [chartData, statisticsData, siteData] = await Promise.all([
+      const [chartData, statisticsData, mapData, siteData] = await Promise.all([
         api.getChartData({
           market_id: filters.market,
           sect_id: filters.sector,
           date_range: `${startDate};${endDate}`,
         }),
         api.getStatistics({
+          market_id: filters.market,
+          sect_id: filters.sector,
+          date_range: `${startDate};${endDate}`,
+        }),
+        api.getMapData({
           market_id: filters.market,
           sect_id: filters.sector,
           date_range: `${startDate};${endDate}`,
@@ -59,6 +64,7 @@ export const fetchFilteredData = createAsyncThunk(
           xData: chartData.xData, // x-axis data array
         },
         statistics: statisticsData.statistics,
+        mapData: mapData,
         siteData: siteData,
       };
     } catch (error) {

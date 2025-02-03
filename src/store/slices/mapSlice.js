@@ -25,12 +25,15 @@ const mapSlice = createSlice({
   initialState,
   reducers: {
     setMapData: (state, action) => {
-      state.data = action.payload;
+      state.data = action.payload.data || [];
+      state.layers = action.payload.layers || [];
+      state.extent = action.payload.extent || state.extent;
+      state.averages = action.payload.averages || [];
     },
     clearMapData: (state) => {
       state.data = [];
       state.layers = [];
-      state.extent = null;
+      state.extent = initialState.extent;
       state.averages = [];
     },
     updateMapView: (state, action) => {
@@ -38,10 +41,38 @@ const mapSlice = createSlice({
       if (center) state.center = center;
       if (zoom !== undefined) state.zoom = zoom;
     },
+    setLoading: (state, action) => {
+      state.loading = action.payload;
+    },
+    setError: (state, action) => {
+      state.error = action.payload;
+      state.loading = false;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase("filter/fetchFilteredData/pending", (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase("filter/fetchFilteredData/fulfilled", (state, action) => {
+        if (action.payload.mapData) {
+          state.data = action.payload.mapData.data || [];
+          state.layers = action.payload.mapData.layers || [];
+          state.extent = action.payload.mapData.extent || state.extent;
+          state.averages = action.payload.mapData.averages || [];
+        }
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase("filter/fetchFilteredData/rejected", (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
   },
 });
 
-export const { setMapData, clearMapData, updateMapView } = mapSlice.actions;
+export const { setMapData, clearMapData, updateMapView, setLoading, setError } = mapSlice.actions;
 
 // Selectors
 export const selectMapData = (state) => state.map.data;
