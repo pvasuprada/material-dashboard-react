@@ -248,6 +248,7 @@ function Dashboard({ children }) {
               labels: chart.data.labels,
               datasets: chart.data.datasets,
             }}
+            showLabels={chart.showLabels}
           />
         </MDBox>
       </Grid>

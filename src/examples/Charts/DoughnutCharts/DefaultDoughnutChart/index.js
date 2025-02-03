@@ -31,7 +31,7 @@ import html2canvas from "html2canvas";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
-function DefaultDoughnutChart({ color, title, description, date, chart }) {
+function DefaultDoughnutChart({ color, title, description, date, chart, showLabels }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -89,7 +89,7 @@ function DefaultDoughnutChart({ color, title, description, date, chart }) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: true,
+          display: showLabels,
           position: "right",
           labels: {
             color: darkMode ? "#fff" : "#344767",
@@ -104,7 +104,7 @@ function DefaultDoughnutChart({ color, title, description, date, chart }) {
       },
       cutout: "60%",
     }),
-    [darkMode]
+    [darkMode, showLabels]
   );
 
   return (
@@ -220,6 +220,7 @@ DefaultDoughnutChart.defaultProps = {
   color: "info",
   description: "",
   date: "",
+  showLabels: true,
   chart: {
     labels: [],
     datasets: {
@@ -246,14 +247,15 @@ DefaultDoughnutChart.propTypes = {
   title: PropTypes.string.isRequired,
   description: PropTypes.string,
   date: PropTypes.string,
+  showLabels: PropTypes.bool,
   chart: PropTypes.shape({
-    labels: PropTypes.arrayOf(PropTypes.string),
+    labels: PropTypes.arrayOf(PropTypes.string).isRequired,
     datasets: PropTypes.shape({
-      label: PropTypes.string,
-      data: PropTypes.arrayOf(PropTypes.number),
-      backgroundColors: PropTypes.arrayOf(PropTypes.string),
-    }),
-  }),
+      label: PropTypes.string.isRequired,
+      data: PropTypes.arrayOf(PropTypes.number).isRequired,
+      backgroundColors: PropTypes.arrayOf(PropTypes.string).isRequired,
+    }).isRequired,
+  }).isRequired,
 };
 
 export default DefaultDoughnutChart;

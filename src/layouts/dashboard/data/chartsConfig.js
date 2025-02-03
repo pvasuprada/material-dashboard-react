@@ -5,6 +5,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       color: "dark",
       title: "User Count",
       visible: true,
+      showLabels: false,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
         description: "User count over time",
@@ -21,6 +22,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       color: "error",
       title: "Avg DL Latency",
       visible: true,
+      showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
         description: "Average download latency",
@@ -37,6 +39,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       color: "dark",
       title: "Total DL Volume",
       visible: true,
+      showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
         description: "Download volume over time",
@@ -53,6 +56,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       color: "error",
       title: "Total UL Volume",
       visible: true,
+      showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
         description: "Upload volume over time",
@@ -69,6 +73,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       color: "dark",
       title: "Traffic Sources",
       visible: true,
+      showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
         description: "Last month traffic sources",
@@ -87,6 +92,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       color: "light",
       title: "User Engagement",
       visible: true,
+      showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
         description: "User activity metrics",
@@ -110,6 +116,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       color: "dark",
       title: "Project Completion",
       visible: true,
+      showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
         description: "Project progress tracking",
@@ -127,6 +134,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       color: "dark",
       title: "Monthly Revenue",
       visible: true,
+      showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
         description: "Monthly revenue breakdown",

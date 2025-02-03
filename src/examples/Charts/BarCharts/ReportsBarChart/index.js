@@ -30,7 +30,7 @@ import html2canvas from "html2canvas";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
-function ReportsBarChart({ color, title, description, date, chart }) {
+function ReportsBarChart({ color, title, description, date, chart, showLabels }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -118,6 +118,18 @@ function ReportsBarChart({ color, title, description, date, chart }) {
               family: "inherit",
             },
           },
+          title: {
+            display: showLabels,
+            text: "Value",
+            color: darkMode ? "#fff" : "#344767",
+            font: {
+              size: 12,
+              family: "Roboto",
+              weight: 500,
+              style: "normal",
+            },
+            padding: { bottom: 0 },
+          },
         },
         x: {
           grid: {
@@ -135,10 +147,22 @@ function ReportsBarChart({ color, title, description, date, chart }) {
               family: "inherit",
             },
           },
+          title: {
+            display: showLabels,
+            text: "Time Period",
+            color: darkMode ? "#fff" : "#344767",
+            font: {
+              size: 12,
+              family: "Roboto",
+              weight: 500,
+              style: "normal",
+            },
+            padding: { top: 0 },
+          },
         },
       },
     }),
-    [darkMode]
+    [darkMode, showLabels]
   );
 
   return (
@@ -250,8 +274,9 @@ function ReportsBarChart({ color, title, description, date, chart }) {
 }
 
 ReportsBarChart.defaultProps = {
-  color: "info",
+  color: "dark",
   description: "",
+  showLabels: true,
   date: "",
   chart: {
     labels: [],
@@ -271,17 +296,18 @@ ReportsBarChart.propTypes = {
     "light",
   ]),
   title: PropTypes.string.isRequired,
-  description: PropTypes.string,
-  date: PropTypes.string,
+  description: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+  date: PropTypes.string.isRequired,
+  showLabels: PropTypes.bool,
   chart: PropTypes.shape({
-    labels: PropTypes.arrayOf(PropTypes.string),
+    labels: PropTypes.arrayOf(PropTypes.string).isRequired,
     datasets: PropTypes.arrayOf(
       PropTypes.shape({
-        label: PropTypes.string,
-        data: PropTypes.arrayOf(PropTypes.number),
+        label: PropTypes.string.isRequired,
+        data: PropTypes.arrayOf(PropTypes.number).isRequired,
       })
-    ),
-  }),
+    ).isRequired,
+  }).isRequired,
 };
 
 export default ReportsBarChart;

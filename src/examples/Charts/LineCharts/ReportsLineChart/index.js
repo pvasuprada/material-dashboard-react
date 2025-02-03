@@ -60,7 +60,7 @@ ChartJS.register(
   Filler
 );
 
-function ReportsLineChart({ color, title, description, date, chart }) {
+function ReportsLineChart({ color, title, showLabels, description, date, chart }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const chartRef = useRef(null);
   const [controller] = useMaterialUIController();
@@ -100,7 +100,7 @@ function ReportsLineChart({ color, title, description, date, chart }) {
     [chart]
   );
 
-  const options = useMemo(
+  const chartOptions = useMemo(
     () => ({
       responsive: true,
       maintainAspectRatio: false,
@@ -109,15 +109,19 @@ function ReportsLineChart({ color, title, description, date, chart }) {
           display: false,
         },
         tooltip: {
-          backgroundColor: "rgba(0,0,0,0.7)",
-          padding: 6,
-          titleFont: { size: 11 },
-          bodyFont: { size: 11 },
+          backgroundColor: darkMode ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.9)",
+          titleColor: darkMode ? "#fff" : "#344767",
+          bodyColor: darkMode ? "#fff" : "#344767",
+          padding: 10,
+          bodyFont: {
+            size: 10,
+          },
+          titleFont: {
+            size: 10,
+          },
+          bodySpacing: 5,
+          boxPadding: 5,
         },
-      },
-      interaction: {
-        intersect: false,
-        mode: "index",
       },
       scales: {
         y: {
@@ -126,36 +130,93 @@ function ReportsLineChart({ color, title, description, date, chart }) {
             display: true,
             drawOnChartArea: true,
             drawTicks: false,
-            borderDash: [3, 3],
-            color: "rgba(255, 255, 255, .1)",
+            borderDash: [5, 5],
+            color: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
           },
           ticks: {
             display: true,
-            color: "#f8f9fa",
-            padding: 8,
+            padding: 5,
+            color: darkMode ? "#fff" : "#fff",
             font: {
-              size: 10,
-              weight: 300,
+              size: 11,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 1,
             },
+            stepSize: Math.ceil(
+              (Math.max(...(chart?.datasets?.data || [])) -
+                Math.min(...(chart?.datasets?.data || []))) /
+                5
+            ),
+            maxTicksLimit: 5,
+          },
+          title: {
+            display: showLabels,
+            text: "Value",
+            color: darkMode ? "#fff" : "#fff",
+            font: {
+              size: 12,
+              family: "Roboto",
+              weight: 500,
+              style: "normal",
+            },
+            padding: { bottom: 0 },
           },
         },
         x: {
           grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: false,
+            drawTicks: false,
           },
           ticks: {
             display: true,
-            color: "#f8f9fa",
-            padding: 8,
+            color: darkMode ? "#fff" : "#fff",
+            padding: 5,
             font: {
-              size: 10,
-              weight: 300,
+              size: 11,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 1,
             },
+            maxRotation: 0,
+            minRotation: 0,
+            callback: function (value, index, values) {
+              if (index > 0 && (index - 1) % 3 === 0) {
+                return this.getLabelForValue(value);
+              }
+              return "";
+            },
+          },
+          title: {
+            display: showLabels,
+            text: "Time Period",
+            color: darkMode ? "#fff" : "#fff",
+            font: {
+              size: 12,
+              family: "Roboto",
+              weight: 500,
+              style: "normal",
+            },
+            padding: { top: 0 },
           },
         },
       },
+      layout: {
+        padding: {
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+        },
+      },
+      interaction: {
+        intersect: false,
+        mode: "index",
+      },
     }),
-    []
+    [darkMode, chart]
   );
 
   return (
@@ -179,7 +240,7 @@ function ReportsLineChart({ color, title, description, date, chart }) {
               },
             }}
           >
-            <Line data={chartData} options={options} />
+            <Line data={chartData} options={chartOptions} />
           </MDBox>
           <MDBox pt={1} px={0.5} display="flex" alignItems="center" justifyContent="space-between">
             <MDTypography
@@ -258,7 +319,7 @@ function ReportsLineChart({ color, title, description, date, chart }) {
             coloredShadow={color}
             p={2}
           >
-            <Line data={chartData} options={options} />
+            <Line data={chartData} options={chartOptions} />
           </MDBox>
         </MDBox>
       </Dialog>
@@ -281,17 +342,27 @@ ReportsLineChart.defaultProps = {
 
 // Typechecking props for the ReportsLineChart
 ReportsLineChart.propTypes = {
-  color: PropTypes.oneOf(["primary", "secondary", "info", "success", "warning", "error", "dark"]),
+  color: PropTypes.oneOf([
+    "primary",
+    "secondary",
+    "info",
+    "success",
+    "warning",
+    "error",
+    "dark",
+    "light",
+  ]),
   title: PropTypes.string.isRequired,
   description: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   date: PropTypes.string.isRequired,
   chart: PropTypes.shape({
-    labels: PropTypes.arrayOf(PropTypes.string),
+    labels: PropTypes.arrayOf(PropTypes.string).isRequired,
     datasets: PropTypes.shape({
-      label: PropTypes.string,
-      data: PropTypes.arrayOf(PropTypes.number),
-    }),
+      label: PropTypes.string.isRequired,
+      data: PropTypes.arrayOf(PropTypes.number).isRequired,
+    }).isRequired,
   }).isRequired,
+  showLabels: PropTypes.bool,
 };
 
 export default ReportsLineChart;
