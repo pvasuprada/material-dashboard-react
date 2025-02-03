@@ -36,14 +36,19 @@ function NetworkGenie() {
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const messagesEndRef = useRef(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  // useEffect(() => {
+  //   if (!isInitialLoad) {
+  //     scrollToBottom();
+  //   } else {
+  //     setIsInitialLoad(false);
+  //   }
+  // }, [messages, isInitialLoad]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
