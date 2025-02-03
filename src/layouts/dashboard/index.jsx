@@ -44,10 +44,11 @@ import Map from "layouts/dashboard/components/Map";
 import NetworkGenie from "layouts/dashboard/components/NetworkGenie";
 import SiteGrid from "layouts/dashboard/components/SiteGrid";
 import { useSidenav } from "context/SidenavContext";
+import zIndex from "@mui/material/styles/zIndex";
 
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
-  const { sidenavColor, darkMode } = controller;
+  const { sidenavColor, darkMode, miniSidenav } = controller;
   const [activeSection, setActiveSection] = useState("dashboards");
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { dashboardData, chartsData } = useInsights();
@@ -62,7 +63,7 @@ function Dashboard({ children }) {
   const responsive = {
     desktop: {
       breakpoint: { max: 3000, min: 1024 },
-      items: 3,
+      items: miniSidenav ? 4 : 3,
       slidesToSlide: 1,
     },
     tablet: {
@@ -91,11 +92,13 @@ function Dashboard({ children }) {
     let interval;
     if (viewMode === "carousel") {
       interval = setInterval(() => {
-        setActiveSlide((prev) => (prev === chartsData.length - 3 ? 0 : prev + 1));
+        setActiveSlide((prev) =>
+          prev === chartsData.length - (miniSidenav ? 4 : 3) ? 0 : prev + 1
+        );
       }, 5000);
     }
     return () => clearInterval(interval);
-  }, [viewMode, chartsData.length]);
+  }, [viewMode, chartsData.length, miniSidenav]);
 
   //const chartsConfig = getChartsConfig(chartData, xData);
 
@@ -224,11 +227,11 @@ function Dashboard({ children }) {
   const renderChart = (chart) => {
     if (filterLoading) {
       return (
-        <Grid item xs={12} md={4} lg={3} key={chart.id}>
+        <Grid item xs={12} md={miniSidenav ? 3 : 4} lg={miniSidenav ? 3 : 4} key={chart.id}>
           <Skeleton
             variant="rectangular"
             height={200}
-            width={300}
+            width="100%"
             animation="wave"
             sx={{
               borderRadius: 2,
@@ -260,7 +263,7 @@ function Dashboard({ children }) {
     }
 
     return (
-      <Grid item {...chart.gridSize} key={chart.title}>
+      <Grid item xs={12} md={miniSidenav ? 3 : 4} lg={miniSidenav ? 3 : 4} key={chart.title}>
         <MDBox mb={3}>
           <ChartComponent
             color={chart.color}
@@ -291,7 +294,7 @@ function Dashboard({ children }) {
       <DashboardNavbar />
       <MDBox pt={2} pb={2}>
         <MDBox display="flex" justifyContent="space-between" alignItems="center">
-          <MDBox display="flex" gap={1}>
+          <MDBox display="flex" gap={1} sx={{ zIndex: 10000 }}>
             <MDButtonSmall
               variant={activeSection === "dashboards" ? "contained" : "outlined"}
               color={sidenavColor}

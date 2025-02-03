@@ -22,13 +22,13 @@ import { useLocation, NavLink } from "react-router-dom";
 import PropTypes from "prop-types";
 
 // @mui material components
-import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
-import Link from "@mui/material/Link";
-import Icon from "@mui/material/Icon";
-import Switch from "@mui/material/Switch";
-import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import FormGroup from "@mui/material/FormGroup";
+import Icon from "@mui/material/Icon";
+import Link from "@mui/material/Link";
+import List from "@mui/material/List";
+import Switch from "@mui/material/Switch";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -73,12 +73,24 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     textColor = "inherit";
   }
 
-  const closeSidenav = () => setMiniSidenav(dispatch, true);
+  const closeSidenav = () => {
+    setMiniSidenav(dispatch, true);
+    document.body.style.setProperty("--sidenav-width", "0px");
+  };
+
+  const openSidenav = () => {
+    setMiniSidenav(dispatch, false);
+    document.body.style.setProperty("--sidenav-width", "250px");
+  };
 
   useEffect(() => {
     // A function that sets the mini state of the sidenav.
     function handleMiniSidenav() {
-      setMiniSidenav(dispatch, window.innerWidth < 1200);
+      if (window.innerWidth < 1200) {
+        closeSidenav();
+      } else {
+        openSidenav();
+      }
       setTransparentSidenav(dispatch, window.innerWidth < 1200 ? false : transparentSidenav);
       setWhiteSidenav(dispatch, window.innerWidth < 1200 ? false : whiteSidenav);
     }
@@ -226,50 +238,101 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   );
 
   return (
-    <SidenavRoot
-      {...rest}
-      variant="permanent"
-      ownerState={{ transparentSidenav, whiteSidenav, miniSidenav, darkMode }}
-    >
-      <MDBox pt={3} pb={1} px={4} textAlign="center">
-        <MDBox
-          display={{ xs: "block", xl: "none" }}
-          position="absolute"
-          top={0}
-          right={0}
-          p={1.625}
-          onClick={closeSidenav}
-          sx={{ cursor: "pointer" }}
+    <>
+      {/* Floating chevron button that shows when sidenav is closed */}
+      <MDBox
+        className="chevron-button"
+        sx={{
+          position: "fixed",
+          left: miniSidenav ? "20px" : "274px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          zIndex: 1299,
+          backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+          borderRadius: "50%",
+          cursor: "pointer",
+          p: 1,
+          transition: "all 0.2s ease",
+          "&:hover": {
+            backgroundColor: darkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.2)",
+            transform: "translateY(-50%) scale(1.1)",
+          },
+          boxShadow: darkMode ? "0 2px 10px 0 rgba(0,0,0,0.2)" : "0 2px 10px 0 rgba(0,0,0,0.1)",
+        }}
+        onClick={openSidenav}
+      >
+        <Icon
+          sx={{
+            color: darkMode ? "#fff" : "#000",
+            fontSize: "24px",
+            display: "flex",
+          }}
         >
-          <MDTypography variant="h6" color="secondary">
-            <Icon sx={{ fontWeight: "bold" }}>close</Icon>
-          </MDTypography>
-        </MDBox>
-        <MDBox component={NavLink} to="/" display="flex" alignItems="center">
-          {brand && <MDBox component="img" src={brand} alt="Brand" width="2rem" />}
+          chevron_right
+        </Icon>
+      </MDBox>
+      <SidenavRoot
+        {...rest}
+        variant="permanent"
+        ownerState={{ transparentSidenav, whiteSidenav, miniSidenav, darkMode }}
+        sx={{
+          ...(miniSidenav && {
+            "& .MuiListItem-root": {
+              pointerEvents: "auto",
+              position: "relative",
+              zIndex: 1300,
+            },
+            "& .MuiCollapse-root": {
+              position: "relative",
+              zIndex: 1300,
+            },
+            "& .MuiButtonBase-root": {
+              position: "relative",
+              zIndex: 1300,
+            },
+          }),
+        }}
+      >
+        <MDBox pt={3} pb={1} px={4} textAlign="center">
           <MDBox
-            width={!brandName && "100%"}
-            sx={(theme) => sidenavLogoLabel(theme, { miniSidenav })}
+            display={{ xs: "block", xl: "block" }}
+            position="absolute"
+            top={0}
+            right={0}
+            p={1.625}
+            onClick={closeSidenav}
+            sx={{ cursor: "pointer" }}
           >
-            <MDTypography component="h6" variant="button" fontWeight="medium" color={textColor}>
-              {brandName}
+            <MDTypography variant="h6" color="secondary">
+              <Icon sx={{ fontWeight: "bold" }}>chevron_left</Icon>
             </MDTypography>
           </MDBox>
+          <MDBox component={NavLink} to="/" display="flex" alignItems="center">
+            {brand && <MDBox component="img" src={brand} alt="Brand" width="2rem" />}
+            <MDBox
+              width={!brandName && "100%"}
+              sx={(theme) => sidenavLogoLabel(theme, { miniSidenav })}
+            >
+              <MDTypography component="h6" variant="button" fontWeight="medium" color={textColor}>
+                {brandName}
+              </MDTypography>
+            </MDBox>
+          </MDBox>
         </MDBox>
-      </MDBox>
-      <Divider
-        light={
-          (!darkMode && !whiteSidenav && !transparentSidenav) ||
-          (darkMode && !transparentSidenav && whiteSidenav)
-        }
-      />
+        <Divider
+          light={
+            (!darkMode && !whiteSidenav && !transparentSidenav) ||
+            (darkMode && !transparentSidenav && whiteSidenav)
+          }
+        />
 
-      <List>
-        {activeSection === "dashboards" && renderRoutes}
-        {activeSection === "filters" && renderFilterSection()}
-        {activeSection === "insights" && renderInsightsSection()}
-      </List>
-    </SidenavRoot>
+        <List>
+          {activeSection === "dashboards" && renderRoutes}
+          {activeSection === "filters" && renderFilterSection()}
+          {activeSection === "insights" && renderInsightsSection()}
+        </List>
+      </SidenavRoot>
+    </>
   );
 }
 

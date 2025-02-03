@@ -26,6 +26,9 @@ export default styled(Drawer)(({ theme, ownerState }) => {
   const { xxl } = boxShadows;
   const { pxToRem, linearGradient } = functions;
 
+  // Add CSS variable for sidenav width
+  document.body.style.setProperty("--sidenav-width", miniSidenav ? "0px" : "250px");
+
   let backgroundValue = darkMode
     ? background.sidenav
     : linearGradient(gradients.dark.main, gradients.dark.state);
@@ -46,11 +49,13 @@ export default styled(Drawer)(({ theme, ownerState }) => {
     }),
 
     [breakpoints.up("xl")]: {
+      width: "var(--sidenav-width)",
+      borderRight: transparentSidenav ? "none" : "1px solid",
+      borderRightColor: transparentSidenav ? "transparent" : "rgba(0, 0, 0, 0.12)",
       boxShadow: transparentSidenav ? "none" : xxl,
       marginBottom: transparentSidenav ? 0 : "inherit",
       left: "0",
-      width: sidebarWidth,
-      transform: "translateX(0)",
+      transform: "none",
       transition: transitions.create(["width", "background-color"], {
         easing: transitions.easing.sharp,
         duration: transitions.duration.enteringScreen,
@@ -68,15 +73,16 @@ export default styled(Drawer)(({ theme, ownerState }) => {
     }),
 
     [breakpoints.up("xl")]: {
+      width: "var(--sidenav-width)",
+      borderRight: transparentSidenav ? "none" : "1px solid",
+      borderRightColor: transparentSidenav ? "transparent" : "rgba(0, 0, 0, 0.12)",
       boxShadow: transparentSidenav ? "none" : xxl,
       marginBottom: transparentSidenav ? 0 : "inherit",
       left: "0",
-      width: pxToRem(96),
-      overflowX: "hidden",
-      transform: "translateX(0)",
+      transform: "none",
       transition: transitions.create(["width", "background-color"], {
         easing: transitions.easing.sharp,
-        duration: transitions.duration.shorter,
+        duration: transitions.duration.enteringScreen,
       }),
     },
   });
@@ -85,7 +91,6 @@ export default styled(Drawer)(({ theme, ownerState }) => {
     "& .MuiDrawer-paper": {
       boxShadow: xxl,
       border: "none",
-
       ...(miniSidenav ? drawerCloseStyles() : drawerOpenStyles()),
     },
   };

@@ -1,0 +1,31 @@
+:root {
+  --sidenav-width: 250px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.layout-container {
+  margin-left: var(--sidenav-width);
+  transition: margin-left 0.2s ease;
+}
+
+.chevron-button {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* Show chevron button when sidenav is closed */
+body:has([style*="--sidenav-width:0px"]) .chevron-button {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (max-width: 1200px) {
+  .layout-container {
+    margin-left: 0;
+  }
+} 

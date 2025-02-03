@@ -138,7 +138,7 @@ function AppContent() {
             sx={{
               position: "fixed",
               top: "50%",
-              left: showSidenav ? (miniSidenav ? "120px" : "274px") : "0",
+              left: miniSidenav ? "20px" : "270px",
               //transform: "translateY(-50%)",
               zIndex: 1300,
               transition: "left 300ms cubic-bezier(0.4, 0, 0.2, 1)",
