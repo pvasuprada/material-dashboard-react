@@ -1,25 +1,25 @@
-import ReportsBarChart from "./BarCharts/ReportsBarChart";
-import ReportsLineChart from "./LineCharts/ReportsLineChart";
-import BubbleChart from "./BubbleChart/index";
-import DoughnutChart from "./DoughnutCharts/DefaultDoughnutChart/index";
-import PieChart from "./PieChart/index";
-import VerticalBarChart from "./BarCharts/VerticalBarChart/index";
-import ProgressLineChart from "./LineCharts/ProgressLineChart/index";
-import GradientLineChart from "./LineCharts/GradientLineChart/index";
-import MixedChart from "./MixedChart/index";
-import PolarChart from "./PolarChart/index";
-import RadarChart from "./RadarChart/index";
+import BubbleChart from "examples/Charts/BubbleChart";
+import DoughnutChart from "examples/Charts/DoughnutCharts/DefaultDoughnutChart";
+import GradientLineChart from "examples/Charts/LineCharts/GradientLineChart";
+import MixedChart from "examples/Charts/MixedChart";
+import PieChart from "examples/Charts/PieChart";
+import PolarChart from "examples/Charts/PolarChart";
+import ProgressLineChart from "examples/Charts/LineCharts/ProgressLineChart";
+import RadarChart from "examples/Charts/RadarChart";
+import ReportsBarChart from "examples/Charts/BarCharts/ReportsBarChart";
+import ReportsLineChart from "examples/Charts/LineCharts/ReportsLineChart";
+import VerticalBarChart from "examples/Charts/BarCharts/VerticalBarChart";
 
-export const ChartComponents = {
-  bar: ReportsBarChart,
-  line: ReportsLineChart,
-  bubble: BubbleChart,
-  doughnut: DoughnutChart,
-  pie: PieChart,
-  verticalBar: VerticalBarChart,
-  progressLine: ProgressLineChart,
-  gradientLine: GradientLineChart,
-  mixed: MixedChart,
-  polar: PolarChart,
-  radar: RadarChart,
+export {
+  ReportsBarChart,
+  ReportsLineChart,
+  BubbleChart,
+  DoughnutChart,
+  PieChart,
+  VerticalBarChart,
+  ProgressLineChart,
+  GradientLineChart,
+  MixedChart,
+  PolarChart,
+  RadarChart,
 };

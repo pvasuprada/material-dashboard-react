@@ -15,13 +15,12 @@ Coded by www.creative-tim.com
 
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
-import { store } from "./store";
-import App from "App";
+import { BrowserRouter } from "react-router-dom";
 
-// Material Dashboard 2 React Context Provider
+import App from "./App";
 import { MaterialUIControllerProvider } from "context";
+import { store } from "store";
 
 const container = document.getElementById("root");
 const root = createRoot(container);

@@ -1,9 +1,10 @@
-import dashboardReducer from "./slices/dashboardSlice";
 import { configureStore } from "@reduxjs/toolkit";
-import chartReducer from "./slices/chartSlice";
-import filterReducer from "./slices/filterSlice";
-import mapReducer from "./slices/mapSlice";
-import gridDataReducer from "./slices/gridDataSlice";
+
+import chartReducer from "store/slices/chartSlice";
+import dashboardReducer from "store/slices/dashboardSlice";
+import filterReducer from "store/slices/filterSlice";
+import gridDataReducer from "store/slices/gridDataSlice";
+import mapReducer from "store/slices/mapSlice";
 
 export const store = configureStore({
   reducer: {

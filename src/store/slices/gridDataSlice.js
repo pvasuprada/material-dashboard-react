@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchFilteredData } from "./filterSlice";
+import { fetchFilteredData } from "store/slices/filterSlice";
 
 const initialState = {
   gridData: [],

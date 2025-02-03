@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
-import { mockData } from "../mockData";
+import { mockData } from "src/__tests__/mockData";
 
 // Import components from their correct paths
-import StatisticsCard from "../../components/StatisticsCard";
-import ChartComponent from "../../components/ChartComponent";
-import FiltersComponent from "../../components/FiltersComponent";
-import MapComponent from "../../components/MapComponent";
-import GridComponent from "../../components/GridComponent";
+import StatisticsCard from "components/StatisticsCard";
+import ChartComponent from "components/ChartComponent";
+import FiltersComponent from "components/FiltersComponent";
+import MapComponent from "components/MapComponent";
+import GridComponent from "components/GridComponent";
 
 describe("Statistics Card Component", () => {
   test("renders statistics card with correct data", () => {

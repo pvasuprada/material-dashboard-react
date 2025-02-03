@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { api } from "../../services/api";
+import { api } from "services/api";
 // Mock data - replace with actual API calls later
 const mockFilterOptions = {
   markets: ["1", "2", "3", "4", "5", "6", "7", "8"],

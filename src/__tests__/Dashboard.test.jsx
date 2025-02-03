@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import Dashboard from "../components/Dashboard";
+import Dashboard from "components/Dashboard";
 
 // Mock your data
 const mockData = {

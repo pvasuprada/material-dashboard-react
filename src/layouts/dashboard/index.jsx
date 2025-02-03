@@ -11,11 +11,22 @@ import ReportsBarChart from "examples/Charts/BarCharts/ReportsBarChart";
 import ReportsLineChart from "examples/Charts/LineCharts/ReportsLineChart";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
 import { useInsights } from "context/insightsContext";
-import { chartsConfig } from "./data/chartsConfig";
-import { ChartComponents } from "examples/Charts";
+import { getChartsConfig } from "layouts/dashboard/data/chartsConfig";
+import {
+  ReportsBarChart as ReportsBarChartComponent,
+  ReportsLineChart as ReportsLineChartComponent,
+  BubbleChart,
+  DoughnutChart,
+  PieChart,
+  VerticalBarChart,
+  ProgressLineChart,
+  GradientLineChart,
+  MixedChart,
+  PolarChart,
+  RadarChart,
+} from "examples/Charts";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchFilteredData } from "../../store/slices/filterSlice";
-import { getChartsConfig } from "./data/chartsConfig";
+import { fetchFilteredData } from "store/slices/filterSlice";
 import Skeleton from "@mui/material/Skeleton";
 import { Card } from "@mui/material";
 import MDTypography from "components/MDTypography";
@@ -29,9 +40,9 @@ import "react-multi-carousel/lib/styles.css";
 import "assets/css/carousel.css";
 import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
-import Map from "./components/Map";
-import NetworkGenie from "./components/NetworkGenie";
-import SiteGrid from "./components/SiteGrid";
+import Map from "layouts/dashboard/components/Map";
+import NetworkGenie from "layouts/dashboard/components/NetworkGenie";
+import SiteGrid from "layouts/dashboard/components/SiteGrid";
 import { useSidenav } from "context/SidenavContext";
 
 function Dashboard({ children }) {
@@ -229,7 +240,19 @@ function Dashboard({ children }) {
     }
     if (!chart.visible || loading) return null;
 
-    const ChartComponent = ChartComponents[chart.type];
+    const ChartComponent = {
+      bar: ReportsBarChartComponent,
+      line: ReportsLineChartComponent,
+      bubble: BubbleChart,
+      doughnut: DoughnutChart,
+      pie: PieChart,
+      verticalBar: VerticalBarChart,
+      progressLine: ProgressLineChart,
+      gradientLine: GradientLineChart,
+      mixed: MixedChart,
+      polar: PolarChart,
+      radar: RadarChart,
+    }[chart.type];
 
     if (!ChartComponent) {
       console.warn(`Chart type "${chart.type}" is not supported`);

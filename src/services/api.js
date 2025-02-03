@@ -10,13 +10,6 @@ const apiClient = axios.create({
   },
 });
 
-// For demo purposes, let's create mock data
-const mockMarkets = ["1", "2", "3", "4", "5", "6", "7", "8"];
-const mockSectors = ["115", "116", "117", "118"];
-
-// Mock API response delay
-const mockDelay = () => new Promise((resolve) => setTimeout(resolve, 1000));
-
 // Add request/response interceptors for debugging
 if (process.env.NODE_ENV === "development") {
   apiClient.interceptors.request.use(
