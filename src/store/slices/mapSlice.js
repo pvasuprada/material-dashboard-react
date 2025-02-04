@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { fetchFilteredData } from "store/slices/filterSlice";
 
 const initialState = {
   layers: [],
@@ -10,9 +11,9 @@ const initialState = {
     ymax: 48.992177,
   },
   averages: [
-    { geobin: "8928c204a5bffff", user_count: 1 },
-    { geobin: "8928c2059cfffff", user_count: 2 },
-    { geobin: "8928c241ad7ffff", user_count: 3 },
+    // { geobin: "8928c204a5bffff", user_count: 1 },
+    // { geobin: "8928c2059cfffff", user_count: 2 },
+    // { geobin: "8928c241ad7ffff", user_count: 3 },
   ],
   loading: false,
   error: null,
@@ -51,21 +52,21 @@ const mapSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase("filter/fetchFilteredData/pending", (state) => {
+      .addCase(fetchFilteredData.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase("filter/fetchFilteredData/fulfilled", (state, action) => {
+      .addCase(fetchFilteredData.fulfilled, (state, action) => {
         if (action.payload.mapData) {
-          state.data = action.payload.mapData.data || [];
-          state.layers = action.payload.mapData.layers || [];
-          state.extent = action.payload.mapData.extent || state.extent;
-          state.averages = action.payload.mapData.averages || [];
+          state.data = action.payload.mapData.data.data || [];
+          state.layers = action.payload.mapData.data.layers || [];
+          state.extent = action.payload.mapData.data.extent || state.extent;
+          state.averages = action.payload.mapData.data.averages || [];
         }
         state.loading = false;
         state.error = null;
       })
-      .addCase("filter/fetchFilteredData/rejected", (state, action) => {
+      .addCase(fetchFilteredData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });
