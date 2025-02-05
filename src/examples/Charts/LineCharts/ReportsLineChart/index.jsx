@@ -183,7 +183,14 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
             maxRotation: 0,
             minRotation: 0,
             callback: function (value, index, values) {
-              if (index > 0 && (index - 1) % 3 === 0) {
+              // Calculate step size based on total number of points
+              const totalPoints = values.length;
+              let step = Math.ceil(totalPoints / 10); // Show roughly 10 ticks
+
+              // Ensure minimum step size is 1
+              step = Math.max(1, step);
+
+              if (index % step === 0) {
                 return this.getLabelForValue(value);
               }
               return "";
