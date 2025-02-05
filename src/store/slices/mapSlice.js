@@ -19,6 +19,7 @@ const initialState = {
   error: null,
   center: [-93.31223, 32.1341], // Default center coordinates [longitude, latitude]
   zoom: 4, // Default zoom level
+  selectedLocation: null, // Add selected location state
 };
 
 const mapSlice = createSlice({
@@ -49,6 +50,12 @@ const mapSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
     },
+    setSelectedLocation: (state, action) => {
+      state.selectedLocation = action.payload;
+    },
+    clearSelectedLocation: (state) => {
+      state.selectedLocation = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -73,7 +80,15 @@ const mapSlice = createSlice({
   },
 });
 
-export const { setMapData, clearMapData, updateMapView, setLoading, setError } = mapSlice.actions;
+export const {
+  setMapData,
+  clearMapData,
+  updateMapView,
+  setLoading,
+  setError,
+  setSelectedLocation,
+  clearSelectedLocation,
+} = mapSlice.actions;
 
 // Selectors
 export const selectMapData = (state) => state.map.data;
@@ -84,5 +99,6 @@ export const selectMapLoading = (state) => state.map.loading;
 export const selectMapError = (state) => state.map.error;
 export const selectMapCenter = (state) => state.map.center;
 export const selectMapZoom = (state) => state.map.zoom;
+export const selectSelectedLocation = (state) => state.map.selectedLocation;
 
 export default mapSlice.reducer;

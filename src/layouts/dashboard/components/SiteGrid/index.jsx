@@ -17,7 +17,7 @@ import DataTable from "examples/Tables/DataTable";
 import { api } from "services/api";
 import { updateGridConfig } from "store/slices/gridDataSlice";
 import { fetchFilteredData } from "store/slices/filterSlice";
-import { updateMapView } from "store/slices/mapSlice";
+import { updateMapView, setSelectedLocation } from "store/slices/mapSlice";
 
 function SiteGrid() {
   const dispatch = useDispatch();
@@ -37,6 +37,13 @@ function SiteGrid() {
         updateMapView({
           center: [longitude, latitude],
           zoom: 13,
+        })
+      );
+      dispatch(
+        setSelectedLocation({
+          longitude,
+          latitude,
+          siteData: rowData,
         })
       );
     }

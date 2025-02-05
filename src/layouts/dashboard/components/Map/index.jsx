@@ -33,8 +33,8 @@ import { defaults as defaultControls } from "ol/control";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { Feature } from "ol";
-import { Polygon } from "ol/geom";
-import { Fill, Style, Stroke } from "ol/style";
+import { Polygon, Point } from "ol/geom";
+import { Fill, Style, Stroke, Circle as CircleStyle } from "ol/style";
 import * as h3 from "h3-js";
 import { api } from "services/api";
 // Material Dashboard 2 React components
@@ -49,6 +49,8 @@ import {
   selectMapCenter,
   selectMapZoom,
   updateMapView,
+  selectSelectedLocation,
+  clearSelectedLocation,
 } from "store/slices/mapSlice";
 import MDAlert from "components/MDAlert";
 import Overlay from "ol/Overlay";
@@ -189,6 +191,8 @@ function MapComponent() {
   const [viewChangeTimeout, setViewChangeTimeout] = useState(null);
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
+  const selectedLocation = useSelector(selectSelectedLocation);
+  const selectedFeatureLayerRef = useRef(null);
 
   const createCustomControl = (element) => {
     const customControl = new Control({
@@ -241,6 +245,51 @@ function MapComponent() {
       }
     } catch (error) {
       console.error("Error updating hexbins:", error);
+    }
+  };
+
+  // Add this function to handle selected location updates
+  const updateSelectedLocation = () => {
+    if (!mapInstanceRef.current) return;
+
+    // Remove existing selected feature layer if it exists
+    if (selectedFeatureLayerRef.current) {
+      mapInstanceRef.current.removeLayer(selectedFeatureLayerRef.current);
+      selectedFeatureLayerRef.current = null;
+    }
+
+    if (selectedLocation) {
+      const { longitude, latitude } = selectedLocation;
+      const feature = new Feature({
+        geometry: new Point(fromLonLat([longitude, latitude])),
+      });
+
+      // Create a distinctive style for the selected location
+      const style = new Style({
+        image: new CircleStyle({
+          radius: 4,
+          fill: new Fill({
+            color: "#ff0000",
+          }),
+          stroke: new Stroke({
+            color: "#ffffff",
+            width: 1,
+          }),
+        }),
+      });
+
+      feature.setStyle(style);
+
+      // Create a new vector layer for the selected feature
+      const vectorLayer = new VectorLayer({
+        source: new VectorSource({
+          features: [feature],
+        }),
+        zIndex: 999, // Ensure it's on top of other layers
+      });
+
+      selectedFeatureLayerRef.current = vectorLayer;
+      mapInstanceRef.current.addLayer(vectorLayer);
     }
   };
 
@@ -378,8 +427,9 @@ function MapComponent() {
             </div>
           `;
         } else {
-          // Hide popup when clicking outside features
+          // Hide popup and clear selected location when clicking outside features
           popupRef.current.style.display = "none";
+          dispatch(clearSelectedLocation());
         }
       });
 
@@ -501,6 +551,11 @@ function MapComponent() {
     }));
     overlayLayers[layerKey].setVisible(newVisibility);
   };
+
+  // Add effect to update selected location when it changes
+  useEffect(() => {
+    updateSelectedLocation();
+  }, [selectedLocation]);
 
   // Add more detailed error display
   if (error) {
