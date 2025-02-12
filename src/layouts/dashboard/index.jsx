@@ -34,6 +34,7 @@ import Icon from "@mui/material/Icon";
 import MDButtonSmall from "components/MDButtonSmall";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
+import ViewStreamIcon from "@mui/icons-material/ViewStream";
 import IconButton from "@mui/material/IconButton";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
@@ -57,7 +58,7 @@ function Dashboard({ children }) {
   const { showSidenav, sidenavContent, activeButton, openSidenav } = useSidenav();
   const { loading: filterLoading } = useSelector((state) => state.filter);
   const selectedFilters = useSelector((state) => state.filter.selectedFilters);
-  const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'carousel'
+  const [viewMode, setViewMode] = useState("carousel"); // 'grid' or 'carousel' or 'row'
   const [activeSlide, setActiveSlide] = useState(0);
 
   const responsive = {
@@ -227,7 +228,7 @@ function Dashboard({ children }) {
   const renderChart = (chart) => {
     if (filterLoading) {
       return (
-        <Grid item xs={12} md={miniSidenav ? 3 : 4} lg={miniSidenav ? 3 : 4} key={chart.id}>
+        <Grid item xs={12} md={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} lg={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} key={chart.id}>
           <Skeleton
             variant="rectangular"
             height={200}
@@ -263,7 +264,7 @@ function Dashboard({ children }) {
     }
 
     return (
-      <Grid item xs={12} md={miniSidenav ? 3 : 4} lg={miniSidenav ? 3 : 4} key={chart.title}>
+      <Grid item xs={12} md={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} lg={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} key={chart.title}>
         <MDBox mb={3}>
           <ChartComponent
             color={chart.color}
@@ -281,8 +282,8 @@ function Dashboard({ children }) {
     );
   };
 
-  const toggleViewMode = () => {
-    setViewMode((prev) => (prev === "grid" ? "carousel" : "grid"));
+  const toggleViewMode = (mode) => {
+    setViewMode(mode);
   };
 
   // Add this computed value for visible charts
@@ -321,7 +322,7 @@ function Dashboard({ children }) {
           {hasVisibleCharts && (
             <MDBox display="flex" alignItems="center">
               <IconButton
-                onClick={toggleViewMode}
+                onClick={() => toggleViewMode("grid")}
                 sx={{
                   color: darkMode ? "white" : "dark",
                   backgroundColor: viewMode === "grid" ? "rgba(0,0,0,0.05)" : "transparent",
@@ -332,14 +333,25 @@ function Dashboard({ children }) {
                 <ViewModuleIcon sx={{ fontSize: "1.2rem" }} />
               </IconButton>
               <IconButton
-                onClick={toggleViewMode}
+                onClick={() => toggleViewMode("carousel")}
                 sx={{
                   color: darkMode ? "white" : "dark",
                   backgroundColor: viewMode === "carousel" ? "rgba(0,0,0,0.05)" : "transparent",
+                  mr: 1,
                   padding: "6px",
                 }}
               >
                 <ViewCarouselIcon sx={{ fontSize: "1.2rem" }} />
+              </IconButton>
+              <IconButton
+                onClick={() => toggleViewMode("row")}
+                sx={{
+                  color: darkMode ? "white" : "dark",
+                  backgroundColor: viewMode === "row" ? "rgba(0,0,0,0.05)" : "transparent",
+                  padding: "6px",
+                }}
+              >
+                <ViewStreamIcon sx={{ fontSize: "1.2rem" }} />
               </IconButton>
             </MDBox>
           )}
@@ -352,11 +364,7 @@ function Dashboard({ children }) {
         </Grid>
         <MDBox mt={6}>
           {hasVisibleCharts ? (
-            viewMode === "grid" ? (
-              <Grid container spacing={2}>
-                {visibleCharts.map(renderChart)}
-              </Grid>
-            ) : (
+            viewMode === "carousel" ? (
               <MDBox>
                 <Carousel
                   responsive={responsive}
@@ -383,6 +391,10 @@ function Dashboard({ children }) {
                   ))}
                 </Carousel>
               </MDBox>
+            ) : (
+              <Grid container spacing={2}>
+                {visibleCharts.map(renderChart)}
+              </Grid>
             )
           ) : (
             <Grid container spacing={2}>
