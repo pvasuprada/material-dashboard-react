@@ -56,6 +56,17 @@ import { SidenavProvider, useSidenav } from "context/SidenavContext";
 import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
 
+// Create rtl cache
+const cacheRtl = createCache({
+  key: "muirtl",
+  stylisPlugins: [rtlPlugin],
+});
+
+// Create default cache
+const cache = createCache({
+  key: "mui",
+});
+
 function AppContent() {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, layout, sidenavColor, transparentSidenav, whiteSidenav, darkMode } =
@@ -181,11 +192,13 @@ function AppContent() {
 
 function App() {
   return (
-    <InsightsProvider>
-      <SidenavProvider>
-        <AppContent />
-      </SidenavProvider>
-    </InsightsProvider>
+    <CacheProvider value={cache}>
+      <InsightsProvider>
+        <SidenavProvider>
+          <AppContent />
+        </SidenavProvider>
+      </InsightsProvider>
+    </CacheProvider>
   );
 }
 
