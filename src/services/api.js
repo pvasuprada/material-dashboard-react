@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:2024/minerva-service"; // Replace with your actual API base URL
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Create axios instance with common config
 const apiClient = axios.create({
