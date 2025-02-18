@@ -9,8 +9,6 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       showLabels: false,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        description: "User count over time",
-        date: "updated daily",
         labels: xData,
         datasets: {
           label: "Users",
@@ -27,8 +25,6 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        description: "Average download latency",
-        date: "updated daily",
         labels: xData,
         datasets: {
           label: "Latency",
@@ -45,8 +41,6 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        description: "Download volume over time",
-        date: "updated daily",
         labels: xData,
         datasets: {
           label: "Volume",
@@ -63,8 +57,6 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        description: "Upload volume over time",
-        date: "updated daily",
         labels: xData,
         datasets: {
           label: "Volume",
@@ -81,8 +73,6 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        description: "Last month traffic sources",
-        date: "updated yesterday",
         labels: ["Direct", "Organic", "Referral", "Social"],
         datasets: {
           label: "Traffic",
@@ -101,8 +91,6 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        description: "User activity metrics",
-        date: "updated daily",
         labels: ["0", "10", "20", "30", "40", "50", "60", "70", "80", "90"],
         datasets: [
           {
@@ -126,8 +114,6 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        description: "Project progress tracking",
-        date: "updated hourly",
         labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
         datasets: {
           label: "Progress",
@@ -145,8 +131,6 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        description: "Monthly revenue breakdown",
-        date: "updated monthly",
         labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
         datasets: [
           {

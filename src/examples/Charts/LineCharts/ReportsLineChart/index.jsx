@@ -255,30 +255,16 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart, 
       <Card sx={{ height: "100%" }} ref={chartRef}>
         <MDBox p={1}>
           <MDBox
-            variant="gradient"
-            bgColor={color}
-            borderRadius="lg"
-            coloredShadow={color}
-            py={1}
-            pr={0.5}
-            mt={-3}
-            height="10rem"
-            sx={{
-              transition: "all 0.3s",
-              "&:hover": {
-                transform: "translateY(-2px)",
-                boxShadow: 3,
-              },
-            }}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={1}
           >
-            <Line data={chartData} options={chartOptions} />
-          </MDBox>
-          <MDBox pt={1} px={0.5} display="flex" alignItems="center" justifyContent="space-between">
             <MDTypography
               variant="caption"
               fontWeight="medium"
               textTransform="capitalize"
-              color={darkMode ? "white" : "dark"}
+              color={fontColor === "light" ? "white" : "dark"}
             >
               {title}
             </MDTypography>
@@ -288,9 +274,9 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart, 
                 size="small"
                 sx={{
                   padding: "4px",
-                  color: darkMode ? "#fff" : "#344767",
+                  color: fontColor === "light" ? "#fff" : "#344767",
                   "&:hover": {
-                    backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                    backgroundColor: fontColor === "light" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
                   },
                 }}
               >
@@ -301,15 +287,33 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart, 
                 size="small"
                 sx={{
                   padding: "4px",
-                  color: darkMode ? "#fff" : "#344767",
+                  color: fontColor === "light" ? "#fff" : "#344767",
                   "&:hover": {
-                    backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                    backgroundColor: fontColor === "light" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
                   },
                 }}
               >
                 <FullscreenIcon fontSize="small" />
               </IconButton>
             </MDBox>
+          </MDBox>
+          <MDBox
+            variant="gradient"
+            bgColor={color}
+            borderRadius="lg"
+            coloredShadow={color}
+            py={1}
+            pr={0.5}
+            height="10rem"
+            sx={{
+              transition: "all 0.3s",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: 3,
+              },
+            }}
+          >
+            <Line data={chartData} options={chartOptions} />
           </MDBox>
         </MDBox>
       </Card>
@@ -326,16 +330,16 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart, 
       >
         <MDBox display="flex" flexDirection="column" p={2} height="100%">
           <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <MDTypography variant="h6" color={darkMode ? "white" : "dark"}>
+            <MDTypography variant="h6" color={fontColor === "light" ? "white" : "dark"}>
               {title}
             </MDTypography>
             <IconButton
               onClick={() => setIsFullscreen(false)}
               size="small"
               sx={{
-                color: darkMode ? "#fff" : "#344767",
+                color: fontColor === "light" ? "#fff" : "#344767",
                 "&:hover": {
-                  backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                  backgroundColor: fontColor === "light" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
                 },
               }}
             >
