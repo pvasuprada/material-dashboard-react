@@ -26,7 +26,7 @@ function collapseItem(theme, ownerState) {
       ? linearGradient(gradients[sidenavColor].main, gradients[sidenavColor].state)
       : transparent.main,
     color:
-      (transparentSidenav && !darkMode && !active) || (whiteSidenav && !active)
+      (transparentSidenav && !darkMode) || (whiteSidenav && !active) || (!darkMode && !active)
         ? dark.main
         : white.main,
     display: "flex",
@@ -75,7 +75,7 @@ function collapseIconBox(theme, ownerState) {
     minWidth: pxToRem(32),
     minHeight: pxToRem(32),
     color:
-      (transparentSidenav && !darkMode && !active) || (whiteSidenav && !active)
+      (transparentSidenav && !darkMode) || (whiteSidenav && !active) || (!darkMode && !active)
         ? dark.main
         : white.main,
     borderRadius: borderRadius.md,
@@ -87,13 +87,15 @@ function collapseIconBox(theme, ownerState) {
     }),
 
     "& svg, svg g": {
-      color: transparentSidenav || whiteSidenav ? dark.main : white.main,
+      color: (transparentSidenav && !darkMode) || (whiteSidenav && !active) || (!darkMode && !active)
+        ? dark.main
+        : white.main,
     },
   };
 }
 
-const collapseIcon = ({ palette: { white, gradients } }, { active }) => ({
-  color: active ? white.main : gradients.dark.state,
+const collapseIcon = ({ palette: { white, gradients, dark } }, { active, darkMode }) => ({
+  color: (!darkMode || active) ? dark.main : white.main,
 });
 
 function collapseText(theme, ownerState) {
