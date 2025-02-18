@@ -60,7 +60,7 @@ ChartJS.register(
   Filler
 );
 
-function ReportsLineChart({ color, title, showLabels, description, date, chart }) {
+function ReportsLineChart({ color, title, showLabels, description, date, chart, fontColor }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const chartRef = useRef(null);
   const [controller] = useMaterialUIController();
@@ -93,24 +93,32 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
           backgroundColor: (context) => {
             const ctx = context.chart.ctx;
             const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, darkMode ? "rgba(30, 136, 229, 0.2)" : "rgba(77, 77, 77, 0.1)");
+            gradient.addColorStop(0, fontColor === "light" 
+              ? "rgba(255, 255, 255, 0.2)" 
+              : darkMode ? "rgba(30, 136, 229, 0.2)" : "rgba(77, 77, 77, 0.1)");
             gradient.addColorStop(1, "rgba(255, 255, 255, 0.05)");
             return gradient;
           },
-          borderColor: darkMode ? "rgba(30, 136, 229, 0.8)" : "rgba(77, 77, 77, 0.7)",
+          borderColor: fontColor === "light" 
+            ? "rgba(255, 255, 255, 0.8)" 
+            : darkMode ? "rgba(30, 136, 229, 0.8)" : "rgba(77, 77, 77, 0.7)",
           fill: true,
           data: chart?.datasets?.data || [],
-          pointBackgroundColor: darkMode ? "rgba(30, 136, 229, 1)" : "rgba(77, 77, 77, 0.8)",
-          pointBorderColor: "#fff",
+          pointBackgroundColor: fontColor === "light" 
+            ? "rgba(255, 255, 255, 1)" 
+            : darkMode ? "rgba(30, 136, 229, 1)" : "rgba(77, 77, 77, 0.8)",
+          pointBorderColor: fontColor === "light" ? "rgba(0, 0, 0, 0.2)" : "#fff",
           pointBorderWidth: 1,
           pointHoverRadius: 5,
-          pointHoverBackgroundColor: darkMode ? "rgba(30, 136, 229, 1)" : "rgba(77, 77, 77, 1)",
-          pointHoverBorderColor: "#fff",
+          pointHoverBackgroundColor: fontColor === "light" 
+            ? "rgba(255, 255, 255, 1)" 
+            : darkMode ? "rgba(30, 136, 229, 1)" : "rgba(77, 77, 77, 1)",
+          pointHoverBorderColor: fontColor === "light" ? "rgba(0, 0, 0, 0.2)" : "#fff",
           pointHoverBorderWidth: 2,
         },
       ],
     }),
-    [chart, darkMode]
+    [chart, darkMode, fontColor]
   );
 
   const chartOptions = useMemo(
@@ -123,8 +131,8 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
         },
         tooltip: {
           backgroundColor: darkMode ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.95)",
-          titleColor: "#344767",
-          bodyColor: "#344767",
+          titleColor: fontColor === "dark" ? "#344767" : "#ffffff",
+          bodyColor: fontColor === "dark" ? "#344767" : "#ffffff",
           padding: 12,
           bodyFont: {
             size: 11,
@@ -155,7 +163,7 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
           ticks: {
             display: true,
             padding: 8,
-            color: "#344767",
+            color: fontColor === "dark" ? "#344767" : "#ffffff",
             font: {
               size: 11,
               family: "Roboto",
@@ -173,7 +181,7 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
           title: {
             display: showLabels,
             text: "Value",
-            color: "#344767",
+            color: fontColor === "dark" ? "#344767" : "#ffffff",
             font: {
               size: 12,
               family: "Roboto",
@@ -192,7 +200,7 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
           },
           ticks: {
             display: true,
-            color: "#344767",
+            color: fontColor === "dark" ? "#344767" : "#ffffff",
             padding: 5,
             font: {
               size: 11,
@@ -215,7 +223,7 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
           title: {
             display: showLabels,
             text: "Time Period",
-            color: "#344767",
+            color: fontColor === "dark" ? "#344767" : "#ffffff",
             font: {
               size: 12,
               family: "Roboto",
@@ -239,7 +247,7 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
         mode: "index",
       },
     }),
-    [darkMode, chart]
+    [darkMode, chart, showLabels, fontColor]
   );
 
   return (
@@ -354,6 +362,7 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
 ReportsLineChart.defaultProps = {
   color: "info",
   description: "",
+  fontColor: "dark",
   chart: {
     labels: [],
     datasets: {
@@ -378,6 +387,7 @@ ReportsLineChart.propTypes = {
   title: PropTypes.string.isRequired,
   description: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   date: PropTypes.string.isRequired,
+  fontColor: PropTypes.oneOf(["dark", "light"]),
   chart: PropTypes.shape({
     labels: PropTypes.arrayOf(PropTypes.string).isRequired,
     datasets: PropTypes.shape({

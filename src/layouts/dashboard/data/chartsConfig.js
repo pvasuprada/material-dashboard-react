@@ -3,6 +3,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     {
       type: "line",
       color: "light",
+      fontColor: "dark",
       title: "User Count",
       visible: true,
       showLabels: false,
@@ -20,6 +21,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     {
       type: "line",
       color: "light",
+      fontColor: "dark",
       title: "Avg DL Latency",
       visible: true,
       showLabels: true,
@@ -37,6 +39,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     {
       type: "line",
       color: "light",
+      fontColor: "dark",
       title: "Total DL Volume",
       visible: true,
       showLabels: true,
@@ -54,6 +57,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     {
       type: "line",
       color: "light",
+      fontColor: "dark",
       title: "Total UL Volume",
       visible: true,
       showLabels: true,
@@ -71,6 +75,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     {
       type: "doughnut",
       color: "light",
+      fontColor: "dark",
       title: "Traffic Sources",
       visible: true,
       showLabels: true,
@@ -90,6 +95,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     {
       type: "bubble",
       color: "light",
+      fontColor: "dark",
       title: "User Engagement",
       visible: true,
       showLabels: true,
@@ -114,6 +120,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     {
       type: "progressLine",
       color: "light",
+      fontColor: "dark",
       title: "Project Completion",
       visible: true,
       showLabels: true,
@@ -132,6 +139,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     {
       type: "bar",
       color: "light",
+      fontColor: "dark",
       title: "Monthly Revenue",
       visible: true,
       showLabels: true,
