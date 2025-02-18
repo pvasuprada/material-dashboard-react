@@ -55,6 +55,8 @@ import { useInsights } from "context/insightsContext";
 import MDAutocomplete from "components/MDAutocomplete";
 import MDDateRangePicker from "components/MDDateRangePicker";
 import Filter from "components/Filter";
+import InsightsSelection from "components/InsightsSelection";
+import ChartsSelection from "components/ChartsSelection";
 
 function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
@@ -186,54 +188,18 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
 
   const renderInsightsSection = () => (
     <MDBox pl={3} pr={1} mt={2}>
-      <MDTypography variant="h6" color="white">
-        Insights
-      </MDTypography>
-      <FormGroup>
-        {dashboardData.statistics.map((stat) => (
-          <FormControlLabel
-            key={stat.id}
-            control={
-              <Switch
-                color={sidenavColor}
-                checked={stat.visible}
-                onChange={() => updateInsightVisibility(stat.id)}
-                name={stat.title}
-                size="small"
-              />
-            }
-            label={
-              <MDTypography variant="button" fontWeight="regular" color="white">
-                {stat.title}
-              </MDTypography>
-            }
-          />
-        ))}
-      </FormGroup>
-      <MDTypography variant="h6" color="white" mt={2}>
-        Charts
-      </MDTypography>
-      <FormGroup>
-        {chartsData.map((chart) => (
-          <FormControlLabel
-            key={chart.title}
-            control={
-              <Switch
-                color={sidenavColor}
-                checked={chart.visible}
-                onChange={() => updateChartVisibility(chart.title)}
-                name={chart.title}
-                size="small"
-              />
-            }
-            label={
-              <MDTypography variant="button" fontWeight="regular" color="white">
-                {chart.title}
-              </MDTypography>
-            }
-          />
-        ))}
-      </FormGroup>
+      <InsightsSelection 
+        darkMode={darkMode}
+        sidenavColor={sidenavColor}
+        dashboardData={dashboardData}
+        updateInsightVisibility={updateInsightVisibility}
+      />
+      <ChartsSelection 
+        darkMode={darkMode}
+        sidenavColor={sidenavColor}
+        chartsData={chartsData}
+        updateChartVisibility={updateChartVisibility}
+      />
     </MDBox>
   );
 

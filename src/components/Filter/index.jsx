@@ -21,7 +21,7 @@ import { useMaterialUIController } from "context";
 function Filter() {
   const dispatch = useDispatch();
   const [controller] = useMaterialUIController();
-  const { sidenavColor } = controller;
+  const { sidenavColor, darkMode } = controller;
   const { data, selectedFilters, loading, error } = useSelector((state) => state.filter);
 
   const [market, setMarket] = useState(selectedFilters.market);
@@ -88,7 +88,7 @@ function Filter() {
     <MDBox>
       <MDBox px={2} py={1}>
         <MDTypography
-          color="white"
+          color={darkMode ? "white" : "dark"}
           variant="caption"
           fontWeight="medium"
           sx={{
@@ -108,7 +108,10 @@ function Filter() {
         </MDTypography>
       </MDBox>
 
-      <Divider sx={{ backgroundColor: "rgba(255, 255, 255, 0.1)", my: 1 }} />
+      <Divider sx={{ 
+        backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)", 
+        my: 1 
+      }} />
 
       <MDBox px={2} py={0.5}>
         <MDBox mb={1.5}>
@@ -118,7 +121,7 @@ function Filter() {
             onChange={(event, newValue) => setMarket(newValue)}
             options={data.markets || []}
             label="Market"
-            color="white"
+            color={darkMode ? "white" : "dark"}
             loading={loading}
           />
         </MDBox>
@@ -129,7 +132,7 @@ function Filter() {
             onChange={(event, newValue) => setSector(newValue)}
             options={data.sectors || []}
             label="Sector"
-            color="white"
+            color={darkMode ? "white" : "dark"}
             loading={loading}
           />
         </MDBox>
@@ -144,7 +147,7 @@ function Filter() {
               onChange={(newValue) => setStartDate(newValue)}
               maxDate={endDate}
               disabled={loading}
-              color="white"
+              color={darkMode ? "white" : "dark"}
             />
           </MDBox>
           <MDBox>
@@ -157,18 +160,21 @@ function Filter() {
               onChange={(newValue) => setEndDate(newValue)}
               minDate={startDate}
               disabled={loading}
-              color="white"
+              color={darkMode ? "white" : "dark"}
             />
           </MDBox>
         </MDBox>
       </MDBox>
 
-      <Divider sx={{ backgroundColor: "rgba(255, 255, 255, 0.1)", my: 1 }} />
+      <Divider sx={{ 
+        backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)", 
+        my: 1 
+      }} />
 
       <MDBox px={2} py={1} display="flex" gap={1}>
         <MDButton
           variant="text"
-          color="light"
+          color={darkMode ? "light" : "dark"}
           size="small"
           onClick={handleReset}
           disabled={loading}
