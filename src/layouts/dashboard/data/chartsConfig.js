@@ -2,7 +2,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
   charts: [
     {
       type: "line",
-      color: "dark",
+      color: "light",
       title: "User Count",
       visible: true,
       showLabels: false,
@@ -19,7 +19,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     },
     {
       type: "line",
-      color: "error",
+      color: "light",
       title: "Avg DL Latency",
       visible: true,
       showLabels: true,
@@ -36,7 +36,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     },
     {
       type: "line",
-      color: "dark",
+      color: "light",
       title: "Total DL Volume",
       visible: true,
       showLabels: true,
@@ -53,7 +53,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     },
     {
       type: "line",
-      color: "error",
+      color: "light",
       title: "Total UL Volume",
       visible: true,
       showLabels: true,
@@ -70,7 +70,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     },
     {
       type: "doughnut",
-      color: "dark",
+      color: "light",
       title: "Traffic Sources",
       visible: true,
       showLabels: true,
@@ -82,7 +82,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
         datasets: {
           label: "Traffic",
           data: [40, 30, 20, 10],
-          backgroundColors: ["info", "primary", "dark", "secondary"],
+          backgroundColors: ["info", "primary", "light", "secondary"],
         },
       },
       height: "10rem",
@@ -113,7 +113,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     },
     {
       type: "progressLine",
-      color: "dark",
+      color: "light",
       title: "Project Completion",
       visible: true,
       showLabels: true,
@@ -131,7 +131,7 @@ export const getChartsConfig = (chartData = [], xData = []) => ({
     },
     {
       type: "bar",
-      color: "dark",
+      color: "light",
       title: "Monthly Revenue",
       visible: true,
       showLabels: true,

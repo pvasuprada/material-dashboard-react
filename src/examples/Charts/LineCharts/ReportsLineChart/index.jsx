@@ -88,16 +88,29 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
         {
           label: chart?.datasets?.label || "",
           tension: 0.4,
-          pointRadius: 2,
+          pointRadius: 3,
           borderWidth: 2,
-          backgroundColor: "rgba(255, 255, 255, .1)",
-          borderColor: "rgba(255, 255, 255, .8)",
+          backgroundColor: (context) => {
+            const ctx = context.chart.ctx;
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, darkMode ? "rgba(30, 136, 229, 0.2)" : "rgba(77, 77, 77, 0.1)");
+            gradient.addColorStop(1, "rgba(255, 255, 255, 0.05)");
+            return gradient;
+          },
+          borderColor: darkMode ? "rgba(30, 136, 229, 0.8)" : "rgba(77, 77, 77, 0.7)",
           fill: true,
           data: chart?.datasets?.data || [],
+          pointBackgroundColor: darkMode ? "rgba(30, 136, 229, 1)" : "rgba(77, 77, 77, 0.8)",
+          pointBorderColor: "#fff",
+          pointBorderWidth: 1,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: darkMode ? "rgba(30, 136, 229, 1)" : "rgba(77, 77, 77, 1)",
+          pointHoverBorderColor: "#fff",
+          pointHoverBorderWidth: 2,
         },
       ],
     }),
-    [chart]
+    [chart, darkMode]
   );
 
   const chartOptions = useMemo(
@@ -109,18 +122,24 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
           display: false,
         },
         tooltip: {
-          backgroundColor: darkMode ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.9)",
-          titleColor: darkMode ? "#fff" : "#344767",
-          bodyColor: darkMode ? "#fff" : "#344767",
-          padding: 10,
+          backgroundColor: darkMode ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.95)",
+          titleColor: "#344767",
+          bodyColor: "#344767",
+          padding: 12,
           bodyFont: {
-            size: 10,
+            size: 11,
+            weight: 400,
           },
           titleFont: {
-            size: 10,
+            size: 11,
+            weight: 600,
           },
-          bodySpacing: 5,
-          boxPadding: 5,
+          bodySpacing: 6,
+          boxPadding: 6,
+          borderColor: "rgba(0, 0, 0, 0.1)",
+          borderWidth: 1,
+          cornerRadius: 8,
+          displayColors: false,
         },
       },
       scales: {
@@ -131,17 +150,18 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
             drawOnChartArea: true,
             drawTicks: false,
             borderDash: [5, 5],
-            color: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+            color: "rgba(0, 0, 0, 0.05)",
           },
           ticks: {
             display: true,
-            padding: 5,
-            color: darkMode ? "#fff" : "#fff",
+            padding: 8,
+            color: "#344767",
             font: {
               size: 11,
               family: "Roboto",
               style: "normal",
               lineHeight: 1,
+              weight: 400,
             },
             stepSize: Math.ceil(
               (Math.max(...(chart?.datasets?.data || [])) -
@@ -153,7 +173,7 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
           title: {
             display: showLabels,
             text: "Value",
-            color: darkMode ? "#fff" : "#fff",
+            color: "#344767",
             font: {
               size: 12,
               family: "Roboto",
@@ -172,7 +192,7 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
           },
           ticks: {
             display: true,
-            color: darkMode ? "#fff" : "#fff",
+            color: "#344767",
             padding: 5,
             font: {
               size: 11,
@@ -183,13 +203,9 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
             maxRotation: 0,
             minRotation: 0,
             callback: function (value, index, values) {
-              // Calculate step size based on total number of points
               const totalPoints = values.length;
-              let step = Math.ceil(totalPoints / 10); // Show roughly 10 ticks
-
-              // Ensure minimum step size is 1
+              let step = Math.ceil(totalPoints / 10);
               step = Math.max(1, step);
-
               if (index % step === 0) {
                 return this.getLabelForValue(value);
               }
@@ -199,7 +215,7 @@ function ReportsLineChart({ color, title, showLabels, description, date, chart }
           title: {
             display: showLabels,
             text: "Time Period",
-            color: darkMode ? "#fff" : "#fff",
+            color: "#344767",
             font: {
               size: 12,
               family: "Roboto",
