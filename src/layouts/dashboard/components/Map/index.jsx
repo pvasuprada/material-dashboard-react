@@ -57,6 +57,8 @@ import Overlay from "ol/Overlay";
 import { unByKey } from "ol/Observable";
 import { useTheme } from "@mui/material/styles";
 import { useMaterialUIController } from "context";
+import { Divider } from "@mui/material";
+import { Radio } from "@mui/material";
 
 // Custom styles for the controls
 const controlStyle = {
@@ -130,43 +132,6 @@ const basemaps = {
   }),
 };
 
-const overlayLayers = {
-  hurricanes: new ImageLayer({
-    source: new ImageWMS({
-      url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Hurricanes/MapServer/0",
-      params: { LAYERS: "0" },
-    }),
-    title: "Hurricanes",
-    visible: true,
-  }),
-  geoserver: new ImageLayer({
-    source: new ImageWMS({
-      url: "https://ahocevar.com/geoserver/wms",
-      params: { LAYERS: "topp:states" },
-    }),
-    title: "GeoServer Layer",
-    visible: false,
-  }),
-  hexbins: new VectorLayer({
-    source: new VectorSource(),
-    title: "Hexbins",
-    visible: true,
-    style: (feature) => {
-      const userCount = feature.get("user_count");
-      // Make hexbins more visible with stronger colors and borders
-      return new Style({
-        fill: new Fill({
-          color: `rgba(255, 0, 0, ${Math.min(0.8, 0.2 + userCount * 0.2)})`,
-        }),
-        stroke: new Stroke({
-          color: "rgba(255, 0, 0, 1)",
-          width: 1,
-        }),
-      });
-    },
-  }),
-};
-
 function MapComponent() {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -178,6 +143,7 @@ function MapComponent() {
     geoserver: false,
     hexbins: true,
   });
+  const [selectedMetric, setSelectedMetric] = useState('user_count');
   const averages = useSelector(selectMapAverages);
   const extent = useSelector(selectMapExtent);
   const loading = useSelector(selectMapLoading);
@@ -193,6 +159,8 @@ function MapComponent() {
   const { darkMode } = controller;
   const selectedLocation = useSelector(selectSelectedLocation);
   const selectedFeatureLayerRef = useRef(null);
+  const [clickedFeature, setClickedFeature] = useState(null);
+  const [clickedCoordinate, setClickedCoordinate] = useState(null);
 
   const createCustomControl = (element) => {
     const customControl = new Control({
@@ -201,40 +169,125 @@ function MapComponent() {
     return customControl;
   };
 
+  const getColorForMetric = (feature) => {
+    const value = feature.get(selectedMetric);
+    let opacity = 0.2;
+    
+    if (value) {
+      // Normalize the value between 0.2 and 0.8 for opacity
+      switch(selectedMetric) {
+        case 'user_count':
+          opacity = Math.min(0.8, 0.2 + value * 0.2);
+          break;
+        case 'avg_dl_latency':
+          opacity = Math.min(0.8, 0.2 + (value / 10)); // Assuming max latency of 10
+          break;
+        case 'total_dl_volume':
+          opacity = Math.min(0.8, 0.2 + (value / 5)); // Assuming max volume of 5
+          break;
+        default:
+          opacity = 0.5;
+      }
+    }
+
+    // Different colors for different metrics
+    const colors = {
+      user_count: [255, 0, 0], // Red
+      avg_dl_latency: [0, 0, 255], // Blue
+      total_dl_volume: [255, 192, 203], // Pink
+    };
+
+    const [r, g, b] = colors[selectedMetric] || colors.user_count;
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  const createHexbinStyle = (feature) => {
+    return new Style({
+      fill: new Fill({
+        color: getColorForMetric(feature),
+      }),
+      stroke: new Stroke({
+        color: getColorForMetric(feature).replace(/[\d.]+\)$/, '1)'), // Full opacity for stroke
+        width: 1,
+      }),
+    });
+  };
+
+  const createHexbinLayer = () => {
+    return new VectorLayer({
+      source: new VectorSource(),
+      title: "Hexbins",
+      visible: true,
+      style: createHexbinStyle,
+    });
+  };
+
+  const overlayLayers = {
+    hurricanes: new ImageLayer({
+      source: new ImageWMS({
+        url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Hurricanes/MapServer/0",
+        params: { LAYERS: "0" },
+      }),
+      title: "Hurricanes",
+      visible: true,
+    }),
+    geoserver: new ImageLayer({
+      source: new ImageWMS({
+        url: "https://ahocevar.com/geoserver/wms",
+        params: { LAYERS: "topp:states" },
+      }),
+      title: "GeoServer Layer",
+      visible: false,
+    }),
+    hexbins: createHexbinLayer(),
+  };
+
   const updateHexbins = async () => {
     try {
-      if (averages && Array.isArray(averages)) {
-        console.log("Creating hexbin features from averages:", averages); // Debug log
+      if (averages && Array.isArray(averages) && mapInstanceRef.current) {
+        console.log("Updating hexbins with metric:", selectedMetric);
+        console.log("Averages data:", averages);
 
-        const features = averages.map(({ geobin, user_count }) => {
-          // Get hexagon boundary coordinates
+        const features = averages.map(({ geobin, user_count, avg_dl_latency, total_dl_volume }) => {
           const hexBoundary = h3.cellToBoundary(geobin);
-          console.log("Hex boundary for", geobin, ":", hexBoundary); // Debug log
-
-          // Convert to OpenLayers format (longitude, latitude)
           const coordinates = [hexBoundary.map(([lat, lng]) => fromLonLat([lng, lat]))];
-
-          // Create feature
           const feature = new Feature({
             geometry: new Polygon(coordinates),
           });
 
+          // Set all metrics on the feature
           feature.set("user_count", user_count);
           feature.set("geobin", geobin);
+          feature.set("avg_dl_latency", avg_dl_latency);
+          feature.set("total_dl_volume", total_dl_volume);
           return feature;
         });
 
-        console.log("Created features:", features); // Debug log
+        // Find the hexbin layer
+        const hexbinLayer = mapInstanceRef.current.getLayers().getArray()
+          .find(layer => layer.get('title') === 'Hexbins');
 
-        const hexbinLayer = overlayLayers.hexbins;
-        const source = hexbinLayer.getSource();
-        source.clear();
-        source.addFeatures(features);
+        if (hexbinLayer) {
+          const source = hexbinLayer.getSource();
+          source.clear();
+          source.addFeatures(features);
+          
+          // Update the style function
+          hexbinLayer.setStyle(createHexbinStyle);
+          
+          // Ensure the layer is visible
+          hexbinLayer.setVisible(true);
+          
+          // Force redraw
+          source.changed();
+          
+          console.log("Hexbin layer updated with", features.length, "features");
+        } else {
+          console.error("Hexbin layer not found");
+        }
 
-        // Ensure the layer is visible
-        hexbinLayer.setVisible(true);
-
-        if (mapInstanceRef.current && extent) {
+        // Update the view extent if needed
+        if (extent) {
           const { xmin, ymin, xmax, ymax } = extent;
           const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
           mapInstanceRef.current.getView().fit(transformedExtent, {
@@ -411,23 +464,12 @@ function MapComponent() {
 
         if (feature) {
           const coordinates = evt.coordinate;
-          const userCount = feature.get("user_count");
-          const geobin = feature.get("geobin");
-
-          // Show popup
-          popupRef.current.style.display = "block";
-          popupOverlayRef.current.setPosition(coordinates);
-
-          // Update popup content
-          const popupContent = document.getElementById("popup-content");
-          popupContent.innerHTML = `
-            <div>
-              <strong>Geobin:</strong> ${geobin}<br>
-              <strong>User Count:</strong> ${userCount}
-            </div>
-          `;
+          setClickedFeature(feature);
+          setClickedCoordinate(coordinates);
+          updatePopup(feature, coordinates);
         } else {
-          // Hide popup and clear selected location when clicking outside features
+          setClickedFeature(null);
+          setClickedCoordinate(null);
           popupRef.current.style.display = "none";
           dispatch(clearSelectedLocation());
         }
@@ -440,29 +482,7 @@ function MapComponent() {
         mapInstanceRef.current.getViewport().style.cursor = hit ? "pointer" : "";
       });
 
-      // Add view change listener
-      const view = mapInstanceRef.current.getView();
-      view.on("change", () => {
-        // Debounce view changes to prevent too many Redux updates
-        if (viewChangeTimeout) {
-          clearTimeout(viewChangeTimeout);
-        }
-
-        // setViewChangeTimeout(
-        //   setTimeout(() => {
-        //     const center = view.getCenter();
-        //     const [lon, lat] = center.map((coord) => parseFloat(coord.toFixed(6)));
-        //     dispatch(
-        //       updateMapView({
-        //         center: [lon, lat],
-        //         zoom: view.getZoom(),
-        //       })
-        //     );
-        //   }, 300)
-        // );
-      });
-
-      // Call updateHexbins after map is initialized
+      // Initial update of hexbins
       updateHexbins();
     }
 
@@ -557,6 +577,88 @@ function MapComponent() {
     updateSelectedLocation();
   }, [selectedLocation]);
 
+  // Update useEffect for metric changes
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      console.log("Selected metric changed to:", selectedMetric);
+      const hexbinLayer = mapInstanceRef.current.getLayers().getArray()
+        .find(layer => layer.get('title') === 'Hexbins');
+      
+      if (hexbinLayer) {
+        // Update the style function
+        hexbinLayer.setStyle(createHexbinStyle);
+        // Force redraw
+        hexbinLayer.getSource().changed();
+        // Update popup if there's a clicked feature
+        if (clickedFeature && clickedCoordinate) {
+          updatePopup(clickedFeature, clickedCoordinate);
+        }
+      }
+    }
+  }, [selectedMetric]);
+
+  // Function to update popup content
+  const updatePopup = (feature, coordinates) => {
+    if (!feature || !coordinates) return;
+
+    const geobin = feature.get("geobin");
+    const value = feature.get(selectedMetric);
+
+    // Show popup
+    popupRef.current.style.display = "block";
+    popupOverlayRef.current.setPosition(coordinates);
+
+    // Get the metric label
+    const metricLabels = {
+      user_count: "User Count",
+      avg_dl_latency: "Avg Download Latency",
+      total_dl_volume: "Total Download Volume"
+    };
+
+    // Get the unit for the metric
+    const metricUnits = {
+      user_count: "",
+      avg_dl_latency: "ms",
+      total_dl_volume: "GB"
+    };
+
+    // Update popup content with only selected metric
+    const popupContent = document.getElementById("popup-content");
+    popupContent.innerHTML = `
+      <div>
+        <strong>Geobin:</strong> ${geobin}<br>
+        <strong>${metricLabels[selectedMetric]}:</strong> ${value || 'N/A'}${value ? ` ${metricUnits[selectedMetric]}` : ''}
+      </div>
+    `;
+  };
+
+  // Update the metric selection handler
+  const handleMetricChange = (metric) => {
+    setSelectedMetric(metric);
+    if (mapInstanceRef.current) {
+      const hexbinLayer = mapInstanceRef.current.getLayers().getArray()
+        .find(layer => layer.get('title') === 'Hexbins');
+      
+      if (hexbinLayer) {
+        // Update the style function
+        hexbinLayer.setStyle(createHexbinStyle);
+        // Force redraw
+        hexbinLayer.getSource().changed();
+        // Update popup if there's a clicked feature
+        if (clickedFeature && clickedCoordinate) {
+          updatePopup(clickedFeature, clickedCoordinate);
+        }
+      }
+    }
+  };
+
+  // Add effect to update popup when metric changes
+  useEffect(() => {
+    if (clickedFeature && clickedCoordinate) {
+      updatePopup(clickedFeature, clickedCoordinate);
+    }
+  }, [selectedMetric]);
+
   // Add more detailed error display
   if (error) {
     return (
@@ -648,6 +750,40 @@ function MapComponent() {
                     />
                   }
                   label="Hexbins"
+                />
+              </MenuItem>
+              <Divider />
+              <MenuItem>
+                <FormControlLabel
+                  control={
+                    <Radio
+                      checked={selectedMetric === 'user_count'}
+                      onChange={() => handleMetricChange('user_count')}
+                    />
+                  }
+                  label="User Count (Red)"
+                />
+              </MenuItem>
+              <MenuItem>
+                <FormControlLabel
+                  control={
+                    <Radio
+                      checked={selectedMetric === 'avg_dl_latency'}
+                      onChange={() => handleMetricChange('avg_dl_latency')}
+                    />
+                  }
+                  label="Avg Download Latency (Blue)"
+                />
+              </MenuItem>
+              <MenuItem>
+                <FormControlLabel
+                  control={
+                    <Radio
+                      checked={selectedMetric === 'total_dl_volume'}
+                      onChange={() => handleMetricChange('total_dl_volume')}
+                    />
+                  }
+                  label="Total Download Volume (Pink)"
                 />
               </MenuItem>
             </Menu>

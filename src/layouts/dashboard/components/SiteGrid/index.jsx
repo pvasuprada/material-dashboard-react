@@ -146,7 +146,7 @@ function SiteGrid() {
 
   return (
     <Card ref={gridRef}>
-      <MDBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
+      <MDBox display="flex" justifyContent="space-between" alignItems="center" pt={2} pl={2} pr={2}>
         <MDBox>
           <MDTypography variant="h6" gutterBottom>
             Site Grid

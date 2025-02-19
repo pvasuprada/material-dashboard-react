@@ -11,9 +11,8 @@ const initialState = {
     ymax: 48.992177,
   },
   averages: [
-    // { geobin: "8928c204a5bffff", user_count: 1 },
-    // { geobin: "8928c2059cfffff", user_count: 2 },
-    // { geobin: "8928c241ad7ffff", user_count: 3 },
+    // { geobin: "8928c204a5bffff", user_count: 1, avg_dl_latency: 3, total_dl_volume: 2 },
+    // { geobin: "8928c2059cfffff", user_count: 2, avg_dl_latency: 4, total_dl_volume: 1 },
   ],
   loading: false,
   error: null,
