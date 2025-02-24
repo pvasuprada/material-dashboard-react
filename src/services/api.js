@@ -57,17 +57,26 @@ export const api = {
     }
   },
 
-  // Sectors
-  getSectors: async () => {
+  // GNODEBs
+  getGnodebs: async () => {
     try {
-      // For development with mock data
-      const mockSectors = ["115", "116", "117", "118"];
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return { data: mockSectors };
+      const response = await apiClient.get("/gnodebs");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching gnodebs:", error);
+      throw error;
+    }
+  },
 
-      // TODO: Replace with actual sectors endpoint when available
-      // const response = await apiClient.get('/sites');
-      // return response.data;
+  // Sectors
+  getSectors: async (params) => {
+    try {
+      const response = await apiClient.post("/sectors", {
+        nwfid: params.nwfid,
+        du: params.du,
+        trafficType: params.trafficType || ["FWA"]
+      });
+      return response.data;
     } catch (error) {
       console.error("Error fetching sectors:", error);
       throw error;

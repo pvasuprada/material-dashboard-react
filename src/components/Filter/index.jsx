@@ -11,7 +11,8 @@ import Tooltip from "@mui/material/Tooltip";
 import Icon from "@mui/material/Icon";
 import Divider from "@mui/material/Divider";
 import {
-  fetchFilterOptions,
+  fetchInitialOptions,
+  fetchSectors,
   fetchFilteredData,
   updateSelectedFilters,
   resetFilters,
@@ -25,7 +26,9 @@ function Filter() {
   const { data, selectedFilters, loading, error } = useSelector((state) => state.filter);
 
   const [market, setMarket] = useState(selectedFilters.market);
+  const [gnodeb, setGnodeb] = useState(selectedFilters.gnodeb);
   const [sector, setSector] = useState(selectedFilters.sector);
+  const [trafficType, setTrafficType] = useState(selectedFilters.trafficType);
   const [startDate, setStartDate] = useState(
     dayjs(selectedFilters.dateRange.startDate || new Date().setMonth(new Date().getMonth() - 1))
   );
@@ -33,23 +36,33 @@ function Filter() {
   const [isFiltersChanged, setIsFiltersChanged] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchFilterOptions());
+    dispatch(fetchInitialOptions());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (gnodeb) {
+      dispatch(fetchSectors(gnodeb));
+    }
+  }, [dispatch, gnodeb]);
 
   useEffect(() => {
     const hasChanged =
       market !== selectedFilters.market ||
+      gnodeb?.value !== selectedFilters.gnodeb?.value ||
       sector !== selectedFilters.sector ||
+      trafficType !== selectedFilters.trafficType ||
       !startDate.isSame(dayjs(selectedFilters.dateRange.startDate)) ||
       !endDate.isSame(dayjs(selectedFilters.dateRange.endDate));
 
     setIsFiltersChanged(hasChanged);
-  }, [market, sector, startDate, endDate, selectedFilters]);
+  }, [market, gnodeb, sector, trafficType, startDate, endDate, selectedFilters]);
 
   const handleReset = () => {
     dispatch(resetFilters());
-    setMarket("all");
-    setSector("all");
+    setMarket(null);
+    setGnodeb(null);
+    setSector(null);
+    setTrafficType("FWA");
     setStartDate(dayjs(new Date().setMonth(new Date().getMonth() - 1)));
     setEndDate(dayjs(new Date()));
   };
@@ -57,7 +70,9 @@ function Filter() {
   const handleApply = async () => {
     const newFilters = {
       market,
+      gnodeb,
       sector,
+      trafficType,
       dateRange: {
         startDate,
         endDate,
@@ -100,11 +115,6 @@ function Filter() {
         >
           <Icon fontSize="small">filter_list</Icon>
           FILTERS
-          {/* {isFiltersChanged && (
-            <Icon fontSize="small" color="warning" sx={{ ml: "auto" }}>
-              pending
-            </Icon>
-          )} */}
         </MDTypography>
       </MDBox>
 
@@ -120,7 +130,25 @@ function Filter() {
             value={market}
             onChange={(event, newValue) => setMarket(newValue)}
             options={data.markets || []}
+            getOptionLabel={(option) => option?.text || ""}
+            isOptionEqualToValue={(option, value) => option?.value === value?.value}
             label="Market"
+            color={darkMode ? "white" : "dark"}
+            loading={loading}
+          />
+        </MDBox>
+        <MDBox mb={1.5}>
+          <MDAutocomplete
+            size="small"
+            value={gnodeb}
+            onChange={(event, newValue) => {
+              setGnodeb(newValue);
+              setSector(null);
+            }}
+            options={data.gnodebs || []}
+            getOptionLabel={(option) => option?.label || ""}
+            isOptionEqualToValue={(option, value) => option?.value === value?.value}
+            label="GNODEB"
             color={darkMode ? "white" : "dark"}
             loading={loading}
           />
@@ -131,7 +159,21 @@ function Filter() {
             value={sector}
             onChange={(event, newValue) => setSector(newValue)}
             options={data.sectors || []}
+            getOptionLabel={(option) => option?.label || ""}
+            isOptionEqualToValue={(option, value) => option?.value === value?.value}
             label="Sector"
+            color={darkMode ? "white" : "dark"}
+            loading={loading}
+            disabled={!gnodeb}
+          />
+        </MDBox>
+        <MDBox mb={1.5}>
+          <MDAutocomplete
+            size="small"
+            value={trafficType}
+            onChange={(event, newValue) => setTrafficType(newValue)}
+            options={data.trafficTypes || []}
+            label="Traffic Type"
             color={darkMode ? "white" : "dark"}
             loading={loading}
           />
