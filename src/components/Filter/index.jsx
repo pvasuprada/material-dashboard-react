@@ -148,6 +148,17 @@ function Filter() {
             options={data.gnodebs || []}
             getOptionLabel={(option) => option?.label || ""}
             isOptionEqualToValue={(option, value) => option?.value === value?.value}
+            filterOptions={(options, { inputValue }) => {
+              if (inputValue.length < 3) return [];
+              return options.filter(
+                option => option.label.toLowerCase().includes(inputValue.toLowerCase())
+              );
+            }}
+            noOptionsText={inputValue => 
+              inputValue.length < 3 
+                ? "Type at least 3 characters to search" 
+                : "No options found"
+            }
             label="GNODEB"
             color={darkMode ? "white" : "dark"}
             loading={loading}
