@@ -14,6 +14,7 @@ Coded by www.creative-tim.com
 */
 
 import { useState, useEffect, useMemo } from "react";
+import PropTypes from "prop-types";
 
 // react-router components
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
@@ -49,8 +50,9 @@ import routes from "routes";
 
 // Material Dashboard 2 React contexts
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
-import { InsightsProvider } from "context/insightsContext";
+import { InsightsProvider, useInsights } from "context/insightsContext";
 import { SidenavProvider, useSidenav } from "context/SidenavContext";
+import { ChartOrderProvider } from "context/chartOrderContext";
 
 // Images
 import brandWhite from "assets/images/logo-ct.png";
@@ -73,6 +75,7 @@ function AppContent() {
     controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const { showSidenav, sidenavContent, activeButton } = useSidenav();
+  const { chartsData } = useInsights();
 
   const handleOnMouseEnter = () => {
     if (miniSidenav && !onMouseEnter) {
@@ -194,12 +197,29 @@ function App() {
   return (
     <CacheProvider value={cache}>
       <InsightsProvider>
-        <SidenavProvider>
-          <AppContent />
-        </SidenavProvider>
+        <ChartOrderProviderWrapper>
+          <SidenavProvider>
+            <AppContent />
+          </SidenavProvider>
+        </ChartOrderProviderWrapper>
       </InsightsProvider>
     </CacheProvider>
   );
 }
+
+// Wrapper component to use the insights context
+function ChartOrderProviderWrapper({ children }) {
+  const { chartsData } = useInsights();
+  
+  return (
+    <ChartOrderProvider initialCharts={chartsData}>
+      {children}
+    </ChartOrderProvider>
+  );
+}
+
+ChartOrderProviderWrapper.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export default App;

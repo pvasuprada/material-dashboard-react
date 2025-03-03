@@ -46,6 +46,8 @@ import NetworkGenie from "layouts/dashboard/components/NetworkGenie";
 import SiteGrid from "layouts/dashboard/components/SiteGrid";
 import { useSidenav } from "context/SidenavContext";
 import zIndex from "@mui/material/styles/zIndex";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { useChartOrder } from "context/chartOrderContext";
 
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
@@ -58,6 +60,7 @@ function Dashboard({ children }) {
   const { showSidenav, sidenavContent, activeButton, openSidenav } = useSidenav();
   const { loading: filterLoading } = useSelector((state) => state.filter);
   const selectedFilters = useSelector((state) => state.filter.selectedFilters);
+  const { chartOrder, updateChartOrder } = useChartOrder();
   const [viewMode, setViewMode] = useState("carousel"); // 'grid' or 'carousel' or 'row'
   const [activeSlide, setActiveSlide] = useState(0);
 
@@ -225,21 +228,29 @@ function Dashboard({ children }) {
     );
   };
 
-  const renderChart = (chart) => {
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const newOrder = Array.from(chartOrder);
+    const [reorderedItem] = newOrder.splice(result.source.index, 1);
+    newOrder.splice(result.destination.index, 0, reorderedItem);
+
+    updateChartOrder(newOrder);
+  };
+
+  const renderChartContent = (chart) => {
     if (filterLoading) {
       return (
-        <Grid item xs={12} md={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} lg={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} key={chart.id}>
-          <Skeleton
-            variant="rectangular"
-            height={200}
-            width="100%"
-            animation="wave"
-            sx={{
-              borderRadius: 2,
-              backgroundColor: "#eee",
-            }}
-          />
-        </Grid>
+        <Skeleton
+          variant="rectangular"
+          height={200}
+          width="100%"
+          animation="wave"
+          sx={{
+            borderRadius: 2,
+            backgroundColor: "#eee",
+          }}
+        />
       );
     }
     if (!chart.visible || loading) return null;
@@ -264,21 +275,99 @@ function Dashboard({ children }) {
     }
 
     return (
-      <Grid item xs={12} md={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} lg={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} key={chart.title}>
-        <MDBox mb={3}>
-          <ChartComponent
-            color={chart.color}
-            title={chart.title}
-            description={chart.data.description}
-            date={chart.data.date}
-            chart={{
-              labels: chart.data.labels,
-              datasets: chart.data.datasets,
-            }}
-            showLabels={chart.showLabels}
-          />
-        </MDBox>
-      </Grid>
+      <ChartComponent
+        color={chart.color}
+        title={chart.title}
+        description={chart.data.description}
+        date={chart.data.date}
+        chart={{
+          labels: chart.data.labels,
+          datasets: chart.data.datasets,
+        }}
+        showLabels={chart.showLabels}
+      />
+    );
+  };
+
+  const renderDraggableCharts = () => {
+    if (!hasVisibleCharts) return null;
+
+    if (viewMode === "carousel") {
+      return (
+        <Carousel
+          responsive={responsive}
+          infinite={true}
+          autoPlay={true}
+          autoPlaySpeed={5000}
+          keyBoardControl={true}
+          customTransition="transform 300ms ease-in-out"
+          transitionDuration={300}
+          containerClass="custom-carousel-container"
+          removeArrowOnDeviceType={["tablet", "mobile"]}
+          deviceType="desktop"
+          dotListClass="custom-dot-list-style"
+          itemClass="carousel-item-padding-40-px"
+          selectedSlideIndex={activeSlide}
+          afterChange={(previousSlide, { currentSlide }) => {
+            setActiveSlide(currentSlide);
+          }}
+        >
+          {visibleCharts.map((chart, index) => (
+            <MDBox key={index} px={1}>
+              {renderChartContent(chart)}
+            </MDBox>
+          ))}
+        </Carousel>
+      );
+    }
+
+    return (
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="charts" direction={viewMode === "row" ? "vertical" : "horizontal"}>
+          {(provided) => (
+            <Grid
+              container
+              spacing={2}
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+              sx={{
+                display: "flex",
+                flexWrap: viewMode === "row" ? "nowrap" : "wrap",
+                flexDirection: viewMode === "row" ? "column" : "row",
+              }}
+            >
+              {chartOrder
+                .map((index) => visibleCharts[index])
+                .filter(Boolean)
+                .map((chart, index) => (
+                  <Draggable key={chart.title} draggableId={chart.title} index={index}>
+                    {(provided, snapshot) => (
+                      <Grid
+                        item
+                        xs={12}
+                        md={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)}
+                        lg={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)}
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        sx={{
+                          transition: "transform 0.2s",
+                          transform: snapshot.isDragging ? "scale(1.02)" : "scale(1)",
+                          zIndex: snapshot.isDragging ? 1 : "auto",
+                        }}
+                      >
+                        <MDBox mb={3}>
+                          {renderChartContent(chart)}
+                        </MDBox>
+                      </Grid>
+                    )}
+                  </Draggable>
+                ))}
+              {provided.placeholder}
+            </Grid>
+          )}
+        </Droppable>
+      </DragDropContext>
     );
   };
 
@@ -363,44 +452,7 @@ function Dashboard({ children }) {
           {renderStatistics()}
         </Grid>
         <MDBox mt={6}>
-          {hasVisibleCharts ? (
-            viewMode === "carousel" ? (
-              <MDBox>
-                <Carousel
-                  responsive={responsive}
-                  infinite={true}
-                  autoPlay={true}
-                  autoPlaySpeed={5000}
-                  keyBoardControl={true}
-                  customTransition="transform 300ms ease-in-out"
-                  transitionDuration={300}
-                  containerClass="custom-carousel-container"
-                  removeArrowOnDeviceType={["tablet", "mobile"]}
-                  deviceType="desktop"
-                  dotListClass="custom-dot-list-style"
-                  itemClass="carousel-item-padding-40-px"
-                  selectedSlideIndex={activeSlide}
-                  afterChange={(previousSlide, { currentSlide }) => {
-                    setActiveSlide(currentSlide);
-                  }}
-                >
-                  {visibleCharts.map((chart, index) => (
-                    <MDBox key={index} px={1}>
-                      {renderChart(chart)}
-                    </MDBox>
-                  ))}
-                </Carousel>
-              </MDBox>
-            ) : (
-              <Grid container spacing={2}>
-                {visibleCharts.map(renderChart)}
-              </Grid>
-            )
-          ) : (
-            <Grid container spacing={2}>
-              {chartsData.map(renderChart)}
-            </Grid>
-          )}
+          {renderDraggableCharts()}
         </MDBox>
         {/* <Insights /> */}
       </MDBox>
