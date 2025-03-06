@@ -116,7 +116,7 @@ export const api = {
 
   getChartData: async (params) => {
     try {
-      const response = await apiClient.post("/dynamic-query-executor/sector-360/time-series", {
+      const response = await apiClient.post("/time-series", {
         request_id: params?.request_id || 131,
         market_id: params?.market_id || "131",
         fuze_site_id: params?.fuze_site_id || "2214712",
