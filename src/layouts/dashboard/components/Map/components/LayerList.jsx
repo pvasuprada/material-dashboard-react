@@ -1,8 +1,40 @@
-import { Menu, MenuItem, Checkbox, Radio, FormControlLabel, Divider, Typography } from "@mui/material";
+import { Menu, MenuItem, Checkbox, Radio, FormControlLabel, Divider, Typography, IconButton } from "@mui/material";
+import Icon from "@mui/material/Icon";
 import { useMap } from "../context/MapContext";
 
 const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange }) => {
-  const { layerVisibility, selectedMetric } = useMap();
+  const { layerVisibility, selectedMetric, mapInstance, overlayLayers } = useMap();
+
+  const handleZoomToLayer = (layerId) => {
+    if (!mapInstance || !overlayLayers[layerId]) return;
+    
+    const layer = overlayLayers[layerId];
+    const source = layer.getSource();
+    
+    if (!source) return;
+
+    // For vector layers
+    if (source.getFeatures) {
+      const features = source.getFeatures();
+      if (features.length > 0) {
+        const extent = source.getExtent();
+        mapInstance.getView().fit(extent, {
+          padding: [50, 50, 50, 50],
+          duration: 1000
+        });
+      }
+    }
+    // For WMS layers
+    else if (source.getImageExtent) {
+      const extent = source.getImageExtent();
+      if (extent) {
+        mapInstance.getView().fit(extent, {
+          padding: [50, 50, 50, 50],
+          duration: 1000
+        });
+      }
+    }
+  };
 
   const layerGroups = [
     {
@@ -60,7 +92,7 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
           ) : (
             // Render checkboxes for layers
             group.layers.map((layer) => (
-              <MenuItem key={layer.id}>
+              <MenuItem key={layer.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -70,6 +102,16 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
                   }
                   label={layer.label}
                 />
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleZoomToLayer(layer.id);
+                  }}
+                  style={{ marginLeft: 8 }}
+                >
+                  <Icon>zoom_in</Icon>
+                </IconButton>
               </MenuItem>
             ))
           )}
