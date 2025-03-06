@@ -1,9 +1,12 @@
 import { Menu, MenuItem, Checkbox, Radio, FormControlLabel, Divider, Typography, IconButton } from "@mui/material";
 import Icon from "@mui/material/Icon";
 import { useMap } from "../context/MapContext";
+import { useState } from "react";
+import Legend from "./Legend";
 
 const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange }) => {
   const { layerVisibility, selectedMetric, mapInstance, overlayLayers } = useMap();
+  const [expandedLegends, setExpandedLegends] = useState({});
 
   const handleZoomToLayer = (layerId) => {
     if (!mapInstance || !overlayLayers[layerId]) return;
@@ -34,6 +37,13 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
         });
       }
     }
+  };
+
+  const toggleLegend = (layerId) => {
+    setExpandedLegends(prev => ({
+      ...prev,
+      [layerId]: !prev[layerId]
+    }));
   };
 
   const layerGroups = [
@@ -92,27 +102,47 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
           ) : (
             // Render checkboxes for layers
             group.layers.map((layer) => (
-              <MenuItem key={layer.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={layerVisibility[layer.id]}
-                      onChange={() => onLayerToggle(layer.id)}
-                    />
-                  }
-                  label={layer.label}
+              <div key={layer.id}>
+                <MenuItem style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={layerVisibility[layer.id]}
+                        onChange={() => onLayerToggle(layer.id)}
+                      />
+                    }
+                    label={layer.label}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleLegend(layer.id);
+                      }}
+                      style={{ marginLeft: 8 }}
+                    >
+                      <Icon>
+                        {expandedLegends[layer.id] ? 'expand_less' : 'expand_more'}
+                      </Icon>
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleZoomToLayer(layer.id);
+                      }}
+                      style={{ marginLeft: 8 }}
+                    >
+                      <Icon>zoom_in</Icon>
+                    </IconButton>
+                  </div>
+                </MenuItem>
+                <Legend 
+                  layer={layer}
+                  expanded={expandedLegends[layer.id]}
                 />
-                <IconButton
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleZoomToLayer(layer.id);
-                  }}
-                  style={{ marginLeft: 8 }}
-                >
-                  <Icon>zoom_in</Icon>
-                </IconButton>
-              </MenuItem>
+              </div>
             ))
           )}
         </div>
