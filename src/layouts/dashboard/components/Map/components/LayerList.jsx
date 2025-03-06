@@ -52,14 +52,12 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
       layers: [
         { id: "geoserver", label: "GeoServer Layer" },
         { id: "hurricanes", label: "Hurricanes" },
-        { id: "hexbins", label: "Hexbins" },
-        { id: "coverage_capacity", label: "Coverage Capacity (Brown)" },
       ],
     },
     {
-      title: "Metrics",
-      type: "radio",
-      options: [
+      title: "Data Layers",
+      layers: [
+        { id: "coverage_capacity", label: "Coverage Capacity (Brown)" },
         { id: "user_count", label: "User Count (Red)" },
         { id: "avg_dl_latency", label: "Avg Download Latency (Blue)" },
         { id: "total_dl_volume", label: "Total Download Volume (Pink)" },

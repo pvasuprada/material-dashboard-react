@@ -29,11 +29,23 @@ const Legend = ({ layer, expanded }) => {
           { color: "rgba(139, 69, 19, 0.5)", label: "Medium Signal (RSRP 20-50)" },
           { color: "rgba(139, 69, 19, 0.8)", label: "High Signal (RSRP > 50)" },
         ];
-      case "hexbins":
+      case "user_count":
         return [
-          { color: "rgba(255, 0, 0, 0.2)", label: "Low Density" },
-          { color: "rgba(255, 0, 0, 0.5)", label: "Medium Density" },
-          { color: "rgba(255, 0, 0, 0.8)", label: "High Density" },
+          { color: "rgba(255, 0, 0, 0.2)", label: "Low (< 10 users)" },
+          { color: "rgba(255, 0, 0, 0.5)", label: "Medium (10-50 users)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "High (> 50 users)" },
+        ];
+      case "avg_dl_latency":
+        return [
+          { color: "rgba(0, 0, 255, 0.2)", label: "Good (< 50ms)" },
+          { color: "rgba(0, 0, 255, 0.5)", label: "Medium (50-100ms)" },
+          { color: "rgba(0, 0, 255, 0.8)", label: "Poor (> 100ms)" },
+        ];
+      case "total_dl_volume":
+        return [
+          { color: "rgba(255, 192, 203, 0.2)", label: "Low (< 1GB)" },
+          { color: "rgba(255, 192, 203, 0.5)", label: "Medium (1-5GB)" },
+          { color: "rgba(255, 192, 203, 0.8)", label: "High (> 5GB)" },
         ];
       case "hurricanes":
         return [

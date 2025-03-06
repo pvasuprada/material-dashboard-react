@@ -68,6 +68,23 @@ export const createWMSLayer = ({
   });
 };
 
+const createVectorLayer = (title, color, opacity = 0.5) => {
+  return new VectorLayer({
+    source: new VectorSource(),
+    title: title,
+    visible: true,
+    style: (feature) => new Style({
+      fill: new Fill({
+        color: `rgba(${color.join(',')}, ${opacity})`,
+      }),
+      stroke: new Stroke({
+        color: `rgba(${color.join(',')}, 1)`,
+        width: 1,
+      }),
+    }),
+  });
+};
+
 // Example layer configurations
 export const defaultLayers = {
   geoserver: createWMSLayer({
@@ -97,6 +114,9 @@ export const defaultLayers = {
       }),
     }),
   }),
+  user_count: createVectorLayer('User Count', [255, 0, 0]),
+  avg_dl_latency: createVectorLayer('Avg Download Latency', [0, 0, 255]),
+  total_dl_volume: createVectorLayer('Total Download Volume', [255, 192, 203]),
 };
 
 // Layer groups for the layer list
@@ -110,11 +130,12 @@ export const layerGroups = [
     ],
   },
   {
-    title: "Metrics",
-    type: "radio",
-    options: Object.entries(metricConfigs).map(([id, config]) => ({
-      id,
-      label: `${config.label} (${config.color.join(", ")})`,
-    })),
+    title: "Data Layers",
+    layers: [
+      { id: "coverage_capacity", label: "Coverage Capacity (Brown)" },
+      { id: "user_count", label: "User Count (Red)" },
+      { id: "avg_dl_latency", label: "Avg Download Latency (Blue)" },
+      { id: "total_dl_volume", label: "Total Download Volume (Pink)" },
+    ],
   },
 ]; 
