@@ -11,6 +11,7 @@ export const MapProvider = ({ children }) => {
     hurricanes: true,
     geoserver: false,
     hexbins: true,
+    coverage_capacity: true,
   });
   const [selectedMetric, setSelectedMetric] = useState("user_count");
 

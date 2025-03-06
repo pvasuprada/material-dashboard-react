@@ -83,6 +83,20 @@ export const defaultLayers = {
     visible: true,
   }),
   hexbins: createHexbinLayer(),
+  coverage_capacity: new VectorLayer({
+    source: new VectorSource(),
+    title: 'Coverage Capacity',
+    visible: true,
+    style: (feature) => new Style({
+      fill: new Fill({
+        color: `rgba(139, 69, 19, ${Math.min(0.8, 0.2 + (feature.get('bn77_rsrp') / 100))})`,
+      }),
+      stroke: new Stroke({
+        color: 'rgba(139, 69, 19, 1)',
+        width: 1,
+      }),
+    }),
+  }),
 };
 
 // Layer groups for the layer list

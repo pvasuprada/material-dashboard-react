@@ -341,17 +341,17 @@ function MapContent() {
   const updateCoverageCapacity = async (coverageData) => {
     try {
       if (coverageData?.data && Array.isArray(coverageData.data) && mapInstance) {
-        console.log("Updating coverage capacity layer");
+        console.log("Updating coverage capacity layer with data:", coverageData.data);
 
-        const features = coverageData.data.map(({ h3_10_index, bn77_rsrp, bn5_rsrp }) => {
-          const hexBoundary = h3.cellToBoundary(h3_10_index);
+        const features = coverageData.data.map(({ h3_text_string, bn77_rsrp, bn5_rsrp }) => {
+          const hexBoundary = h3.cellToBoundary(h3_text_string);
           const coordinates = [hexBoundary.map(([lat, lng]) => fromLonLat([lng, lat]))];
           const feature = new Feature({
             geometry: new Polygon(coordinates),
           });
 
           // Set coverage metrics on the feature
-          feature.set("h3_index", h3_10_index);
+          feature.set("h3_index", h3_text_string);
           feature.set("bn77_rsrp", bn77_rsrp);
           feature.set("bn5_rsrp", bn5_rsrp);
           return feature;
@@ -367,14 +367,14 @@ function MapContent() {
             title: 'Coverage Capacity',
             style: (feature) => new Style({
               fill: new Fill({
-                color: `rgba(139, 69, 19, ${Math.min(0.8, 0.2 + (feature.get('bn77_rsrp') / 100))})`, // Brown color with opacity based on RSRP
+                color: `rgba(139, 69, 19, ${Math.min(0.8, 0.2 + (feature.get('bn77_rsrp') / 100))})`,
               }),
               stroke: new Stroke({
                 color: 'rgba(139, 69, 19, 1)',
                 width: 1,
               }),
             }),
-            visible: layerVisibility['coverage_capacity'] || false,
+            visible: true,
           });
           mapInstance.addLayer(coverageLayer);
         }
@@ -382,6 +382,11 @@ function MapContent() {
         const source = coverageLayer.getSource();
         source.clear();
         source.addFeatures(features);
+        
+        // Ensure the layer is visible
+        coverageLayer.setVisible(true);
+        
+        // Force redraw
         source.changed();
         
         console.log("Coverage capacity layer updated with", features.length, "features");
@@ -404,6 +409,27 @@ function MapContent() {
         }
       };
       fetchCoverageData();
+    }
+  }, [mapInstance]);
+
+  // Add effect to test coverage capacity with sample data
+  useEffect(() => {
+    if (mapInstance) {
+      const testData = {
+        data: [
+          {
+            bn77_rsrp: 8,
+            bn5_rsrp: 28,
+            h3_text_string: "8a2a10728537fff"
+          },
+          {
+            bn77_rsrp: 18,
+            bn5_rsrp: 38,
+            h3_text_string: "8a2a1072e26ffff"
+          }
+        ]
+      };
+      updateCoverageCapacity(testData);
     }
   }, [mapInstance]);
 
@@ -666,7 +692,7 @@ function MapContent() {
   if (error) {
     return (
       <Card>
-        <MDBox p={2}>
+        <MDBox p={0.5}>
           <MDAlert color="error" dismissible>
             <MDTypography variant="body2" color="white">
               Failed to load map data: {error}
