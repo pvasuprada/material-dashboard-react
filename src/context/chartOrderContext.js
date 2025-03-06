@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 const ChartOrderContext = createContext(null);
@@ -6,12 +6,50 @@ const ChartOrderContext = createContext(null);
 export function ChartOrderProvider({ children, initialCharts }) {
   const [chartOrder, setChartOrder] = useState(() => {
     const savedOrder = localStorage.getItem("chartOrder");
-    return savedOrder ? JSON.parse(savedOrder) : initialCharts.map((_, index) => index);
+    // If we have a saved order and it's a valid array with the right length
+    if (savedOrder) {
+      try {
+        const parsed = JSON.parse(savedOrder);
+        // Validate the saved order
+        if (Array.isArray(parsed) && parsed.every(index => index >= 0 && index < initialCharts.length)) {
+          return parsed;
+        }
+      } catch (e) {
+        console.warn("Invalid chart order in localStorage");
+      }
+    }
+    // If no valid saved order, create default order
+    return initialCharts.map((_, index) => index);
   });
 
+  // Update stored order whenever charts change
+  useEffect(() => {
+    const savedOrder = localStorage.getItem("chartOrder");
+    if (savedOrder) {
+      try {
+        const parsed = JSON.parse(savedOrder);
+        // If the saved order length doesn't match current charts, reset it
+        if (!Array.isArray(parsed) || parsed.length !== initialCharts.length) {
+          const newOrder = initialCharts.map((_, index) => index);
+          setChartOrder(newOrder);
+          localStorage.setItem("chartOrder", JSON.stringify(newOrder));
+        }
+      } catch (e) {
+        console.warn("Invalid chart order in localStorage");
+      }
+    }
+  }, [initialCharts]);
+
   const updateChartOrder = (newOrder) => {
-    setChartOrder(newOrder);
-    localStorage.setItem("chartOrder", JSON.stringify(newOrder));
+    // Validate the new order before updating
+    if (Array.isArray(newOrder) && 
+        newOrder.length === initialCharts.length && 
+        newOrder.every(index => index >= 0 && index < initialCharts.length)) {
+      setChartOrder(newOrder);
+      localStorage.setItem("chartOrder", JSON.stringify(newOrder));
+    } else {
+      console.warn("Invalid chart order provided");
+    }
   };
 
   return (

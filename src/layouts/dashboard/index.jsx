@@ -96,13 +96,17 @@ function Dashboard({ children }) {
     let interval;
     if (viewMode === "carousel") {
       interval = setInterval(() => {
+        const orderedVisibleCharts = chartOrder
+          .map(index => chartsData[index])
+          .filter(chart => chart && chart.visible);
+        
         setActiveSlide((prev) =>
-          prev === chartsData.length - (miniSidenav ? 4 : 3) ? 0 : prev + 1
+          prev === orderedVisibleCharts.length - (miniSidenav ? 4 : 3) ? 0 : prev + 1
         );
       }, 5000);
     }
     return () => clearInterval(interval);
-  }, [viewMode, chartsData.length, miniSidenav]);
+  }, [viewMode, chartsData, chartOrder, miniSidenav]);
 
   //const chartsConfig = getChartsConfig(chartData, xData);
 
@@ -238,6 +242,43 @@ function Dashboard({ children }) {
     updateChartOrder(newOrder);
   };
 
+  const renderChartSkeletons = () => {
+    const skeletonCount = viewMode === "row" ? 3 : (miniSidenav ? 4 : 3);
+    return Array(skeletonCount).fill(0).map((_, index) => (
+      <Grid 
+        item 
+        xs={12} 
+        md={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} 
+        lg={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} 
+        key={index}
+      >
+        <MDBox mb={3}>
+          <Card>
+            <MDBox p={2}>
+              <MDBox mb={1}>
+                <Skeleton 
+                  variant="text" 
+                  width={150} 
+                  sx={{ 
+                    backgroundColor: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+                  }}
+                />
+              </MDBox>
+              <Skeleton 
+                variant="rectangular" 
+                height={200}
+                sx={{ 
+                  borderRadius: 2,
+                  backgroundColor: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+                }}
+              />
+            </MDBox>
+          </Card>
+        </MDBox>
+      </Grid>
+    ));
+  };
+
   const renderChartContent = (chart) => {
     if (filterLoading) {
       return (
@@ -290,9 +331,21 @@ function Dashboard({ children }) {
   };
 
   const renderDraggableCharts = () => {
-    if (!hasVisibleCharts) return null;
+    if (!hasVisibleCharts && !loading && !filterLoading) return null;
+
+    if (loading || filterLoading) {
+      return (
+        <Grid container spacing={2}>
+          {renderChartSkeletons()}
+        </Grid>
+      );
+    }
 
     if (viewMode === "carousel") {
+      const orderedVisibleCharts = chartOrder
+        .map(index => chartsData[index])
+        .filter(chart => chart && chart.visible);
+
       return (
         <Carousel
           responsive={responsive}
@@ -312,8 +365,8 @@ function Dashboard({ children }) {
             setActiveSlide(currentSlide);
           }}
         >
-          {visibleCharts.map((chart, index) => (
-            <MDBox key={index} px={1}>
+          {orderedVisibleCharts.map((chart, index) => (
+            <MDBox key={chart.title} px={1}>
               {renderChartContent(chart)}
             </MDBox>
           ))}
