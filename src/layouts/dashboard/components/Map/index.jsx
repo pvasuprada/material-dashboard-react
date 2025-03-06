@@ -59,6 +59,11 @@ import { useTheme } from "@mui/material/styles";
 import { useMaterialUIController } from "context";
 import { Divider } from "@mui/material";
 import { Radio } from "@mui/material";
+import { MapControls } from "./components";
+import { createBasemaps } from "./config/basemaps";
+import { defaultLayers, createHexbinStyle } from "./config/layers";
+import { MapProvider, useMap } from "./context/MapContext";
+import { MAPBOX_API_KEY } from "./config/keys";
 
 // Custom styles for the controls
 const controlStyle = {
@@ -85,65 +90,23 @@ const controlsContainerStyle = {
   gap: "5px",
 };
 
-const basemaps = {
-  osm: new TileLayer({
-    source: new OSM(),
-    title: "OSM",
-  }),
-  streets: new TileLayer({
-    source: new XYZ({
-      url: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoicHZhc3VwcmFkYSIsImEiOiJjamllZXV4M2cwNXZ3M3ZwMXM4NzBxM2xjIn0.DhJvytW8s6yVVOFVL-Xuqg`,
-      tileSize: 512,
-      maxZoom: 22,
-    }),
-    title: "Streets",
-  }),
-  dark: new TileLayer({
-    source: new XYZ({
-      url: `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoicHZhc3VwcmFkYSIsImEiOiJjamllZXV4M2cwNXZ3M3ZwMXM4NzBxM2xjIn0.DhJvytW8s6yVVOFVL-Xuqg`,
-      tileSize: 512,
-      maxZoom: 22,
-    }),
-    title: "Dark",
-  }),
-  light: new TileLayer({
-    source: new XYZ({
-      url: `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoicHZhc3VwcmFkYSIsImEiOiJjamllZXV4M2cwNXZ3M3ZwMXM4NzBxM2xjIn0.DhJvytW8s6yVVOFVL-Xuqg`,
-      tileSize: 512,
-      maxZoom: 22,
-    }),
-    title: "Light",
-  }),
-  satellite: new TileLayer({
-    source: new XYZ({
-      url: `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoicHZhc3VwcmFkYSIsImEiOiJjamllZXV4M2cwNXZ3M3ZwMXM4NzBxM2xjIn0.DhJvytW8s6yVVOFVL-Xuqg`,
-      tileSize: 512,
-      maxZoom: 22,
-    }),
-    title: "Satellite",
-  }),
-  outdoors: new TileLayer({
-    source: new XYZ({
-      url: `https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoicHZhc3VwcmFkYSIsImEiOiJjamllZXV4M2cwNXZ3M3ZwMXM4NzBxM2xjIn0.DhJvytW8s6yVVOFVL-Xuqg`,
-      tileSize: 512,
-      maxZoom: 22,
-    }),
-    title: "Outdoors",
-  }),
-};
-
-function MapComponent() {
+function MapContent() {
   const mapRef = useRef(null);
-  const mapInstanceRef = useRef(null);
-  const [basemapAnchorEl, setBasemapAnchorEl] = useState(null);
-  const [layersAnchorEl, setLayersAnchorEl] = useState(null);
-  const [currentBasemap, setCurrentBasemap] = useState("light");
-  const [layerVisibility, setLayerVisibility] = useState({
-    hurricanes: true,
-    geoserver: false,
-    hexbins: true,
-  });
-  const [selectedMetric, setSelectedMetric] = useState('user_count');
+  const {
+    mapInstance,
+    setMapInstance,
+    basemaps,
+    setBasemaps,
+    overlayLayers,
+    setOverlayLayers,
+    currentBasemap,
+    setCurrentBasemap,
+    layerVisibility,
+    setLayerVisibility,
+    selectedMetric,
+    setSelectedMetric,
+  } = useMap();
+
   const averages = useSelector(selectMapAverages);
   const extent = useSelector(selectMapExtent);
   const loading = useSelector(selectMapLoading);
@@ -154,13 +117,107 @@ function MapComponent() {
   const dispatch = useDispatch();
   const center = useSelector(selectMapCenter);
   const zoom = useSelector(selectMapZoom);
-  const [viewChangeTimeout, setViewChangeTimeout] = useState(null);
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const selectedLocation = useSelector(selectSelectedLocation);
   const selectedFeatureLayerRef = useRef(null);
   const [clickedFeature, setClickedFeature] = useState(null);
   const [clickedCoordinate, setClickedCoordinate] = useState(null);
+
+  // Initialize basemaps and layers
+  useEffect(() => {
+    if (mapRef.current && !mapInstance) {
+      console.log("Initializing map with dark mode:", darkMode);
+      
+      // Initialize basemaps and layers first
+      const initialBasemaps = createBasemaps();
+      const initialOverlayLayers = defaultLayers;
+      
+      // Set the initial basemap based on dark mode
+      const initialBasemap = darkMode ? "dark" : "light";
+      console.log("Setting initial basemap to:", initialBasemap);
+      
+      // Create initial layers array with the correct basemap
+      const initialLayers = [
+        initialBasemaps[initialBasemap],
+        ...Object.values(initialOverlayLayers)
+      ];
+
+      // Create the map with the initial layers
+      const map = new Map({
+        target: mapRef.current,
+        layers: initialLayers,
+        view: new View({
+          center: fromLonLat(center),
+          zoom: zoom,
+          maxZoom: 18,
+          minZoom: 2,
+        }),
+        controls: defaultControls({ zoom: false }),
+      });
+
+      // Set the state
+      setBasemaps(initialBasemaps);
+      setOverlayLayers(initialOverlayLayers);
+      setMapInstance(map);
+      setCurrentBasemap(initialBasemap);
+
+      // Set initial layer visibility
+      Object.entries(initialOverlayLayers).forEach(([key, layer]) => {
+        layer.setVisible(layerVisibility[key] || false);
+      });
+
+      // Initialize popup overlay
+      popupOverlayRef.current = new Overlay({
+        element: popupRef.current,
+        positioning: "bottom-center",
+        offset: [0, -10],
+        autoPan: true,
+        autoPanAnimation: {
+          duration: 250,
+        },
+      });
+
+      map.addOverlay(popupOverlayRef.current);
+
+      // Add click handler
+      map.on("click", (evt) => {
+        const feature = map.forEachFeatureAtPixel(
+          evt.pixel,
+          (feature) => feature
+        );
+
+        if (feature) {
+          const coordinates = evt.coordinate;
+          setClickedFeature(feature);
+          setClickedCoordinate(coordinates);
+          updatePopup(feature, coordinates);
+        } else {
+          setClickedFeature(null);
+          setClickedCoordinate(null);
+          popupRef.current.style.display = "none";
+          dispatch(clearSelectedLocation());
+        }
+      });
+
+      // Add pointer cursor for features
+      map.on("pointermove", (evt) => {
+        const pixel = map.getEventPixel(evt.originalEvent);
+        const hit = map.hasFeatureAtPixel(pixel);
+        map.getViewport().style.cursor = hit ? "pointer" : "";
+      });
+
+      // Initial update of hexbins
+      updateHexbins();
+    }
+
+    return () => {
+      if (mapInstance) {
+        mapInstance.setTarget(undefined);
+        setMapInstance(null);
+      }
+    };
+  }, [mapRef.current, darkMode, center, zoom]);
 
   const createCustomControl = (element) => {
     const customControl = new Control({
@@ -222,29 +279,9 @@ function MapComponent() {
     });
   };
 
-  const overlayLayers = {
-    hurricanes: new ImageLayer({
-      source: new ImageWMS({
-        url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Hurricanes/MapServer/0",
-        params: { LAYERS: "0" },
-      }),
-      title: "Hurricanes",
-      visible: true,
-    }),
-    geoserver: new ImageLayer({
-      source: new ImageWMS({
-        url: "https://ahocevar.com/geoserver/wms",
-        params: { LAYERS: "topp:states" },
-      }),
-      title: "GeoServer Layer",
-      visible: false,
-    }),
-    hexbins: createHexbinLayer(),
-  };
-
   const updateHexbins = async () => {
     try {
-      if (averages && Array.isArray(averages) && mapInstanceRef.current) {
+      if (averages && Array.isArray(averages) && mapInstance) {
         console.log("Updating hexbins with metric:", selectedMetric);
         console.log("Averages data:", averages);
 
@@ -264,7 +301,7 @@ function MapComponent() {
         });
 
         // Find the hexbin layer
-        const hexbinLayer = mapInstanceRef.current.getLayers().getArray()
+        const hexbinLayer = mapInstance.getLayers().getArray()
           .find(layer => layer.get('title') === 'Hexbins');
 
         if (hexbinLayer) {
@@ -290,7 +327,7 @@ function MapComponent() {
         if (extent) {
           const { xmin, ymin, xmax, ymax } = extent;
           const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
-          mapInstanceRef.current.getView().fit(transformedExtent, {
+          mapInstance.getView().fit(transformedExtent, {
             padding: [50, 50, 50, 50],
             duration: 1000,
           });
@@ -301,13 +338,82 @@ function MapComponent() {
     }
   };
 
+  const updateCoverageCapacity = async (coverageData) => {
+    try {
+      if (coverageData?.data && Array.isArray(coverageData.data) && mapInstance) {
+        console.log("Updating coverage capacity layer");
+
+        const features = coverageData.data.map(({ h3_10_index, bn77_rsrp, bn5_rsrp }) => {
+          const hexBoundary = h3.cellToBoundary(h3_10_index);
+          const coordinates = [hexBoundary.map(([lat, lng]) => fromLonLat([lng, lat]))];
+          const feature = new Feature({
+            geometry: new Polygon(coordinates),
+          });
+
+          // Set coverage metrics on the feature
+          feature.set("h3_index", h3_10_index);
+          feature.set("bn77_rsrp", bn77_rsrp);
+          feature.set("bn5_rsrp", bn5_rsrp);
+          return feature;
+        });
+
+        // Find or create the coverage capacity layer
+        let coverageLayer = mapInstance.getLayers().getArray()
+          .find(layer => layer.get('title') === 'Coverage Capacity');
+
+        if (!coverageLayer) {
+          coverageLayer = new VectorLayer({
+            source: new VectorSource(),
+            title: 'Coverage Capacity',
+            style: (feature) => new Style({
+              fill: new Fill({
+                color: `rgba(139, 69, 19, ${Math.min(0.8, 0.2 + (feature.get('bn77_rsrp') / 100))})`, // Brown color with opacity based on RSRP
+              }),
+              stroke: new Stroke({
+                color: 'rgba(139, 69, 19, 1)',
+                width: 1,
+              }),
+            }),
+            visible: layerVisibility['coverage_capacity'] || false,
+          });
+          mapInstance.addLayer(coverageLayer);
+        }
+
+        const source = coverageLayer.getSource();
+        source.clear();
+        source.addFeatures(features);
+        source.changed();
+        
+        console.log("Coverage capacity layer updated with", features.length, "features");
+      }
+    } catch (error) {
+      console.error("Error updating coverage capacity layer:", error);
+    }
+  };
+
+  // Add effect to update coverage capacity when data changes
+  useEffect(() => {
+    if (mapInstance) {
+      // Fetch coverage capacity data when map instance is ready
+      const fetchCoverageData = async () => {
+        try {
+          const coverageData = await api.getCoverageCapacityData();
+          updateCoverageCapacity(coverageData);
+        } catch (error) {
+          console.error("Error fetching coverage capacity data:", error);
+        }
+      };
+      fetchCoverageData();
+    }
+  }, [mapInstance]);
+
   // Add this function to handle selected location updates
   const updateSelectedLocation = () => {
-    if (!mapInstanceRef.current) return;
+    if (!mapInstance) return;
 
     // Remove existing selected feature layer if it exists
     if (selectedFeatureLayerRef.current) {
-      mapInstanceRef.current.removeLayer(selectedFeatureLayerRef.current);
+      mapInstance.removeLayer(selectedFeatureLayerRef.current);
       selectedFeatureLayerRef.current = null;
     }
 
@@ -342,174 +448,50 @@ function MapComponent() {
       });
 
       selectedFeatureLayerRef.current = vectorLayer;
-      mapInstanceRef.current.addLayer(vectorLayer);
+      mapInstance.addLayer(vectorLayer);
     }
   };
 
+  // Update effect for dark mode changes
   useEffect(() => {
-    if (mapRef.current && !mapInstanceRef.current) {
-      const layers = [basemaps[currentBasemap], ...Object.values(overlayLayers)];
-
-      // Create controls container
-      const controlsContainer = document.createElement("div");
-      Object.assign(controlsContainer.style, controlsContainerStyle);
-
-      // Create zoom in control
-      const zoomInButton = document.createElement("button");
-      zoomInButton.innerHTML = '<i class="material-icons">add</i>';
-      Object.assign(zoomInButton.style, controlStyle);
-      zoomInButton.addEventListener("click", () => {
-        const view = mapInstanceRef.current.getView();
-        view.animate({
-          zoom: view.getZoom() + 1,
-          duration: 250,
-        });
-      });
-
-      // Create zoom out control
-      const zoomOutButton = document.createElement("button");
-      zoomOutButton.innerHTML = '<i class="material-icons">remove</i>';
-      Object.assign(zoomOutButton.style, controlStyle);
-      zoomOutButton.addEventListener("click", () => {
-        const view = mapInstanceRef.current.getView();
-        view.animate({
-          zoom: view.getZoom() - 1,
-          duration: 250,
-        });
-      });
-
-      // Create basemap control
-      const basemapButton = document.createElement("button");
-      basemapButton.innerHTML = '<i class="material-icons">map</i>';
-      Object.assign(basemapButton.style, controlStyle);
-      basemapButton.addEventListener("click", (e) => {
-        setBasemapAnchorEl(e.currentTarget);
-      });
-
-      // Create layers control
-      const layersButton = document.createElement("button");
-      layersButton.innerHTML = '<i class="material-icons">layers</i>';
-      Object.assign(layersButton.style, controlStyle);
-      layersButton.addEventListener("click", (e) => {
-        setLayersAnchorEl(e.currentTarget);
-      });
-
-      // Add fullscreen control button
-      const fullscreenButton = document.createElement("button");
-      fullscreenButton.innerHTML = '<i class="material-icons">fullscreen</i>';
-      Object.assign(fullscreenButton.style, controlStyle);
-      fullscreenButton.addEventListener("click", () => {
-        const mapElement = mapRef.current;
-        if (!document.fullscreenElement) {
-          if (mapElement.requestFullscreen) {
-            mapElement.requestFullscreen();
-          } else if (mapElement.webkitRequestFullscreen) {
-            mapElement.webkitRequestFullscreen();
-          } else if (mapElement.msRequestFullscreen) {
-            mapElement.msRequestFullscreen();
-          }
-          fullscreenButton.innerHTML = '<i class="material-icons">fullscreen_exit</i>';
-        } else {
-          if (document.exitFullscreen) {
-            document.exitFullscreen();
-          } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-          } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-          }
-          fullscreenButton.innerHTML = '<i class="material-icons">fullscreen</i>';
-        }
-      });
-
-      // Add all controls to container
-      controlsContainer.appendChild(zoomInButton);
-      controlsContainer.appendChild(zoomOutButton);
-      controlsContainer.appendChild(basemapButton);
-      controlsContainer.appendChild(layersButton);
-      controlsContainer.appendChild(fullscreenButton);
-
-      const containerControl = createCustomControl(controlsContainer);
-
-      mapInstanceRef.current = new Map({
-        target: mapRef.current,
-        layers: layers,
-        view: new View({
-          center: fromLonLat(center),
-          zoom: zoom,
-          maxZoom: 18,
-          minZoom: 2,
-        }),
-        controls: defaultControls({ zoom: false }).extend([containerControl]),
-      });
-
-      // Initialize popup overlay
-      popupOverlayRef.current = new Overlay({
-        element: popupRef.current,
-        positioning: "bottom-center",
-        offset: [0, -10],
-        autoPan: true,
-        autoPanAnimation: {
-          duration: 250,
-        },
-      });
-
-      mapInstanceRef.current.addOverlay(popupOverlayRef.current);
-
-      // Add click handler
-      mapInstanceRef.current.on("click", (evt) => {
-        const feature = mapInstanceRef.current.forEachFeatureAtPixel(
-          evt.pixel,
-          (feature) => feature
-        );
-
-        if (feature) {
-          const coordinates = evt.coordinate;
-          setClickedFeature(feature);
-          setClickedCoordinate(coordinates);
-          updatePopup(feature, coordinates);
-        } else {
-          setClickedFeature(null);
-          setClickedCoordinate(null);
-          popupRef.current.style.display = "none";
-          dispatch(clearSelectedLocation());
-        }
-      });
-
-      // Add pointer cursor for features
-      mapInstanceRef.current.on("pointermove", (evt) => {
-        const pixel = mapInstanceRef.current.getEventPixel(evt.originalEvent);
-        const hit = mapInstanceRef.current.hasFeatureAtPixel(pixel);
-        mapInstanceRef.current.getViewport().style.cursor = hit ? "pointer" : "";
-      });
-
-      // Initial update of hexbins
-      updateHexbins();
+    if (mapInstance && basemaps) {
+      const newBasemap = darkMode ? "dark" : "light";
+      console.log("Dark mode changed:", darkMode, "New basemap:", newBasemap, "Current basemap:", currentBasemap);
+      
+      // Always update when dark mode changes
+      const layers = mapInstance.getLayers();
+      const currentBasemapLayer = layers.getArray()[0];
+      
+      // Remove current basemap
+      if (currentBasemapLayer) {
+        layers.remove(currentBasemapLayer);
+      }
+      
+      // Add the new basemap
+      const newBasemapLayer = basemaps[newBasemap];
+      if (newBasemapLayer) {
+        layers.insertAt(0, newBasemapLayer);
+        setCurrentBasemap(newBasemap);
+        console.log("Successfully updated basemap to:", newBasemap);
+      } else {
+        console.error("Failed to find basemap:", newBasemap, "Available basemaps:", Object.keys(basemaps));
+      }
     }
-
-    return () => {
-      if (viewChangeTimeout) {
-        clearTimeout(viewChangeTimeout);
-      }
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.setTarget(undefined);
-        mapInstanceRef.current = null;
-      }
-    };
-  }, []);
+  }, [darkMode, mapInstance, basemaps]);
 
   useEffect(() => {
     // Update hexbins when averages data changes
-    if (averages && mapInstanceRef.current) {
+    if (averages && mapInstance) {
       updateHexbins();
     }
   }, [averages]);
 
   // Add effect to handle extent changes
   useEffect(() => {
-    if (mapInstanceRef.current && extent) {
+    if (mapInstance && extent) {
       const { xmin, ymin, xmax, ymax } = extent;
       const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
-      mapInstanceRef.current.getView().fit(transformedExtent, {
+      mapInstance.getView().fit(transformedExtent, {
         padding: [50, 50, 50, 50],
         duration: 1000,
       });
@@ -518,8 +500,8 @@ function MapComponent() {
 
   // Add effect to handle center/zoom changes from Redux
   useEffect(() => {
-    if (mapInstanceRef.current) {
-      const view = mapInstanceRef.current.getView();
+    if (mapInstance) {
+      const view = mapInstance.getView();
       const currentCenter = view.getCenter();
       const currentZoom = view.getZoom();
 
@@ -541,24 +523,10 @@ function MapComponent() {
     }
   }, [center, zoom]);
 
-  // Update useEffect to watch for darkMode changes
-  useEffect(() => {
-    if (mapInstanceRef.current) {
-      // Change basemap when dark mode changes
-      if (darkMode) {
-        handleBasemapChange("dark");
-      } else {
-        handleBasemapChange("light");
-      }
-    }
-  }, [darkMode, mapInstanceRef.current]);
-
   const handleBasemapChange = (basemapKey) => {
-    setBasemapAnchorEl(null);
-    if (basemapKey && basemapKey !== currentBasemap) {
-      const map = mapInstanceRef.current;
-      map.getLayers().removeAt(0);
-      map.getLayers().insertAt(0, basemaps[basemapKey]);
+    if (basemapKey && basemapKey !== currentBasemap && mapInstance) {
+      mapInstance.getLayers().removeAt(0);
+      mapInstance.getLayers().insertAt(0, basemaps[basemapKey]);
       setCurrentBasemap(basemapKey);
     }
   };
@@ -569,7 +537,9 @@ function MapComponent() {
       ...prev,
       [layerKey]: newVisibility,
     }));
-    overlayLayers[layerKey].setVisible(newVisibility);
+    if (overlayLayers[layerKey]) {
+      overlayLayers[layerKey].setVisible(newVisibility);
+    }
   };
 
   // Add effect to update selected location when it changes
@@ -579,17 +549,14 @@ function MapComponent() {
 
   // Update useEffect for metric changes
   useEffect(() => {
-    if (mapInstanceRef.current) {
+    if (mapInstance) {
       console.log("Selected metric changed to:", selectedMetric);
-      const hexbinLayer = mapInstanceRef.current.getLayers().getArray()
+      const hexbinLayer = mapInstance.getLayers().getArray()
         .find(layer => layer.get('title') === 'Hexbins');
       
       if (hexbinLayer) {
-        // Update the style function
-        hexbinLayer.setStyle(createHexbinStyle);
-        // Force redraw
+        hexbinLayer.setStyle((feature) => createHexbinStyle(feature, selectedMetric));
         hexbinLayer.getSource().changed();
-        // Update popup if there's a clicked feature
         if (clickedFeature && clickedCoordinate) {
           updatePopup(clickedFeature, clickedCoordinate);
         }
@@ -635,16 +602,13 @@ function MapComponent() {
   // Update the metric selection handler
   const handleMetricChange = (metric) => {
     setSelectedMetric(metric);
-    if (mapInstanceRef.current) {
-      const hexbinLayer = mapInstanceRef.current.getLayers().getArray()
+    if (mapInstance) {
+      const hexbinLayer = mapInstance.getLayers().getArray()
         .find(layer => layer.get('title') === 'Hexbins');
       
       if (hexbinLayer) {
-        // Update the style function
-        hexbinLayer.setStyle(createHexbinStyle);
-        // Force redraw
+        hexbinLayer.setStyle((feature) => createHexbinStyle(feature, metric));
         hexbinLayer.getSource().changed();
-        // Update popup if there's a clicked feature
         if (clickedFeature && clickedCoordinate) {
           updatePopup(clickedFeature, clickedCoordinate);
         }
@@ -658,6 +622,45 @@ function MapComponent() {
       updatePopup(clickedFeature, clickedCoordinate);
     }
   }, [selectedMetric]);
+
+  const handleZoomIn = () => {
+    if (!mapInstance) return;
+    const view = mapInstance.getView();
+    view.animate({
+      zoom: view.getZoom() + 1,
+      duration: 250,
+    });
+  };
+
+  const handleZoomOut = () => {
+    if (!mapInstance) return;
+    const view = mapInstance.getView();
+    view.animate({
+      zoom: view.getZoom() - 1,
+      duration: 250,
+    });
+  };
+
+  const handleFullscreenToggle = () => {
+    const mapElement = mapRef.current;
+    if (!document.fullscreenElement) {
+      if (mapElement.requestFullscreen) {
+        mapElement.requestFullscreen();
+      } else if (mapElement.webkitRequestFullscreen) {
+        mapElement.webkitRequestFullscreen();
+      } else if (mapElement.msRequestFullscreen) {
+        mapElement.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+  };
 
   // Add more detailed error display
   if (error) {
@@ -709,84 +712,17 @@ function MapComponent() {
               position: "relative",
             }}
           >
-            <Menu
-              container={mapRef.current}
-              anchorEl={basemapAnchorEl}
-              open={Boolean(basemapAnchorEl)}
-              onClose={() => setBasemapAnchorEl(null)}
-              style={{ zIndex: 2000 }}
-            >
-              <MenuItem onClick={() => handleBasemapChange("osm")}>OpenStreetMap</MenuItem>
-              <MenuItem onClick={() => handleBasemapChange("dark")}>Dark</MenuItem>
-              <MenuItem onClick={() => handleBasemapChange("light")}>Light</MenuItem>
-              <MenuItem onClick={() => handleBasemapChange("satellite")}>Satellite</MenuItem>
-              <MenuItem onClick={() => handleBasemapChange("outdoors")}>Outdoors</MenuItem>
-            </Menu>
-
-            <Menu
-              container={mapRef.current}
-              anchorEl={layersAnchorEl}
-              open={Boolean(layersAnchorEl)}
-              onClose={() => setLayersAnchorEl(null)}
-              style={{ zIndex: 2000 }}
-            >
-              <MenuItem>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={layerVisibility.geoserver}
-                      onChange={() => handleLayerToggle("geoserver")}
-                    />
-                  }
-                  label="GeoServer Layer"
-                />
-              </MenuItem>
-              <MenuItem>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={layerVisibility.hexbins}
-                      onChange={() => handleLayerToggle("hexbins")}
-                    />
-                  }
-                  label="Hexbins"
-                />
-              </MenuItem>
-              <Divider />
-              <MenuItem>
-                <FormControlLabel
-                  control={
-                    <Radio
-                      checked={selectedMetric === 'user_count'}
-                      onChange={() => handleMetricChange('user_count')}
-                    />
-                  }
-                  label="User Count (Red)"
-                />
-              </MenuItem>
-              <MenuItem>
-                <FormControlLabel
-                  control={
-                    <Radio
-                      checked={selectedMetric === 'avg_dl_latency'}
-                      onChange={() => handleMetricChange('avg_dl_latency')}
-                    />
-                  }
-                  label="Avg Download Latency (Blue)"
-                />
-              </MenuItem>
-              <MenuItem>
-                <FormControlLabel
-                  control={
-                    <Radio
-                      checked={selectedMetric === 'total_dl_volume'}
-                      onChange={() => handleMetricChange('total_dl_volume')}
-                    />
-                  }
-                  label="Total Download Volume (Pink)"
-                />
-              </MenuItem>
-            </Menu>
+            <MapControls
+              mapRef={mapRef}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onBasemapChange={handleBasemapChange}
+              onLayerToggle={handleLayerToggle}
+              onMetricChange={handleMetricChange}
+              layerVisibility={layerVisibility}
+              selectedMetric={selectedMetric}
+              onFullscreenToggle={handleFullscreenToggle}
+            />
 
             {/* Updated popup with theme-aware styles */}
             <div
@@ -825,6 +761,15 @@ function MapComponent() {
         </MDBox>
       </MDBox>
     </Card>
+  );
+}
+
+// Wrap the component with the provider
+function MapComponent() {
+  return (
+    <MapProvider>
+      <MapContent />
+    </MapProvider>
   );
 }
 

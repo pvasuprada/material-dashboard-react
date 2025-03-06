@@ -1,11 +1,17 @@
 import { Menu, MenuItem } from "@mui/material";
-import { basemapOptions } from "../config/basemaps";
+import { useMap } from "../context/MapContext";
 
-const Basemaps = ({ anchorEl, onClose, onBasemapChange, container }) => {
-  const handleBasemapChange = (basemapKey) => {
-    onBasemapChange(basemapKey);
-    onClose();
-  };
+const Basemaps = ({ container, anchorEl, onClose, onBasemapChange }) => {
+  const { basemaps } = useMap();
+
+  const basemapOptions = [
+    { id: "osm", label: "OpenStreetMap" },
+    { id: "streets", label: "Streets" },
+    { id: "dark", label: "Dark" },
+    { id: "light", label: "Light" },
+    { id: "satellite", label: "Satellite" },
+    { id: "outdoors", label: "Outdoors" },
+  ];
 
   return (
     <Menu
@@ -18,7 +24,10 @@ const Basemaps = ({ anchorEl, onClose, onBasemapChange, container }) => {
       {basemapOptions.map((basemap) => (
         <MenuItem
           key={basemap.id}
-          onClick={() => handleBasemapChange(basemap.id)}
+          onClick={() => {
+            onBasemapChange(basemap.id);
+            onClose();
+          }}
         >
           {basemap.label}
         </MenuItem>

@@ -1,21 +1,11 @@
 import { useState } from "react";
 import Basemaps from "./Basemaps";
 import LayerList from "./LayerList";
-
-const controlStyle = {
-  background: "rgba(255,255,255,0.9)",
-  padding: "2px",
-  margin: "5px",
-  borderRadius: "4px",
-  cursor: "pointer",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-  border: "none",
-  width: "32px",
-  height: "32px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-};
+import MDBox from "components/MDBox";
+import MDButton from "components/MDButton";
+import Icon from "@mui/material/Icon";
+import { useTheme } from "@mui/material/styles";
+import { useMap } from "../context/MapContext";
 
 const controlsContainerStyle = {
   position: "absolute",
@@ -24,30 +14,75 @@ const controlsContainerStyle = {
   display: "flex",
   flexDirection: "column",
   gap: "5px",
+  zIndex: 1000,
 };
 
 const MapControls = ({
   mapRef,
   onZoomIn,
   onZoomOut,
-  onBasemapChange,
-  onLayerToggle,
-  onMetricChange,
-  layerVisibility,
-  selectedMetric,
   onFullscreenToggle,
 }) => {
   const [basemapAnchorEl, setBasemapAnchorEl] = useState(null);
   const [layersAnchorEl, setLayersAnchorEl] = useState(null);
+  const theme = useTheme();
+  const {
+    mapInstance,
+    basemaps,
+    overlayLayers,
+    currentBasemap,
+    setCurrentBasemap,
+    layerVisibility,
+    setLayerVisibility,
+    selectedMetric,
+    setSelectedMetric,
+  } = useMap();
+
+  const handleBasemapChange = (basemapKey) => {
+    setBasemapAnchorEl(null);
+    if (basemapKey && basemapKey !== currentBasemap && mapInstance) {
+      mapInstance.getLayers().removeAt(0);
+      mapInstance.getLayers().insertAt(0, basemaps[basemapKey]);
+      setCurrentBasemap(basemapKey);
+    }
+  };
+
+  const handleLayerToggle = (layerKey) => {
+    const newVisibility = !layerVisibility[layerKey];
+    setLayerVisibility((prev) => ({
+      ...prev,
+      [layerKey]: newVisibility,
+    }));
+    if (overlayLayers[layerKey]) {
+      overlayLayers[layerKey].setVisible(newVisibility);
+    }
+  };
 
   const createControlButton = (icon, onClick) => (
-    <button style={controlStyle} onClick={onClick}>
-      <i className="material-icons">{icon}</i>
-    </button>
+    <MDButton
+      variant="contained"
+      color="white"
+      iconOnly
+      circular
+      size="small"
+      onClick={onClick}
+      sx={{
+        minWidth: "32px",
+        width: "32px",
+        height: "32px",
+        padding: 0,
+        boxShadow: theme.shadows[2],
+        "&:hover": {
+          boxShadow: theme.shadows[4],
+        },
+      }}
+    >
+      <Icon sx={{ fontSize: 20 }}>{icon}</Icon>
+    </MDButton>
   );
 
   return (
-    <div style={controlsContainerStyle}>
+    <MDBox sx={controlsContainerStyle}>
       {createControlButton("add", onZoomIn)}
       {createControlButton("remove", onZoomOut)}
       {createControlButton("map", (e) => setBasemapAnchorEl(e.currentTarget))}
@@ -58,7 +93,7 @@ const MapControls = ({
         container={mapRef.current}
         anchorEl={basemapAnchorEl}
         onClose={() => setBasemapAnchorEl(null)}
-        onBasemapChange={onBasemapChange}
+        onBasemapChange={handleBasemapChange}
       />
 
       <LayerList
@@ -66,11 +101,11 @@ const MapControls = ({
         anchorEl={layersAnchorEl}
         onClose={() => setLayersAnchorEl(null)}
         layerVisibility={layerVisibility}
-        onLayerToggle={onLayerToggle}
+        onLayerToggle={handleLayerToggle}
         selectedMetric={selectedMetric}
-        onMetricChange={onMetricChange}
+        onMetricChange={setSelectedMetric}
       />
-    </div>
+    </MDBox>
   );
 };
 

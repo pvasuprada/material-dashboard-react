@@ -1,15 +1,30 @@
 import { Menu, MenuItem, Checkbox, Radio, FormControlLabel, Divider, Typography } from "@mui/material";
-import { layerGroups } from "../config/layers";
+import { useMap } from "../context/MapContext";
 
-const LayerList = ({
-  anchorEl,
-  onClose,
-  layerVisibility,
-  onLayerToggle,
-  selectedMetric,
-  onMetricChange,
-  container,
-}) => {
+const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange }) => {
+  const { layerVisibility, selectedMetric } = useMap();
+
+  const layerGroups = [
+    {
+      title: "Base Layers",
+      layers: [
+        { id: "geoserver", label: "GeoServer Layer" },
+        { id: "hurricanes", label: "Hurricanes" },
+        { id: "hexbins", label: "Hexbins" },
+        { id: "coverage_capacity", label: "Coverage Capacity (Brown)" },
+      ],
+    },
+    {
+      title: "Metrics",
+      type: "radio",
+      options: [
+        { id: "user_count", label: "User Count (Red)" },
+        { id: "avg_dl_latency", label: "Avg Download Latency (Blue)" },
+        { id: "total_dl_volume", label: "Total Download Volume (Pink)" },
+      ],
+    },
+  ];
+
   return (
     <Menu
       container={container}
