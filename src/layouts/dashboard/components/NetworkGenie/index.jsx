@@ -21,12 +21,21 @@ import SendIcon from "@mui/icons-material/Send";
 import Avatar from "@mui/material/Avatar";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import PersonIcon from "@mui/icons-material/Person";
-import CircularProgress from "@mui/material/CircularProgress";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import { keyframes } from "@mui/system";
 import { api } from "services/api";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+
+// Define the typing animation keyframes
+const typingAnimation = keyframes`
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+`;
 
 function NetworkGenie() {
   const [messages, setMessages] = useState([
@@ -38,6 +47,7 @@ function NetworkGenie() {
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const messagesEndRef = useRef(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -52,6 +62,10 @@ function NetworkGenie() {
   //     setIsInitialLoad(false);
   //   }
   // }, [messages, isInitialLoad]);
+
+  const toggleFullScreen = () => {
+    setIsFullScreen(!isFullScreen);
+  };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
@@ -99,22 +113,38 @@ function NetworkGenie() {
   };
 
   return (
-    <Card sx={{ height: "100%" }}>
-      <MDBox pt={3} px={3}>
-        <MDTypography variant="h6" fontWeight="medium" color="text">
-          NetworkGenie AI
-        </MDTypography>
-        <MDBox mt={0} mb={2}>
-          <MDTypography variant="button" color="text" fontWeight="regular">
-            Your intelligent network assistant
+    <Card 
+      sx={{ 
+        height: isFullScreen ? "100vh" : "100%",
+        width: isFullScreen ? "100vw" : "100%",
+        position: isFullScreen ? "fixed" : "relative",
+        top: isFullScreen ? 0 : "auto",
+        left: isFullScreen ? 0 : "auto",
+        zIndex: isFullScreen ? 1300 : "auto",
+        m: isFullScreen ? 0 : "auto",
+        borderRadius: isFullScreen ? 0 : 1,
+      }}
+    >
+      <MDBox pt={3} px={3} display="flex" justifyContent="space-between" alignItems="center">
+        <MDBox>
+          <MDTypography variant="h6" fontWeight="medium" color="text">
+            NetworkGenie AI
           </MDTypography>
+          <MDBox mt={0} mb={2}>
+            <MDTypography variant="button" color="text" fontWeight="regular">
+              Your intelligent network assistant
+            </MDTypography>
+          </MDBox>
         </MDBox>
+        <IconButton onClick={toggleFullScreen} color="info">
+          {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+        </IconButton>
       </MDBox>
 
       {/* Chat Messages - Fixed height with scrollbar */}
       <MDBox
         sx={{
-          height: "250px",
+          height: isFullScreen ? "calc(100vh - 180px)" : "250px",
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
@@ -201,10 +231,27 @@ function NetworkGenie() {
                 backgroundColor: "background.default",
               }}
             >
-              <CircularProgress size={20} color="info" />
-              <MDTypography variant="body2" color="text" sx={{ ml: 1 }}>
-                Thinking...
-              </MDTypography>
+              <MDBox
+                sx={{
+                  display: "flex",
+                  gap: 0.5,
+                  alignItems: "center",
+                }}
+              >
+                {[0, 1, 2].map((i) => (
+                  <MDBox
+                    key={i}
+                    sx={{
+                      width: "6px",
+                      height: "6px",
+                      backgroundColor: "info.main",
+                      borderRadius: "50%",
+                      animation: `${typingAnimation} 1s infinite`,
+                      animationDelay: `${i * 0.2}s`,
+                    }}
+                  />
+                ))}
+              </MDBox>
             </MDBox>
           </MDBox>
         )}
@@ -217,6 +264,11 @@ function NetworkGenie() {
           p: 2,
           borderTop: "1px solid",
           borderColor: "grey.200",
+          position: isFullScreen ? "fixed" : "relative",
+          bottom: isFullScreen ? 0 : "auto",
+          left: isFullScreen ? 0 : "auto",
+          right: isFullScreen ? 0 : "auto",
+          backgroundColor: "white",
         }}
       >
         <MDBox
