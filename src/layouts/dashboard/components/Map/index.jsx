@@ -124,7 +124,60 @@ function MapContent() {
   const [clickedFeature, setClickedFeature] = useState(null);
   const [clickedCoordinate, setClickedCoordinate] = useState(null);
 
-  // Initialize basemaps and layers
+  // Add effect to update data layers when averages change
+  useEffect(() => {
+    if (mapInstance && averages && Array.isArray(averages)) {
+      console.log("Updating data layers with averages:", averages);
+
+      const features = averages.map(({ geobin, user_count, avg_dl_latency, total_dl_volume }) => {
+        const hexBoundary = h3.cellToBoundary(geobin);
+        const coordinates = [hexBoundary.map(([lat, lng]) => fromLonLat([lng, lat]))];
+        const feature = new Feature({
+          geometry: new Polygon(coordinates),
+        });
+
+        // Set all metrics on the feature
+        feature.set("user_count", user_count);
+        feature.set("geobin", geobin);
+        feature.set("avg_dl_latency", avg_dl_latency);
+        feature.set("total_dl_volume", total_dl_volume);
+        return feature;
+      });
+
+      // Update all data layers with the same features
+      const dataLayers = ['user_count', 'avg_dl_latency', 'total_dl_volume'];
+      dataLayers.forEach(layerId => {
+        const layer = mapInstance.getLayers().getArray()
+          .find(layer => layer.get('title') === layerId);
+        if (layer) {
+          console.log(`Updating layer ${layerId} with ${features.length} features`);
+          const source = layer.getSource();
+          source.clear();
+          source.addFeatures(features.map(f => f.clone()));
+          
+          // Ensure layer visibility matches the state
+          layer.setVisible(layerVisibility[layerId] || false);
+          console.log(`Setting visibility for ${layerId}: ${layerVisibility[layerId]}`);
+          
+          source.changed();
+
+          // If the layer is visible, fit to its extent
+          if (layerVisibility[layerId] && features.length > 0) {
+            const extent = source.getExtent();
+            mapInstance.getView().fit(extent, {
+              padding: [50, 50, 50, 50],
+              duration: 1000,
+            });
+          }
+        } else {
+          console.error(`Layer ${layerId} not found in map layers:`, 
+            mapInstance.getLayers().getArray().map(l => l.get('title')));
+        }
+      });
+    }
+  }, [averages, mapInstance, layerVisibility]);
+
+  // Initialize map with layers
   useEffect(() => {
     if (mapRef.current && !mapInstance) {
       console.log("Initializing map with dark mode:", darkMode);
@@ -164,7 +217,10 @@ function MapContent() {
 
       // Set initial layer visibility
       Object.entries(initialOverlayLayers).forEach(([key, layer]) => {
-        layer.setVisible(layerVisibility[key] || false);
+        if (layer) {
+          layer.setVisible(layerVisibility[key] || false);
+          console.log(`Setting initial visibility for ${key}: ${layerVisibility[key]}`);
+        }
       });
 
       // Initialize popup overlay
@@ -300,38 +356,18 @@ function MapContent() {
           return feature;
         });
 
-        // Find the hexbin layer
-        const hexbinLayer = mapInstance.getLayers().getArray()
-          .find(layer => layer.get('title') === 'Hexbins');
-
-        if (hexbinLayer) {
-          const source = hexbinLayer.getSource();
-          source.clear();
-          source.addFeatures(features);
-          
-          // Update the style function
-          hexbinLayer.setStyle(createHexbinStyle);
-          
-          // Ensure the layer is visible
-          hexbinLayer.setVisible(true);
-          
-          // Force redraw
-          source.changed();
-          
-          console.log("Hexbin layer updated with", features.length, "features");
-        } else {
-          console.error("Hexbin layer not found");
-        }
-
-        // Update the view extent if needed
-        if (extent) {
-          const { xmin, ymin, xmax, ymax } = extent;
-          const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
-          mapInstance.getView().fit(transformedExtent, {
-            padding: [50, 50, 50, 50],
-            duration: 1000,
-          });
-        }
+        // Update all data layers with the same features
+        const dataLayers = ['user_count', 'avg_dl_latency', 'total_dl_volume'];
+        dataLayers.forEach(layerId => {
+          const layer = mapInstance.getLayers().getArray()
+            .find(layer => layer.get('title') === layerId);
+          if (layer) {
+            const source = layer.getSource();
+            source.clear();
+            source.addFeatures(features.map(f => f.clone()));
+            source.changed();
+          }
+        });
       }
     } catch (error) {
       console.error("Error updating hexbins:", error);
@@ -359,12 +395,12 @@ function MapContent() {
 
         // Find or create the coverage capacity layer
         let coverageLayer = mapInstance.getLayers().getArray()
-          .find(layer => layer.get('title') === 'Coverage Capacity');
+          .find(layer => layer.get('title') === 'coverage_capacity');
 
         if (!coverageLayer) {
           coverageLayer = new VectorLayer({
             source: new VectorSource(),
-            title: 'Coverage Capacity',
+            title: 'coverage_capacity',
             style: (feature) => new Style({
               fill: new Fill({
                 color: `rgba(139, 69, 19, ${Math.min(0.8, 0.2 + (feature.get('bn77_rsrp') / 100))})`,
@@ -374,7 +410,6 @@ function MapContent() {
                 width: 1,
               }),
             }),
-            visible: true,
           });
           mapInstance.addLayer(coverageLayer);
         }
@@ -383,18 +418,41 @@ function MapContent() {
         source.clear();
         source.addFeatures(features);
         
-        // Ensure the layer is visible
-        coverageLayer.setVisible(true);
+        // Set visibility based on layerVisibility state
+        coverageLayer.setVisible(layerVisibility['coverage_capacity'] || false);
         
         // Force redraw
         source.changed();
         
         console.log("Coverage capacity layer updated with", features.length, "features");
+
+        // Update view extent if needed
+        if (extent && features.length > 0) {
+          const { xmin, ymin, xmax, ymax } = extent;
+          const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
+          mapInstance.getView().fit(transformedExtent, {
+            padding: [50, 50, 50, 50],
+            duration: 1000,
+          });
+        }
       }
     } catch (error) {
       console.error("Error updating coverage capacity layer:", error);
     }
   };
+
+  // Add effect to handle layer visibility changes
+  useEffect(() => {
+    if (mapInstance) {
+      Object.entries(layerVisibility).forEach(([layerId, isVisible]) => {
+        const layer = mapInstance.getLayers().getArray()
+          .find(layer => layer.get('title') === layerId);
+        if (layer) {
+          layer.setVisible(isVisible);
+        }
+      });
+    }
+  }, [layerVisibility, mapInstance]);
 
   // Add effect to update coverage capacity when data changes
   useEffect(() => {

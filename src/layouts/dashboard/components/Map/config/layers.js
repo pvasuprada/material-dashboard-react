@@ -68,20 +68,81 @@ export const createWMSLayer = ({
   });
 };
 
-const createVectorLayer = (title, color, opacity = 0.5) => {
+const createVectorLayer = (title, color) => {
+  const id = title.toLowerCase().replace(/\s+/g, '_');
   return new VectorLayer({
     source: new VectorSource(),
-    title: title,
-    visible: true,
-    style: (feature) => new Style({
-      fill: new Fill({
-        color: `rgba(${color.join(',')}, ${opacity})`,
-      }),
-      stroke: new Stroke({
-        color: `rgba(${color.join(',')}, 1)`,
-        width: 1,
-      }),
-    }),
+    title: id,
+    visible: false,
+    style: (feature) => {
+      // Use the exact property names from the data
+      let value;
+      switch(id) {
+        case 'user_count':
+          value = feature.get('user_count');
+          break;
+        case 'avg_download_latency':
+        case 'avg_dl_latency':
+          value = feature.get('avg_dl_latency');
+          break;
+        case 'total_download_volume':
+        case 'total_dl_volume':
+          value = feature.get('total_dl_volume');
+          break;
+        default:
+          value = feature.get(id);
+      }
+
+      let opacity = 0.2;
+      if (value) {
+        switch(id) {
+          case 'user_count':
+            opacity = Math.min(0.8, 0.2 + value * 0.2);
+            break;
+          case 'avg_download_latency':
+          case 'avg_dl_latency':
+            opacity = Math.min(0.8, 0.2 + (value / 100));
+            break;
+          case 'total_download_volume':
+          case 'total_dl_volume':
+            opacity = Math.min(0.8, 0.2 + (value / 5));
+            break;
+          default:
+            opacity = 0.5;
+        }
+      }
+      
+      return new Style({
+        fill: new Fill({
+          color: `rgba(${color.join(',')}, ${opacity})`,
+        }),
+        stroke: new Stroke({
+          color: `rgba(${color.join(',')}, 1)`,
+          width: 1,
+        }),
+      });
+    },
+  });
+};
+
+const createCoverageCapacityLayer = () => {
+  return new VectorLayer({
+    source: new VectorSource(),
+    title: 'coverage_capacity',
+    visible: false,
+    style: (feature) => {
+      const value = feature.get('bn77_rsrp');
+      const opacity = value ? Math.min(0.8, 0.2 + (value / 100)) : 0.2;
+      return new Style({
+        fill: new Fill({
+          color: `rgba(139, 69, 19, ${opacity})`,
+        }),
+        stroke: new Stroke({
+          color: 'rgba(139, 69, 19, 1)',
+          width: 1,
+        }),
+      });
+    },
   });
 };
 
@@ -90,33 +151,19 @@ export const defaultLayers = {
   geoserver: createWMSLayer({
     url: "https://ahocevar.com/geoserver/wms",
     layers: "topp:states",
-    title: "GeoServer Layer",
+    title: "geoserver",
     visible: false,
   }),
   hurricanes: createWMSLayer({
     url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Hurricanes/MapServer/0",
     layers: "0",
-    title: "Hurricanes",
-    visible: true,
+    title: "hurricanes",
+    visible: false,
   }),
-  hexbins: createHexbinLayer(),
-  coverage_capacity: new VectorLayer({
-    source: new VectorSource(),
-    title: 'Coverage Capacity',
-    visible: true,
-    style: (feature) => new Style({
-      fill: new Fill({
-        color: `rgba(139, 69, 19, ${Math.min(0.8, 0.2 + (feature.get('bn77_rsrp') / 100))})`,
-      }),
-      stroke: new Stroke({
-        color: 'rgba(139, 69, 19, 1)',
-        width: 1,
-      }),
-    }),
-  }),
+  coverage_capacity: createCoverageCapacityLayer(),
   user_count: createVectorLayer('User Count', [255, 0, 0]),
-  avg_dl_latency: createVectorLayer('Avg Download Latency', [0, 0, 255]),
-  total_dl_volume: createVectorLayer('Total Download Volume', [255, 192, 203]),
+  avg_dl_latency: createVectorLayer('Avg DL Latency', [0, 0, 255]),
+  total_dl_volume: createVectorLayer('Total DL Volume', [255, 192, 203]),
 };
 
 // Layer groups for the layer list
