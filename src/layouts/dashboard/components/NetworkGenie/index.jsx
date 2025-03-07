@@ -21,6 +21,7 @@ import SendIcon from "@mui/icons-material/Send";
 import Avatar from "@mui/material/Avatar";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import PersonIcon from "@mui/icons-material/Person";
+import CircularProgress from "@mui/material/CircularProgress";
 import { api } from "services/api";
 
 // Material Dashboard 2 React components
@@ -36,6 +37,7 @@ function NetworkGenie() {
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -63,6 +65,7 @@ function NetworkGenie() {
 
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
+    setIsLoading(true);
 
     try {
       // Send message to API and get response
@@ -70,13 +73,12 @@ function NetworkGenie() {
       
       const botMessage = {
         type: "bot",
-        content: response.message || response, // handle both object and string responses
+        content: response.message || response,
         timestamp: new Date(),
       };
       
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
-      // Handle error by showing error message in chat
       const errorMessage = {
         type: "bot",
         content: "Sorry, I encountered an error while processing your request. Please try again.",
@@ -84,6 +86,8 @@ function NetworkGenie() {
       };
       setMessages((prev) => [...prev, errorMessage]);
       console.error("Chat error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -110,7 +114,7 @@ function NetworkGenie() {
       {/* Chat Messages - Fixed height with scrollbar */}
       <MDBox
         sx={{
-          height: "250px", // Fixed height
+          height: "250px",
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
@@ -176,6 +180,34 @@ function NetworkGenie() {
             )}
           </MDBox>
         ))}
+        {isLoading && (
+          <MDBox
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              mt: 1,
+            }}
+          >
+            <Avatar sx={{ bgcolor: "error.main", width: 32, height: 32 }}>
+              <SmartToyIcon fontSize="small" />
+            </Avatar>
+            <MDBox
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                p: 2,
+                borderRadius: 2,
+                backgroundColor: "background.default",
+              }}
+            >
+              <CircularProgress size={20} color="info" />
+              <MDTypography variant="body2" color="text" sx={{ ml: 1 }}>
+                Thinking...
+              </MDTypography>
+            </MDBox>
+          </MDBox>
+        )}
         <div ref={messagesEndRef} />
       </MDBox>
 
