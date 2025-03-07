@@ -190,9 +190,14 @@ function MapContent() {
       const initialBasemap = darkMode ? "dark" : "light";
       console.log("Setting initial basemap to:", initialBasemap);
       
+      // Ensure basemap is visible
+      const basemapLayer = initialBasemaps[initialBasemap];
+      basemapLayer.setVisible(true);
+      basemapLayer.setOpacity(1);
+      
       // Create initial layers array with the correct basemap
       const initialLayers = [
-        initialBasemaps[initialBasemap],
+        basemapLayer,
         ...Object.values(initialOverlayLayers)
       ];
 
@@ -201,8 +206,8 @@ function MapContent() {
         target: mapRef.current,
         layers: initialLayers,
         view: new View({
-          center: fromLonLat(center),
-          zoom: zoom,
+          center: fromLonLat([-98, 40]), // Center on US by default
+          zoom: 4,
           maxZoom: 18,
           minZoom: 2,
         }),
@@ -263,8 +268,11 @@ function MapContent() {
         map.getViewport().style.cursor = hit ? "pointer" : "";
       });
 
-      // Initial update of hexbins
-      updateHexbins();
+      // Force initial render
+      setTimeout(() => {
+        map.updateSize();
+        map.render();
+      }, 100);
     }
 
     return () => {
@@ -273,7 +281,7 @@ function MapContent() {
         setMapInstance(null);
       }
     };
-  }, [mapRef.current, darkMode, center, zoom]);
+  }, [mapRef.current]);
 
   const createCustomControl = (element) => {
     const customControl = new Control({
@@ -540,25 +548,54 @@ function MapContent() {
   useEffect(() => {
     if (mapInstance && basemaps) {
       const newBasemap = darkMode ? "dark" : "light";
-      console.log("Dark mode changed:", darkMode, "New basemap:", newBasemap, "Current basemap:", currentBasemap);
+      console.log("Dark mode changed:", darkMode, "New basemap:", newBasemap);
       
-      // Always update when dark mode changes
-      const layers = mapInstance.getLayers();
-      const currentBasemapLayer = layers.getArray()[0];
-      
-      // Remove current basemap
-      if (currentBasemapLayer) {
-        layers.remove(currentBasemapLayer);
-      }
-      
-      // Add the new basemap
-      const newBasemapLayer = basemaps[newBasemap];
-      if (newBasemapLayer) {
+      try {
+        // Get the layers collection
+        const layers = mapInstance.getLayers();
+        const allLayers = layers.getArray();
+        
+        // Store current view state
+        const view = mapInstance.getView();
+        const currentCenter = view.getCenter();
+        const currentZoom = view.getZoom();
+        
+        // Get current basemap layer (should be at index 0)
+        const currentBasemapLayer = allLayers[0];
+        
+        // Create and configure new basemap layer
+        const newBasemapLayer = basemaps[newBasemap];
+        newBasemapLayer.setVisible(true);
+        newBasemapLayer.setOpacity(1);
+        
+        // Replace the basemap layer
+        if (currentBasemapLayer) {
+          layers.remove(currentBasemapLayer);
+        }
         layers.insertAt(0, newBasemapLayer);
+        
+        // Update context
         setCurrentBasemap(newBasemap);
+        
+        // Force map update
+        mapInstance.updateSize();
+        
+        // Restore view state with animation
+        view.animate({
+          center: currentCenter,
+          zoom: currentZoom,
+          duration: 0  // Instant transition
+        });
+        
         console.log("Successfully updated basemap to:", newBasemap);
-      } else {
-        console.error("Failed to find basemap:", newBasemap, "Available basemaps:", Object.keys(basemaps));
+        
+        // Force immediate render
+        requestAnimationFrame(() => {
+          mapInstance.render();
+        });
+        
+      } catch (error) {
+        console.error("Error switching basemap:", error);
       }
     }
   }, [darkMode, mapInstance, basemaps]);
@@ -648,65 +685,6 @@ function MapContent() {
     }
   }, [selectedMetric]);
 
-  // Function to update popup content
-  const updatePopup = (feature, coordinates) => {
-    if (!feature || !coordinates) return;
-
-    const geobin = feature.get("geobin");
-    const value = feature.get(selectedMetric);
-
-    // Show popup
-    popupRef.current.style.display = "block";
-    popupOverlayRef.current.setPosition(coordinates);
-
-    // Get the metric label
-    const metricLabels = {
-      user_count: "User Count",
-      avg_dl_latency: "Avg Download Latency",
-      total_dl_volume: "Total Download Volume"
-    };
-
-    // Get the unit for the metric
-    const metricUnits = {
-      user_count: "",
-      avg_dl_latency: "ms",
-      total_dl_volume: "GB"
-    };
-
-    // Update popup content with only selected metric
-    const popupContent = document.getElementById("popup-content");
-    popupContent.innerHTML = `
-      <div>
-        <strong>Geobin:</strong> ${geobin}<br>
-        <strong>${metricLabels[selectedMetric]}:</strong> ${value || 'N/A'}${value ? ` ${metricUnits[selectedMetric]}` : ''}
-      </div>
-    `;
-  };
-
-  // Update the metric selection handler
-  const handleMetricChange = (metric) => {
-    setSelectedMetric(metric);
-    if (mapInstance) {
-      const hexbinLayer = mapInstance.getLayers().getArray()
-        .find(layer => layer.get('title') === 'Hexbins');
-      
-      if (hexbinLayer) {
-        hexbinLayer.setStyle((feature) => createHexbinStyle(feature, metric));
-        hexbinLayer.getSource().changed();
-        if (clickedFeature && clickedCoordinate) {
-          updatePopup(clickedFeature, clickedCoordinate);
-        }
-      }
-    }
-  };
-
-  // Add effect to update popup when metric changes
-  useEffect(() => {
-    if (clickedFeature && clickedCoordinate) {
-      updatePopup(clickedFeature, clickedCoordinate);
-    }
-  }, [selectedMetric]);
-
   const handleZoomIn = () => {
     if (!mapInstance) return;
     const view = mapInstance.getView();
@@ -746,38 +724,66 @@ function MapContent() {
     }
   };
 
-  // Add more detailed error display
-  if (error) {
-    return (
-      <Card>
-        <MDBox p={0.5}>
-          <MDAlert color="error" dismissible>
-            <MDTypography variant="body2" color="white">
-              Failed to load map data: {error}
-              {process.env.NODE_ENV === "development" && (
-                <div>
-                  <small>
-                    Please check:
-                    <ul>
-                      <li>API endpoint configuration</li>
-                      <li>Network connection</li>
-                      <li>Server status</li>
-                    </ul>
-                  </small>
-                </div>
-              )}
-            </MDTypography>
-          </MDAlert>
-        </MDBox>
-      </Card>
-    );
-  }
+  const handleMetricChange = (metric) => {
+    console.log("Changing metric to:", metric);
+    setSelectedMetric(metric);
+    
+    // Update the layer styles if needed
+    if (mapInstance) {
+      const layers = mapInstance.getLayers().getArray();
+      layers.forEach(layer => {
+        if (layer.get('title') === metric) {
+          layer.setVisible(true);
+          const source = layer.getSource();
+          if (source && source.getFeatures().length > 0) {
+            const extent = source.getExtent();
+            mapInstance.getView().fit(extent, {
+              padding: [50, 50, 50, 50],
+              duration: 1000,
+            });
+          }
+        }
+      });
+    }
+  };
+
+  // Function to update popup content
+  const updatePopup = (feature, coordinates) => {
+    if (!feature || !coordinates) return;
+
+    const geobin = feature.get("geobin");
+    const value = feature.get(selectedMetric);
+
+    // Show popup
+    popupRef.current.style.display = "block";
+    popupOverlayRef.current.setPosition(coordinates);
+
+    // Get the metric label
+    const metricLabels = {
+      user_count: "User Count",
+      avg_dl_latency: "Avg Download Latency",
+      total_dl_volume: "Total Download Volume"
+    };
+
+    // Get the unit for the metric
+    const metricUnits = {
+      user_count: "",
+      avg_dl_latency: "ms",
+      total_dl_volume: "GB"
+    };
+
+    // Update popup content with only selected metric
+    const popupContent = document.getElementById("popup-content");
+    popupContent.innerHTML = `
+      <div>
+        <strong>Geobin:</strong> ${geobin}<br>
+        <strong>${metricLabels[selectedMetric]}:</strong> ${value || 'N/A'}${value ? ` ${metricUnits[selectedMetric]}` : ''}
+      </div>
+    `;
+  };
 
   return (
     <Card>
-      {/* <MDBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
-        <MDTypography variant="h6">Interactive Map</MDTypography>
-      </MDBox> */}
       <MDBox p={2}>
         <MDBox
           sx={{

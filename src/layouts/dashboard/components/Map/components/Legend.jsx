@@ -3,9 +3,10 @@ import { styled } from "@mui/material/styles";
 
 const LegendContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1),
-  backgroundColor: theme.palette.background.paper,
+  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.default : theme.palette.background.paper,
   borderRadius: theme.shape.borderRadius,
   marginTop: theme.spacing(0.5),
+  border: `1px solid ${theme.palette.divider}`,
 }));
 
 const LegendItem = styled(Box)(({ theme }) => ({
@@ -18,6 +19,9 @@ const LegendItem = styled(Box)(({ theme }) => ({
     marginRight: theme.spacing(1),
     border: `1px solid ${theme.palette.divider}`,
   },
+  "& .MuiTypography-caption": {
+    color: theme.palette.text.primary,
+  }
 }));
 
 const Legend = ({ layer, expanded }) => {

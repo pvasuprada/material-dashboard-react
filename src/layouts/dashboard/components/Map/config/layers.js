@@ -170,6 +170,13 @@ export const defaultLayers = {
 export const layerGroups = [
   {
     title: "Base Layers",
+    titleProps: {
+      sx: {
+        color: 'text.primary',
+        fontWeight: 600,
+        mb: 1
+      }
+    },
     layers: [
       { id: "geoserver", label: "GeoServer Layer" },
       { id: "hurricanes", label: "Hurricanes" },
@@ -178,6 +185,13 @@ export const layerGroups = [
   },
   {
     title: "Data Layers",
+    titleProps: {
+      sx: {
+        color: 'text.primary',
+        fontWeight: 600,
+        mb: 1
+      }
+    },
     layers: [
       { id: "coverage_capacity", label: "Coverage Capacity (Brown)" },
       { id: "user_count", label: "User Count (Red)" },
