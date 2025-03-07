@@ -21,6 +21,7 @@ import SendIcon from "@mui/icons-material/Send";
 import Avatar from "@mui/material/Avatar";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import PersonIcon from "@mui/icons-material/Person";
+import { api } from "services/api";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -63,15 +64,27 @@ function NetworkGenie() {
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      // Send message to API and get response
+      const response = await api.sendChatMessage(inputMessage);
+      
       const botMessage = {
         type: "bot",
-        content: `I understand you're asking about "${inputMessage}". I'm currently in development, but I'll be able to help you with network-related queries soon.`,
+        content: response.message || response, // handle both object and string responses
         timestamp: new Date(),
       };
+      
       setMessages((prev) => [...prev, botMessage]);
-    }, 1000);
+    } catch (error) {
+      // Handle error by showing error message in chat
+      const errorMessage = {
+        type: "bot",
+        content: "Sorry, I encountered an error while processing your request. Please try again.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+      console.error("Chat error:", error);
+    }
   };
 
   const handleKeyPress = (e) => {

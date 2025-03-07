@@ -184,4 +184,17 @@ export const api = {
       throw error;
     }
   },
+
+  // NetworkGenie Chat
+  sendChatMessage: async (message) => {
+    try {
+      const response = await axios.post('http://localhost:8185/ntwgenie/tools', {
+        message: message
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error sending chat message:", error);
+      throw error;
+    }
+  },
 };
