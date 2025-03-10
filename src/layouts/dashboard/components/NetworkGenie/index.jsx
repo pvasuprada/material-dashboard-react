@@ -25,6 +25,8 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import { keyframes } from "@mui/system";
 import { api } from "services/api";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -47,6 +49,7 @@ function NetworkGenie() {
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [followupQuestions, setFollowupQuestions] = useState([]);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const messagesEndRef = useRef(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -80,14 +83,22 @@ function NetworkGenie() {
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
     setIsLoading(true);
+    setFollowupQuestions([]); // Clear previous followup questions
 
     try {
       // Send message to API and get response
       const response = await api.sendChatMessage(inputMessage);
       
+      // Extract followup questions if they exist
+      const messageArtifacts = response.message_artifacts || [];
+      const followupArtifact = messageArtifacts.find(artifact => artifact.type === "followup");
+      if (followupArtifact) {
+        setFollowupQuestions(followupArtifact.followup_questions || []);
+      }
+
       const botMessage = {
         type: "bot",
-        content: response.message || response,
+        content: response.ai_message || response,
         timestamp: new Date(),
       };
       
@@ -125,7 +136,7 @@ function NetworkGenie() {
         borderRadius: isFullScreen ? 0 : 1,
       }}
     >
-      <MDBox pt={3} px={3} display="flex" justifyContent="space-between" alignItems="center">
+      <MDBox pt={2} px={2} display="flex" justifyContent="space-between" alignItems="center">
         <MDBox>
           <MDTypography variant="h6" fontWeight="medium" color="text">
             NetworkGenie AI
@@ -256,12 +267,39 @@ function NetworkGenie() {
           </MDBox>
         )}
         <div ref={messagesEndRef} />
+                {/* Followup Questions */}
+                {followupQuestions.length > 0 && (
+          <MDBox mb={2}>
+            <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+              {followupQuestions.map((question, index) => (
+                <Chip
+                  key={index}
+                  label={question}
+                  size="small"
+                  onClick={() => {
+                    setInputMessage(question);
+                    handleSendMessage();
+                  }}
+                  sx={{
+                    backgroundColor: "info.light",
+                    color: "white",
+                    fontSize: "0.75rem",
+                    cursor: "pointer",
+                    '&:hover': {
+                      backgroundColor: "info.main",
+                    },
+                  }}
+                />
+              ))}
+            </Stack>
+          </MDBox>
+        )}
       </MDBox>
 
-      {/* Input Area */}
       <MDBox
         sx={{
-          p: 2,
+          px: 2,
+          py: 2,
           borderTop: "1px solid",
           borderColor: "grey.200",
           position: isFullScreen ? "fixed" : "relative",
@@ -271,6 +309,7 @@ function NetworkGenie() {
           backgroundColor: "white",
         }}
       >
+
         <MDBox
           sx={{
             display: "flex",

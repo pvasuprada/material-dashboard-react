@@ -188,7 +188,7 @@ export const api = {
   // NetworkGenie Chat
   sendChatMessage: async (message) => {
     try {
-      const response = await axios.post('http://localhost:8185/ntwgenie/tools', {
+      const response = await apiClient.post('/ntwgenie/tools', {
         message: message
       });
       return response.data;
