@@ -80,47 +80,124 @@ const createVectorLayer = (title, color) => {
       switch(id) {
         case 'user_count':
           value = feature.get('user_count');
-          break;
-        case 'avg_download_latency':
-        case 'avg_dl_latency':
-          value = feature.get('avg_dl_latency');
+          // Get all features to determine min/max for scaling
+          const source = feature.getSource?.() || feature.layer?.getSource();
+          let min = 0;
+          let max = 100; // default max
+          
+          if (source) {
+            const features = source.getFeatures();
+            if (features.length > 0) {
+              const values = features.map(f => f.get('user_count')).filter(v => v != null);
+              if (values.length > 0) {
+                min = Math.min(...values);
+                max = Math.max(...values);
+              }
+            }
+          }
+          
+          // Calculate normalized value between 0 and 1
+          const normalizedValue = (value - min) / (max - min);
+          
+          // Create color gradient from red (0) through yellow (0.5) to green (1)
+          let r, g, b;
+          if (normalizedValue <= 0.5) {
+            // Red to Yellow
+            r = 255;
+            g = Math.round(normalizedValue * 2 * 255);
+            b = 0;
+          } else {
+            // Yellow to Green
+            r = Math.round((1 - (normalizedValue - 0.5) * 2) * 255);
+            g = 255;
+            b = 0;
+          }
+          
+          return new Style({
+            fill: new Fill({
+              color: `rgba(${r}, ${g}, ${b}, ${Math.min(0.8, 0.2 + normalizedValue * 0.6)})`,
+            }),
+            stroke: new Stroke({
+              color: `rgba(${r}, ${g}, ${b}, 1)`,
+              width: 1,
+            }),
+          });
           break;
         case 'total_download_volume':
         case 'total_dl_volume':
           value = feature.get('total_dl_volume');
+          // Get all features to determine min/max for scaling
+          const dlSource = feature.getSource?.() || feature.layer?.getSource();
+          let dlMin = 0;
+          let dlMax = 5; // default max
+          
+          if (dlSource) {
+            const dlFeatures = dlSource.getFeatures();
+            if (dlFeatures.length > 0) {
+              const dlValues = dlFeatures.map(f => f.get('total_dl_volume')).filter(v => v != null);
+              if (dlValues.length > 0) {
+                dlMin = Math.min(...dlValues);
+                dlMax = Math.max(...dlValues);
+              }
+            }
+          }
+          
+          // Calculate normalized value between 0 and 1
+          const dlNormalizedValue = (value - dlMin) / (dlMax - dlMin);
+          
+          // Create color gradient from red (0) through yellow (0.5) to green (1)
+          let dlR, dlG, dlB;
+          if (dlNormalizedValue <= 0.5) {
+            // Red to Yellow
+            dlR = 255;
+            dlG = Math.round(dlNormalizedValue * 2 * 255);
+            dlB = 0;
+          } else {
+            // Yellow to Green
+            dlR = Math.round((1 - (dlNormalizedValue - 0.5) * 2) * 255);
+            dlG = 255;
+            dlB = 0;
+          }
+          
+          return new Style({
+            fill: new Fill({
+              color: `rgba(${dlR}, ${dlG}, ${dlB}, ${Math.min(0.8, 0.2 + dlNormalizedValue * 0.6)})`,
+            }),
+            stroke: new Stroke({
+              color: `rgba(${dlR}, ${dlG}, ${dlB}, 1)`,
+              width: 1,
+            }),
+          });
+          break;
+        case 'avg_download_latency':
+        case 'avg_dl_latency':
+          value = feature.get('avg_dl_latency');
           break;
         default:
           value = feature.get(id);
       }
 
       let opacity = 0.2;
-      if (value) {
+      if (value && !['user_count', 'total_dl_volume'].includes(id)) { // Skip for user_count and total_dl_volume as they're handled above
         switch(id) {
-          case 'user_count':
-            opacity = Math.min(0.8, 0.2 + value * 0.2);
-            break;
           case 'avg_download_latency':
           case 'avg_dl_latency':
             opacity = Math.min(0.8, 0.2 + (value / 100));
             break;
-          case 'total_download_volume':
-          case 'total_dl_volume':
-            opacity = Math.min(0.8, 0.2 + (value / 5));
-            break;
           default:
             opacity = 0.5;
         }
+        
+        return new Style({
+          fill: new Fill({
+            color: `rgba(${color.join(',')}, ${opacity})`,
+          }),
+          stroke: new Stroke({
+            color: `rgba(${color.join(',')}, 1)`,
+            width: 1,
+          }),
+        });
       }
-      
-      return new Style({
-        fill: new Fill({
-          color: `rgba(${color.join(',')}, ${opacity})`,
-        }),
-        stroke: new Stroke({
-          color: `rgba(${color.join(',')}, 1)`,
-          width: 1,
-        }),
-      });
     },
   });
 };

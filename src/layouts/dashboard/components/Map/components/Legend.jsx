@@ -35,9 +35,9 @@ const Legend = ({ layer, expanded }) => {
         ];
       case "user_count":
         return [
-          { color: "rgba(255, 0, 0, 0.2)", label: "Low (< 10 users)" },
-          { color: "rgba(255, 0, 0, 0.5)", label: "Medium (10-50 users)" },
-          { color: "rgba(255, 0, 0, 0.8)", label: "High (> 50 users)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low User Count" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium User Count" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High User Count" },
         ];
       case "avg_dl_latency":
         return [
@@ -47,9 +47,9 @@ const Legend = ({ layer, expanded }) => {
         ];
       case "total_dl_volume":
         return [
-          { color: "rgba(255, 192, 203, 0.2)", label: "Low (< 1GB)" },
-          { color: "rgba(255, 192, 203, 0.5)", label: "Medium (1-5GB)" },
-          { color: "rgba(255, 192, 203, 0.8)", label: "High (> 5GB)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low Download Volume" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Download Volume" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High Download Volume" },
         ];
       case "hurricanes":
         return [
