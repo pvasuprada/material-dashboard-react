@@ -34,6 +34,7 @@ function Filter() {
   );
   const [endDate, setEndDate] = useState(dayjs(selectedFilters.dateRange.endDate || new Date()));
   const [isFiltersChanged, setIsFiltersChanged] = useState(false);
+  const markets = useSelector((state) => state.filter.markets);
 
   useEffect(() => {
     dispatch(fetchInitialOptions());
@@ -99,6 +100,14 @@ function Filter() {
     );
   }
 
+  const handleMarketChangeforGnodeb = async(newValue)=>{
+    const selectedMarket = markets.find(market => market.value === parseInt(newValue?.market_id));
+    setMarket({
+      text: selectedMarket?selectedMarket.text:'',
+      value: newValue?.market_id
+    })
+  }
+
   return (
     <MDBox>
       <MDBox px={2} py={1}>
@@ -143,6 +152,7 @@ function Filter() {
             value={gnodeb}
             onChange={(event, newValue) => {
               setGnodeb(newValue);
+              handleMarketChangeforGnodeb(newValue);
               setSector(null);
             }}
             options={data.gnodebs || []}

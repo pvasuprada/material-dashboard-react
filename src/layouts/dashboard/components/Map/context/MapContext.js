@@ -8,10 +8,12 @@ export const MapProvider = ({ children }) => {
   const [overlayLayers, setOverlayLayers] = useState(null);
   const [currentBasemap, setCurrentBasemap] = useState("light");
   const [layerVisibility, setLayerVisibility] = useState({
-    hurricanes: true,
+    hurricanes: false,
     geoserver: false,
-    hexbins: true,
-    coverage_capacity: true,
+    user_count: true,
+    avg_dl_latency: false,
+    total_dl_volume: false,
+    coverage_capacity: false,
   });
   const [selectedMetric, setSelectedMetric] = useState("user_count");
 

@@ -91,9 +91,9 @@ function NetworkGenie() {
       
       // Extract followup questions if they exist
       const messageArtifacts = response.message_artifacts || [];
-      const followupArtifact = messageArtifacts.find(artifact => artifact.type === "followup");
+      const followupArtifact = messageArtifacts.find(artifact => artifact.type === "followup")?.followup_questions || messageArtifacts[0]?.suggested_followups;
       if (followupArtifact) {
-        setFollowupQuestions(followupArtifact.followup_questions || []);
+        setFollowupQuestions(followupArtifact || []);
       }
 
       const botMessage = {
