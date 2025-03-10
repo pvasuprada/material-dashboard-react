@@ -113,12 +113,14 @@ const createVectorLayer = (title, color) => {
             b = 0;
           }
           
+          const opacity = Math.min(0.8, 0.2 + normalizedValue * 0.6);
+          
           return new Style({
             fill: new Fill({
-              color: `rgba(${r}, ${g}, ${b}, ${Math.min(0.8, 0.2 + normalizedValue * 0.6)})`,
+              color: `rgba(${r}, ${g}, ${b})`,
             }),
             stroke: new Stroke({
-              color: `rgba(${r}, ${g}, ${b}, 1)`,
+              color: `rgba(${r}, ${g}, ${b})`,
               width: 1,
             }),
           });
@@ -159,12 +161,14 @@ const createVectorLayer = (title, color) => {
             dlB = 0;
           }
           
+          const dlOpacity = Math.min(0.8, 0.2 + dlNormalizedValue * 0.6);
+          
           return new Style({
             fill: new Fill({
-              color: `rgba(${dlR}, ${dlG}, ${dlB}, ${Math.min(0.8, 0.2 + dlNormalizedValue * 0.6)})`,
+              color: `rgba(${dlR}, ${dlG}, ${dlB}, ${dlOpacity})`,
             }),
             stroke: new Stroke({
-              color: `rgba(${dlR}, ${dlG}, ${dlB}, 1)`,
+              color: `rgba(${dlR}, ${dlG}, ${dlB}, ${dlOpacity})`,
               width: 1,
             }),
           });
@@ -271,9 +275,9 @@ export const layerGroups = [
     },
     layers: [
       { id: "coverage_capacity", label: "Coverage Capacity (Brown)" },
-      { id: "user_count", label: "User Count (Red)" },
+      { id: "user_count", label: "User Count" },
       { id: "avg_dl_latency", label: "Avg Download Latency (Blue)" },
-      { id: "total_dl_volume", label: "Total Download Volume (Pink)" },
+      { id: "total_dl_volume", label: "Total Download Volume" },
     ],
   },
 ]; 
