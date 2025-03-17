@@ -27,36 +27,12 @@ import { keyframes } from "@mui/system";
 import { api } from "services/api";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
-import { Bar, Line, Pie, Scatter } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from 'chart.js';
-
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+import { useMaterialUIController } from "context";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import NetworkGenieChart from "./NetworkGenieChart";
 
 // Define the typing animation keyframes
 const typingAnimation = keyframes`
@@ -64,60 +40,6 @@ const typingAnimation = keyframes`
   50% { opacity: 1; }
   100% { opacity: 0.3; }
 `;
-
-// Chart component to handle different chart types
-const ChartComponent = ({ data, chartType }) => {
-  if (!data || !data.records || data.records.length === 0) return null;
-
-  const records = data.records;
-  const dimensions = data.suggested_visualization?.[0]?.dimensions?.[0] || {};
-  const measures = data.suggested_visualization?.[0]?.measures?.[0] || {};
-  
-  const xField = dimensions.field;
-  const yField = measures.field;
-
-  const chartData = {
-    labels: records.map(record => record[xField]),
-    datasets: [
-      {
-        label: yField,
-        data: records.map(record => parseFloat(record[yField])),
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: `${yField} by ${xField}`,
-      },
-    },
-  };
-
-  const ChartTypes = {
-    bar_plot: Bar,
-    time_series: Line,
-    piechart: Pie,
-    scatter_plot: Scatter,
-  };
-
-  const SelectedChart = ChartTypes[chartType] || Bar;
-
-  return (
-    <MDBox sx={{ height: '300px', width: '100%', p: 2 }}>
-      <SelectedChart data={chartData} options={options} />
-    </MDBox>
-  );
-};
 
 function NetworkGenie() {
   const [messages, setMessages] = useState([
@@ -133,6 +55,8 @@ function NetworkGenie() {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const messagesEndRef = useRef(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -304,9 +228,12 @@ function NetworkGenie() {
                 {message.content}
               </MDTypography>
               {message.type === "bot" && message.chartData && (
-                <ChartComponent 
-                  data={message.chartData} 
-                  chartType={message.chartData.suggested_visualization?.[0]?.chart_type || 'bar_plot'} 
+                <NetworkGenieChart 
+                  title={message.chartData.suggested_visualization?.[0]?.title || "Data Visualization"}
+                  data={message.chartData}
+                  chartType={message.chartData.suggested_visualization?.[0]?.chart_type || 'time_series'}
+                  fontColor={darkMode ? "light" : "dark"}
+                  showLabels
                 />
               )}
               <MDTypography
@@ -373,8 +300,8 @@ function NetworkGenie() {
           </MDBox>
         )}
         <div ref={messagesEndRef} />
-                {/* Followup Questions */}
-                {followupQuestions.length > 0 && (
+        {/* Followup Questions */}
+        {followupQuestions.length > 0 && (
           <MDBox mb={2}>
             <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
               {followupQuestions.map((question, index) => (
@@ -415,7 +342,6 @@ function NetworkGenie() {
           backgroundColor: "white",
         }}
       >
-
         <MDBox
           sx={{
             display: "flex",
