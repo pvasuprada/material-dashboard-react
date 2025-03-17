@@ -96,9 +96,17 @@ function NetworkGenie() {
         setFollowupQuestions(followupArtifact || []);
       }
 
+      const processBotMessage = (message) => {
+        const sourcesIndex = message.indexOf("Sources");
+        if (sourcesIndex!==-1) {
+          return message.substring(0, sourcesIndex).trim();
+        }
+        return message;
+      };
+
       const botMessage = {
         type: "bot",
-        content: response.ai_message || response,
+        content: processBotMessage(response.ai_message || response),
         timestamp: new Date(),
       };
       
