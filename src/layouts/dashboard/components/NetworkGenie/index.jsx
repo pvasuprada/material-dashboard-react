@@ -33,6 +33,7 @@ import { useMaterialUIController } from "context";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import NetworkGenieChart from "./NetworkGenieChart";
+import MDButton from "components/MDButton";
 
 // Define the typing animation keyframes
 const typingAnimation = keyframes`
@@ -92,22 +93,36 @@ function NetworkGenie() {
     try {
       // Send message to API and get response
       const response = await api.sendChatMessage(inputMessage);
-      
+
       // Extract followup questions if they exist
       const messageArtifacts = response.message_artifacts || [];
-      const followupArtifact = messageArtifacts.find(artifact => artifact.type === "followup")?.followup_questions || messageArtifacts[0]?.suggested_followups;
+      const followupArtifact =
+        messageArtifacts.find((artifact) => artifact.type === "followup")?.followup_questions ||
+        messageArtifacts[0]?.suggested_followups ||
+        messageArtifacts.find((artifact) => artifact.type === "map")?.followup_questions;
       if (followupArtifact) {
         setFollowupQuestions(followupArtifact || []);
       }
 
       // Find table artifact for chart data
-      const tableArtifact = messageArtifacts.find(artifact => artifact.type === "table");
-      const graphArtifact = messageArtifacts.find(artifact => artifact.type === "graph");
+      const tableArtifact = messageArtifacts.find((artifact) => artifact.type === "table");
+      const graphArtifact = messageArtifacts.find((artifact) => artifact.type === "graph");
+      const mapArtifact = messageArtifacts.find((artifact) => artifact.type === "map");
 
-      const chartData = tableArtifact && graphArtifact ? {
-        records: tableArtifact.records,
-        suggested_visualization: graphArtifact.suggested_visualization,
-      } : null;
+      const chartData =
+        tableArtifact && graphArtifact
+          ? {
+              records: tableArtifact.records,
+              suggested_visualization: graphArtifact.suggested_visualization,
+            }
+          : null;
+
+      const mapData = mapArtifact
+        ? {
+            records: mapArtifact.records,
+            suggested_visualization: mapArtifact.suggested_visualization,
+          }
+        : null;
 
       const processBotMessage = (message) => {
         const sourcesIndex = message.indexOf("Sources");
@@ -122,8 +137,9 @@ function NetworkGenie() {
         content: processBotMessage(response.ai_message || response),
         timestamp: new Date(),
         chartData: chartData,
+        mapData: mapData,
       };
-      
+
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       const errorMessage = {
@@ -146,8 +162,8 @@ function NetworkGenie() {
   };
 
   return (
-    <Card 
-      sx={{ 
+    <Card
+      sx={{
         height: isFullScreen ? "100vh" : "100%",
         width: isFullScreen ? "100vw" : "100%",
         position: isFullScreen ? "fixed" : "relative",
@@ -228,14 +244,36 @@ function NetworkGenie() {
                 {message.content}
               </MDTypography>
               {message.type === "bot" && message.chartData && (
-                <NetworkGenieChart 
-                  title={message.chartData.suggested_visualization?.[0]?.title || "Data Visualization"}
+                <NetworkGenieChart
+                  title={
+                    message.chartData.suggested_visualization?.[0]?.title || "Data Visualization"
+                  }
                   data={message.chartData}
-                  chartType={message.chartData.suggested_visualization?.[0]?.chart_type || 'time_series'}
+                  chartType={
+                    message.chartData.suggested_visualization?.[0]?.chart_type || "time_series"
+                  }
                   fontColor={darkMode ? "light" : "dark"}
                   showLabels
                 />
               )}
+              {message.type === "bot" &&
+                message.mapData &&
+                message.mapData.suggested_visualization?.[0]?.chart_type === "map" && (
+                  <MDBox mt={2} display="flex" justifyContent="flex-end">
+                    <MDButton
+                      component="button"
+                      variant="contained"
+                      color="info"
+                      fontWeight="medium"
+                      onClick={() => {
+                        // Handle adding to map
+                        console.log("Adding to map:", message.mapData);
+                      }}
+                    >
+                      Add To Map
+                    </MDButton>
+                  </MDBox>
+                )}
               <MDTypography
                 variant="caption"
                 sx={{
@@ -246,6 +284,32 @@ function NetworkGenie() {
               >
                 {message.timestamp.toLocaleTimeString()}
               </MDTypography>
+              {message.type === "bot" && followupQuestions.length > 0 && (
+                <MDBox mt={2}>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                    {followupQuestions.map((question, index) => (
+                      <Chip
+                        key={index}
+                        label={question}
+                        size="small"
+                        onClick={() => {
+                          setInputMessage(question);
+                          handleSendMessage();
+                        }}
+                        sx={{
+                          backgroundColor: "info.light",
+                          color: "white",
+                          fontSize: "0.75rem",
+                          cursor: "pointer",
+                          "&:hover": {
+                            backgroundColor: "info.main",
+                          },
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                </MDBox>
+              )}
             </MDBox>
             {message.type === "user" && (
               <Avatar sx={{ bgcolor: "secondary.main", width: 32, height: 32 }}>
@@ -300,33 +364,6 @@ function NetworkGenie() {
           </MDBox>
         )}
         <div ref={messagesEndRef} />
-        {/* Followup Questions */}
-        {followupQuestions.length > 0 && (
-          <MDBox mb={2}>
-            <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-              {followupQuestions.map((question, index) => (
-                <Chip
-                  key={index}
-                  label={question}
-                  size="small"
-                  onClick={() => {
-                    setInputMessage(question);
-                    handleSendMessage();
-                  }}
-                  sx={{
-                    backgroundColor: "info.light",
-                    color: "white",
-                    fontSize: "0.75rem",
-                    cursor: "pointer",
-                    '&:hover': {
-                      backgroundColor: "info.main",
-                    },
-                  }}
-                />
-              ))}
-            </Stack>
-          </MDBox>
-        )}
       </MDBox>
 
       <MDBox
