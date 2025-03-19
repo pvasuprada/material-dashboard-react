@@ -14,6 +14,7 @@ export const MapProvider = ({ children }) => {
     avg_dl_latency: false,
     total_dl_volume: false,
     coverage_capacity: false,
+    network_genie_layer_1: true,
   });
   const [selectedMetric, setSelectedMetric] = useState("user_count");
 
@@ -43,4 +44,4 @@ export const useMap = () => {
   return context;
 };
 
-export default MapContext; 
+export default MapContext;

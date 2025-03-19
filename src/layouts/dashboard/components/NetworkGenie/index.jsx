@@ -28,6 +28,8 @@ import { api } from "services/api";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import { useMaterialUIController } from "context";
+import { useDispatch } from "react-redux";
+import { addNetworkGenieLayer } from "store/slices/mapSlice";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -58,6 +60,7 @@ function NetworkGenie() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
+  const dispatch = useDispatch();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -268,6 +271,12 @@ function NetworkGenie() {
                       onClick={() => {
                         // Handle adding to map
                         console.log("Adding to map:", message.mapData);
+                        dispatch(
+                          addNetworkGenieLayer({
+                            records: message.mapData.records,
+                            layerName: "Network Genie Layer 1",
+                          })
+                        );
                       }}
                     >
                       Add To Map

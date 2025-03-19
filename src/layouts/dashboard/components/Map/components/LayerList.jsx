@@ -1,4 +1,13 @@
-import { Menu, MenuItem, Checkbox, Radio, FormControlLabel, Divider, Typography, IconButton } from "@mui/material";
+import {
+  Menu,
+  MenuItem,
+  Checkbox,
+  Radio,
+  FormControlLabel,
+  Divider,
+  Typography,
+  IconButton,
+} from "@mui/material";
 import Icon from "@mui/material/Icon";
 import { useMap } from "../context/MapContext";
 import { useState } from "react";
@@ -10,10 +19,10 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
 
   const handleZoomToLayer = (layerId) => {
     if (!mapInstance || !overlayLayers[layerId]) return;
-    
+
     const layer = overlayLayers[layerId];
     const source = layer.getSource();
-    
+
     if (!source) return;
 
     // For vector layers
@@ -23,7 +32,7 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
         const extent = source.getExtent();
         mapInstance.getView().fit(extent, {
           padding: [50, 50, 50, 50],
-          duration: 1000
+          duration: 1000,
         });
       }
     }
@@ -33,16 +42,16 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
       if (extent) {
         mapInstance.getView().fit(extent, {
           padding: [50, 50, 50, 50],
-          duration: 1000
+          duration: 1000,
         });
       }
     }
   };
 
   const toggleLegend = (layerId) => {
-    setExpandedLegends(prev => ({
+    setExpandedLegends((prev) => ({
       ...prev,
-      [layerId]: !prev[layerId]
+      [layerId]: !prev[layerId],
     }));
   };
 
@@ -61,6 +70,7 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
         { id: "user_count", label: "User Count" },
         { id: "avg_dl_latency", label: "Avg Download Latency (Blue)" },
         { id: "total_dl_volume", label: "Total Download Volume" },
+        { id: "network_genie_layer_1", label: "Network Genie Layer 1" },
       ],
     },
   ];
@@ -81,72 +91,71 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
               {group.title}
             </Typography>
           </MenuItem>
-          
-          {group.type === "radio" ? (
-            // Render radio options for metrics
-            group.options.map((option) => (
-              <MenuItem key={option.id}>
-                <FormControlLabel
-                  control={
-                    <Radio
-                      checked={selectedMetric === option.id}
-                      onChange={() => onMetricChange(option.id)}
-                    />
-                  }
-                  label={option.label}
-                />
-              </MenuItem>
-            ))
-          ) : (
-            // Render checkboxes for layers
-            group.layers.map((layer) => (
-              <div key={layer.id}>
-                <MenuItem style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+          {group.type === "radio"
+            ? // Render radio options for metrics
+              group.options.map((option) => (
+                <MenuItem key={option.id}>
                   <FormControlLabel
                     control={
-                      <Checkbox
-                        checked={layerVisibility[layer.id]}
-                        onChange={() => onLayerToggle(layer.id)}
+                      <Radio
+                        checked={selectedMetric === option.id}
+                        onChange={() => onMetricChange(option.id)}
                       />
                     }
-                    label={layer.label}
+                    label={option.label}
                   />
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleLegend(layer.id);
-                      }}
-                      style={{ marginLeft: 8 }}
-                    >
-                      <Icon>
-                        {expandedLegends[layer.id] ? 'expand_less' : 'expand_more'}
-                      </Icon>
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleZoomToLayer(layer.id);
-                      }}
-                      style={{ marginLeft: 8 }}
-                    >
-                      <Icon>zoom_in</Icon>
-                    </IconButton>
-                  </div>
                 </MenuItem>
-                <Legend 
-                  layer={layer}
-                  expanded={expandedLegends[layer.id]}
-                />
-              </div>
-            ))
-          )}
+              ))
+            : // Render checkboxes for layers
+              group.layers.map((layer) => (
+                <div key={layer.id}>
+                  <MenuItem
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={layerVisibility[layer.id]}
+                          onChange={() => onLayerToggle(layer.id)}
+                        />
+                      }
+                      label={layer.label}
+                    />
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleLegend(layer.id);
+                        }}
+                        style={{ marginLeft: 8 }}
+                      >
+                        <Icon>{expandedLegends[layer.id] ? "expand_less" : "expand_more"}</Icon>
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleZoomToLayer(layer.id);
+                        }}
+                        style={{ marginLeft: 8 }}
+                      >
+                        <Icon>zoom_in</Icon>
+                      </IconButton>
+                    </div>
+                  </MenuItem>
+                  <Legend layer={layer} expanded={expandedLegends[layer.id]} />
+                </div>
+              ))}
         </div>
       ))}
     </Menu>
   );
 };
 
-export default LayerList; 
+export default LayerList;
