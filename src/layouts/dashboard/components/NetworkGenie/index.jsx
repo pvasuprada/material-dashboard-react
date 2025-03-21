@@ -50,11 +50,11 @@ function NetworkGenie() {
       type: "bot",
       content: "Hello! I am NetworkGenie, your AI assistant. How can I help you today?",
       timestamp: new Date(),
+      followupQuestions: [],
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [followupQuestions, setFollowupQuestions] = useState([]);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const messagesEndRef = useRef(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -86,12 +86,12 @@ function NetworkGenie() {
       type: "user",
       content: inputMessage,
       timestamp: new Date(),
+      followupQuestions: [],
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
     setIsLoading(true);
-    setFollowupQuestions([]); // Clear previous followup questions
 
     try {
       // Send message to API and get response
@@ -102,10 +102,8 @@ function NetworkGenie() {
       const followupArtifact =
         messageArtifacts.find((artifact) => artifact.type === "followup")?.followup_questions ||
         messageArtifacts[0]?.suggested_followups ||
-        messageArtifacts.find((artifact) => artifact.type === "map")?.followup_questions;
-      if (followupArtifact) {
-        setFollowupQuestions(followupArtifact || []);
-      }
+        messageArtifacts.find((artifact) => artifact.type === "map")?.followup_questions ||
+        [];
 
       // Find table artifact for chart data
       const tableArtifact = messageArtifacts.find((artifact) => artifact.type === "table");
@@ -141,6 +139,7 @@ function NetworkGenie() {
         timestamp: new Date(),
         chartData: chartData,
         mapData: mapData,
+        followupQuestions: followupArtifact,
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -149,6 +148,7 @@ function NetworkGenie() {
         type: "bot",
         content: "Sorry, I encountered an error while processing your request. Please try again.",
         timestamp: new Date(),
+        followupQuestions: [],
       };
       setMessages((prev) => [...prev, errorMessage]);
       console.error("Chat error:", error);
@@ -293,32 +293,34 @@ function NetworkGenie() {
               >
                 {message.timestamp.toLocaleTimeString()}
               </MDTypography>
-              {message.type === "bot" && followupQuestions.length > 0 && (
-                <MDBox mt={2}>
-                  <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-                    {followupQuestions.map((question, index) => (
-                      <Chip
-                        key={index}
-                        label={question}
-                        size="small"
-                        onClick={() => {
-                          setInputMessage(question);
-                          handleSendMessage();
-                        }}
-                        sx={{
-                          backgroundColor: "info.light",
-                          color: "white",
-                          fontSize: "0.75rem",
-                          cursor: "pointer",
-                          "&:hover": {
-                            backgroundColor: "info.main",
-                          },
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                </MDBox>
-              )}
+              {message.type === "bot" &&
+                message.followupQuestions &&
+                message.followupQuestions.length > 0 && (
+                  <MDBox mt={2}>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                      {message.followupQuestions.map((question, index) => (
+                        <Chip
+                          key={index}
+                          label={question}
+                          size="small"
+                          onClick={() => {
+                            setInputMessage(question);
+                            handleSendMessage();
+                          }}
+                          sx={{
+                            backgroundColor: "info.light",
+                            color: "white",
+                            fontSize: "0.75rem",
+                            cursor: "pointer",
+                            "&:hover": {
+                              backgroundColor: "info.main",
+                            },
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </MDBox>
+                )}
             </MDBox>
             {message.type === "user" && (
               <Avatar sx={{ bgcolor: "secondary.main", width: 32, height: 32 }}>
