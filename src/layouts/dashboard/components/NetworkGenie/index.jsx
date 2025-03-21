@@ -13,29 +13,40 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
+// React and Redux imports
 import { useState, useRef, useEffect } from "react";
-import Card from "@mui/material/Card";
-import TextField from "@mui/material/TextField";
-import IconButton from "@mui/material/IconButton";
+import { useDispatch, useSelector } from "react-redux";
+
+// MUI Icons
 import SendIcon from "@mui/icons-material/Send";
-import Avatar from "@mui/material/Avatar";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import PersonIcon from "@mui/icons-material/Person";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import { keyframes } from "@mui/system";
-import { api } from "services/api";
+
+// MUI Components
+import Card from "@mui/material/Card";
+import TextField from "@mui/material/TextField";
+import IconButton from "@mui/material/IconButton";
+import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import { keyframes } from "@mui/system";
+
+// Services and Context
+import { api } from "services/api";
 import { useMaterialUIController } from "context";
-import { useDispatch } from "react-redux";
 import { addNetworkGenieLayer } from "store/slices/mapSlice";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-import NetworkGenieChart from "./NetworkGenieChart";
 import MDButton from "components/MDButton";
+
+// Local components
+import NetworkGenieChart from "./NetworkGenieChart";
 
 // Define the typing animation keyframes
 const typingAnimation = keyframes`
@@ -56,11 +67,13 @@ function NetworkGenie() {
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [useCurrentSelection, setUseCurrentSelection] = useState(false);
   const messagesEndRef = useRef(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const dispatch = useDispatch();
+  const selectedFilters = useSelector((state) => state.filter.selectedFilters);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -81,10 +94,15 @@ function NetworkGenie() {
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
-    // Add user message
+    // Add user message with filter context if enabled
+    const messageContent =
+      useCurrentSelection && selectedFilters.market
+        ? `${inputMessage} (market: ${selectedFilters.market?.text || ""}, sector: ${selectedFilters.sector?.label || ""})`
+        : inputMessage;
+
     const userMessage = {
       type: "user",
-      content: inputMessage,
+      content: messageContent,
       timestamp: new Date(),
       followupQuestions: [],
     };
@@ -95,7 +113,7 @@ function NetworkGenie() {
 
     try {
       // Send message to API and get response
-      const response = await api.sendChatMessage(inputMessage);
+      const response = await api.sendChatMessage(messageContent);
 
       // Extract followup questions if they exist
       const messageArtifacts = response.message_artifacts || [];
@@ -164,6 +182,17 @@ function NetworkGenie() {
     }
   };
 
+  // Get placeholder text based on current selection
+  const getPlaceholderText = () => {
+    if (!useCurrentSelection || !selectedFilters.market) {
+      return "Ask NetworkGenie...";
+    }
+
+    const marketText = selectedFilters.market?.text || "";
+    const sectorText = selectedFilters.sector?.label || "";
+    return `Ask NetworkGenie in market: ${marketText}${sectorText ? `, sector: ${sectorText}` : ""}`;
+  };
+
   return (
     <Card
       sx={{
@@ -188,9 +217,26 @@ function NetworkGenie() {
             </MDTypography>
           </MDBox>
         </MDBox>
-        <IconButton onClick={toggleFullScreen} color="info">
-          {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-        </IconButton>
+        <MDBox display="flex" alignItems="center" gap={2}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={useCurrentSelection}
+                onChange={(e) => setUseCurrentSelection(e.target.checked)}
+                size="small"
+                color="info"
+              />
+            }
+            label={
+              <MDTypography variant="button" fontWeight="regular" color="text">
+                Use Current Selection
+              </MDTypography>
+            }
+          />
+          <IconButton onClick={toggleFullScreen} color="info">
+            {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+          </IconButton>
+        </MDBox>
       </MDBox>
 
       {/* Chat Messages - Fixed height with scrollbar */}
@@ -399,7 +445,7 @@ function NetworkGenie() {
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Ask NetworkGenie..."
+            placeholder={getPlaceholderText()}
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
