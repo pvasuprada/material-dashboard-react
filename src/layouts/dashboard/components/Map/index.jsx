@@ -65,6 +65,7 @@ import { createBasemaps } from "./config/basemaps";
 import { defaultLayers, createHexbinStyle } from "./config/layers";
 import { MapProvider, useMap } from "./context/MapContext";
 import { MAPBOX_API_KEY } from "./config/keys";
+import { WKT } from "ol/format";
 
 // Custom styles for the controls
 const controlStyle = {
@@ -468,13 +469,76 @@ function MapContent() {
         try {
           const coverageData = await api.getCoverageCapacityData();
           updateCoverageCapacity(coverageData);
+
+          // Fetch and update raw coverage data
+          const rawCoverageData = await api.getRawCoverageCapacityData({});
+          updateRawCoverageLayer(rawCoverageData);
         } catch (error) {
-          console.error("Error fetching coverage capacity data:", error);
+          console.error("Error fetching coverage data:", error);
         }
       };
       fetchCoverageData();
     }
   }, [mapInstance]);
+
+  // Add function to update raw coverage layer
+  const updateRawCoverageLayer = (rawCoverageData) => {
+    if (!mapInstance || !rawCoverageData) return;
+
+    try {
+      // Find the raw coverage layer
+      const rawCoverageLayer = mapInstance
+        .getLayers()
+        .getArray()
+        .find((layer) => layer.get("title") === "raw_coverage");
+
+      if (!rawCoverageLayer) {
+        console.error("Raw coverage layer not found");
+        return;
+      }
+
+      // Parse WKT and create features
+      const features = rawCoverageData.map((record) => {
+        const format = new WKT();
+        const geometry = format.readGeometry(record.geom, {
+          dataProjection: "EPSG:4326",
+          featureProjection: "EPSG:3857",
+        });
+
+        const feature = new Feature({
+          geometry: geometry,
+        });
+
+        // Add properties to the feature
+        feature.setProperties({
+          carrier: record.carrier,
+          enodeb_id: record.enodeb_id,
+          fuze_site_id: record.fuze_site_id,
+        });
+
+        return feature;
+      });
+
+      // Update the layer source
+      const source = rawCoverageLayer.getSource();
+      source.clear();
+      source.addFeatures(features);
+
+      // Set visibility based on layerVisibility state
+      rawCoverageLayer.setVisible(layerVisibility["raw_coverage"] || false);
+
+      // If there are features and the layer is visible, fit to extent
+      if (features.length > 0 && layerVisibility["raw_coverage"]) {
+        const extent = source.getExtent();
+        mapInstance.getView().fit(extent, {
+          padding: [50, 50, 50, 50],
+          duration: 1000,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating raw coverage layer:", error);
+    }
+  };
 
   // Add this function to handle selected location updates
   const updateSelectedLocation = () => {

@@ -28,19 +28,31 @@ const LegendItem = styled(Box)(({ theme }) => ({
 }));
 
 const Legend = ({ layer, expanded }) => {
-  const getLegendItems = () => {
+  const getLegendContent = () => {
     switch (layer.id) {
+      case "raw_coverage":
+        return [
+          {
+            color: "rgba(255, 165, 0, 0.4)",
+            label: "Raw Coverage Area",
+            borderColor: "rgba(255, 165, 0, 1)",
+            borderWidth: 2,
+          },
+        ];
       case "coverage_capacity":
         return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low Signal (RSRP < 20)" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Signal (RSRP 20-50)" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High Signal (RSRP > 50)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low Signal" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Signal" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High Signal" },
         ];
       case "user_count":
         return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low User Count" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium User Count" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High User Count" },
+          {
+            color: "rgba(255, 0, 0, 0.4)",
+            label: "User Density",
+            borderColor: "rgba(255, 0, 0, 1)",
+            description: "Darker red indicates higher user count",
+          },
         ];
       case "avg_dl_latency":
         return [
@@ -63,21 +75,36 @@ const Legend = ({ layer, expanded }) => {
           { color: "#99ff00", label: "Category 1" },
         ];
       default:
-        return [];
+        return null;
     }
   };
 
-  const legendItems = getLegendItems();
+  const legendItems = getLegendContent();
 
-  if (legendItems.length === 0) return null;
+  if (legendItems === null) return null;
 
   return (
     <Collapse in={expanded}>
       <LegendContainer>
         {legendItems.map((item, index) => (
           <LegendItem key={index}>
-            <div className="legend-swatch" style={{ backgroundColor: item.color }} />
-            <Typography variant="caption">{item.label}</Typography>
+            <div
+              className="legend-swatch"
+              style={{
+                backgroundColor: item.color,
+                border: item.borderColor
+                  ? `${item.borderWidth || 1}px solid ${item.borderColor}`
+                  : undefined,
+              }}
+            />
+            <Box>
+              <Typography variant="caption">{item.label}</Typography>
+              {item.description && (
+                <Typography variant="caption" color="text.secondary" display="block">
+                  {item.description}
+                </Typography>
+              )}
+            </Box>
           </LegendItem>
         ))}
       </LegendContainer>

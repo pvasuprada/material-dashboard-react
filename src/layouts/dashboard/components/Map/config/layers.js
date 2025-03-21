@@ -211,6 +211,23 @@ const createCoverageCapacityLayer = () => {
   });
 };
 
+const createRawCoverageLayer = () => {
+  return new VectorLayer({
+    source: new VectorSource(),
+    title: "raw_coverage",
+    visible: false,
+    style: new Style({
+      fill: new Fill({
+        color: "rgba(255, 165, 0, 0.4)", // Orange with 0.4 opacity
+      }),
+      stroke: new Stroke({
+        color: "rgba(255, 165, 0, 1)", // Solid orange for border
+        width: 2,
+      }),
+    }),
+  });
+};
+
 // Example layer configurations
 export const defaultLayers = {
   geoserver: createWMSLayer({
@@ -226,6 +243,7 @@ export const defaultLayers = {
     visible: false,
   }),
   coverage_capacity: createCoverageCapacityLayer(),
+  raw_coverage: createRawCoverageLayer(),
   user_count: createVectorLayer("User Count", [255, 0, 0]),
   avg_dl_latency: createVectorLayer("Avg DL Latency", [0, 0, 255]),
   total_dl_volume: createVectorLayer("Total DL Volume", [255, 192, 203]),

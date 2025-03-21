@@ -74,7 +74,7 @@ export const api = {
       const response = await apiClient.post("/sectors", {
         nwfid: params.nwfid,
         du: params.du,
-        trafficType: params.trafficType || ["FWA"]
+        trafficType: params.trafficType || ["FWA"],
       });
       return response.data;
     } catch (error) {
@@ -188,12 +188,27 @@ export const api = {
   // NetworkGenie Chat
   sendChatMessage: async (message) => {
     try {
-      const response = await apiClient.post('/ntwgenie/tools', {
-        message: message
+      const response = await apiClient.post("/ntwgenie/tools", {
+        message: message,
       });
       return response.data;
     } catch (error) {
       console.error("Error sending chat message:", error);
+      throw error;
+    }
+  },
+
+  getRawCoverageCapacityData: async (params) => {
+    try {
+      const response = await apiClient.post("/raw-coverage", {
+        gnbId: params?.gnodeb,
+        sector: params?.sector,
+        fuze_site_id: params?.fuze_site_id,
+        band: "Bn77",
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching coverage capacity data:", error);
       throw error;
     }
   },
