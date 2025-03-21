@@ -15,13 +15,13 @@ export const metricConfigs = {
     label: "Avg Download Latency",
     color: [0, 0, 255], // Blue
     unit: "ms",
-    normalizer: (value) => Math.min(0.8, 0.2 + (value / 10)),
+    normalizer: (value) => Math.min(0.8, 0.2 + value / 10),
   },
   total_dl_volume: {
     label: "Total Download Volume",
     color: [255, 192, 203], // Pink
     unit: "GB",
-    normalizer: (value) => Math.min(0.8, 0.2 + (value / 5)),
+    normalizer: (value) => Math.min(0.8, 0.2 + value / 5),
   },
 };
 
@@ -51,13 +51,7 @@ export const createHexbinLayer = (title = "Hexbins", metric = "user_count") => {
   });
 };
 
-export const createWMSLayer = ({
-  url,
-  layers,
-  title,
-  visible = true,
-  params = {},
-}) => {
+export const createWMSLayer = ({ url, layers, title, visible = true, params = {} }) => {
   return new ImageLayer({
     source: new ImageWMS({
       url: url,
@@ -69,7 +63,7 @@ export const createWMSLayer = ({
 };
 
 const createVectorLayer = (title, color) => {
-  const id = title.toLowerCase().replace(/\s+/g, '_');
+  const id = title.toLowerCase().replace(/\s+/g, "_");
   return new VectorLayer({
     source: new VectorSource(),
     title: id,
@@ -77,28 +71,28 @@ const createVectorLayer = (title, color) => {
     style: (feature) => {
       // Use the exact property names from the data
       let value;
-      switch(id) {
-        case 'user_count':
-          value = feature.get('user_count');
+      switch (id) {
+        case "user_count":
+          value = feature.get("user_count");
           // Get all features to determine min/max for scaling
           const source = feature.getSource?.() || feature.layer?.getSource();
           let min = 0;
           let max = 100; // default max
-          
+
           if (source) {
             const features = source.getFeatures();
             if (features.length > 0) {
-              const values = features.map(f => f.get('user_count')).filter(v => v != null);
+              const values = features.map((f) => f.get("user_count")).filter((v) => v != null);
               if (values.length > 0) {
                 min = Math.min(...values);
                 max = Math.max(...values);
               }
             }
           }
-          
+
           // Calculate normalized value between 0 and 1
           const normalizedValue = (value - min) / (max - min);
-          
+
           // Create color gradient from red (0) through yellow (0.5) to green (1)
           let r, g, b;
           if (normalizedValue <= 0.5) {
@@ -112,9 +106,9 @@ const createVectorLayer = (title, color) => {
             g = 255;
             b = 0;
           }
-          
+
           const opacity = Math.min(0.8, 0.2 + normalizedValue * 0.6);
-          
+
           return new Style({
             fill: new Fill({
               color: `rgba(${r}, ${g}, ${b})`,
@@ -125,28 +119,30 @@ const createVectorLayer = (title, color) => {
             }),
           });
           break;
-        case 'total_download_volume':
-        case 'total_dl_volume':
-          value = feature.get('total_dl_volume');
+        case "total_download_volume":
+        case "total_dl_volume":
+          value = feature.get("total_dl_volume");
           // Get all features to determine min/max for scaling
           const dlSource = feature.getSource?.() || feature.layer?.getSource();
           let dlMin = 0;
           let dlMax = 5; // default max
-          
+
           if (dlSource) {
             const dlFeatures = dlSource.getFeatures();
             if (dlFeatures.length > 0) {
-              const dlValues = dlFeatures.map(f => f.get('total_dl_volume')).filter(v => v != null);
+              const dlValues = dlFeatures
+                .map((f) => f.get("total_dl_volume"))
+                .filter((v) => v != null);
               if (dlValues.length > 0) {
                 dlMin = Math.min(...dlValues);
                 dlMax = Math.max(...dlValues);
               }
             }
           }
-          
+
           // Calculate normalized value between 0 and 1
           const dlNormalizedValue = (value - dlMin) / (dlMax - dlMin);
-          
+
           // Create color gradient from red (0) through yellow (0.5) to green (1)
           let dlR, dlG, dlB;
           if (dlNormalizedValue <= 0.5) {
@@ -160,9 +156,9 @@ const createVectorLayer = (title, color) => {
             dlG = 255;
             dlB = 0;
           }
-          
+
           const dlOpacity = Math.min(0.8, 0.2 + dlNormalizedValue * 0.6);
-          
+
           return new Style({
             fill: new Fill({
               color: `rgba(${dlR}, ${dlG}, ${dlB}, ${dlOpacity})`,
@@ -173,31 +169,32 @@ const createVectorLayer = (title, color) => {
             }),
           });
           break;
-        case 'avg_download_latency':
-        case 'avg_dl_latency':
-          value = feature.get('avg_dl_latency');
+        case "avg_download_latency":
+        case "avg_dl_latency":
+          value = feature.get("avg_dl_latency");
           break;
         default:
           value = feature.get(id);
       }
 
       let opacity = 0.2;
-      if (value && !['user_count', 'total_dl_volume'].includes(id)) { // Skip for user_count and total_dl_volume as they're handled above
-        switch(id) {
-          case 'avg_download_latency':
-          case 'avg_dl_latency':
-            opacity = Math.min(0.8, 0.2 + (value / 100));
+      if (value && !["user_count", "total_dl_volume"].includes(id)) {
+        // Skip for user_count and total_dl_volume as they're handled above
+        switch (id) {
+          case "avg_download_latency":
+          case "avg_dl_latency":
+            opacity = Math.min(0.8, 0.2 + value / 100);
             break;
           default:
             opacity = 0.5;
         }
-        
+
         return new Style({
           fill: new Fill({
-            color: `rgba(${color.join(',')}, ${opacity})`,
+            color: `rgba(${color.join(",")}, ${opacity})`,
           }),
           stroke: new Stroke({
-            color: `rgba(${color.join(',')}, 1)`,
+            color: `rgba(${color.join(",")}, 1)`,
             width: 1,
           }),
         });
@@ -209,21 +206,8 @@ const createVectorLayer = (title, color) => {
 const createCoverageCapacityLayer = () => {
   return new VectorLayer({
     source: new VectorSource(),
-    title: 'coverage_capacity',
+    title: "coverage_capacity",
     visible: false,
-    style: (feature) => {
-      const value = feature.get('bn77_rsrp');
-      const opacity = value ? Math.min(0.8, 0.2 + (value / 100)) : 0.2;
-      return new Style({
-        fill: new Fill({
-          color: `rgba(139, 69, 19, ${opacity})`,
-        }),
-        stroke: new Stroke({
-          color: 'rgba(139, 69, 19, 1)',
-          width: 1,
-        }),
-      });
-    },
   });
 };
 
@@ -242,9 +226,9 @@ export const defaultLayers = {
     visible: false,
   }),
   coverage_capacity: createCoverageCapacityLayer(),
-  user_count: createVectorLayer('User Count', [255, 0, 0]),
-  avg_dl_latency: createVectorLayer('Avg DL Latency', [0, 0, 255]),
-  total_dl_volume: createVectorLayer('Total DL Volume', [255, 192, 203]),
+  user_count: createVectorLayer("User Count", [255, 0, 0]),
+  avg_dl_latency: createVectorLayer("Avg DL Latency", [0, 0, 255]),
+  total_dl_volume: createVectorLayer("Total DL Volume", [255, 192, 203]),
 };
 
 // Layer groups for the layer list
@@ -253,10 +237,10 @@ export const layerGroups = [
     title: "Base Layers",
     titleProps: {
       sx: {
-        color: 'text.primary',
+        color: "text.primary",
         fontWeight: 600,
-        mb: 1
-      }
+        mb: 1,
+      },
     },
     layers: [
       { id: "geoserver", label: "GeoServer Layer" },
@@ -268,16 +252,16 @@ export const layerGroups = [
     title: "Data Layers",
     titleProps: {
       sx: {
-        color: 'text.primary',
+        color: "text.primary",
         fontWeight: 600,
-        mb: 1
-      }
+        mb: 1,
+      },
     },
     layers: [
-      { id: "coverage_capacity", label: "Coverage Capacity (Brown)" },
+      { id: "coverage_capacity", label: "Coverage Capacity" },
       { id: "user_count", label: "User Count" },
       { id: "avg_dl_latency", label: "Avg Download Latency (Blue)" },
       { id: "total_dl_volume", label: "Total Download Volume" },
     ],
   },
-]; 
+];

@@ -21,7 +21,7 @@ import Dialog from "@mui/material/Dialog";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import DownloadIcon from "@mui/icons-material/Download";
-import { Bar, Line, Pie, Scatter } from 'react-chartjs-2';
+import { Bar, Line, Pie, Scatter } from "react-chartjs-2";
 import html2canvas from "html2canvas";
 import { useMaterialUIController } from "context";
 
@@ -29,7 +29,14 @@ import { useMaterialUIController } from "context";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
-function NetworkGenieChart({ title, data, chartType, color = "info", fontColor = "dark", showLabels = true }) {
+function NetworkGenieChart({
+  title,
+  data,
+  chartType,
+  color = "info",
+  fontColor = "dark",
+  showLabels = true,
+}) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -48,29 +55,25 @@ function NetworkGenieChart({ title, data, chartType, color = "info", fontColor =
 
   const chartData = useMemo(
     () => ({
-      labels: data?.records?.map(record => record[data.suggested_visualization?.[0]?.dimensions?.[0]?.field]) || [],
+      labels:
+        data?.records?.map(
+          (record) => record[data.suggested_visualization?.[0]?.dimensions?.[0]?.field]
+        ) || [],
       datasets: [
         {
           label: data?.suggested_visualization?.[0]?.measures?.[0]?.field || "",
-          data: data?.records?.map(record => 
-            parseFloat(record[data.suggested_visualization?.[0]?.measures?.[0]?.field])
-          ) || [],
-          backgroundColor: darkMode 
-            ? 'rgba(255, 255, 255, 0.2)' 
-            : 'rgba(75, 192, 192, 0.6)',
-          borderColor: darkMode 
-            ? 'rgba(255, 255, 255, 0.8)' 
-            : 'rgba(75, 192, 192, 1)',
+          data:
+            data?.records?.map((record) =>
+              parseFloat(record[data.suggested_visualization?.[0]?.measures?.[0]?.field])
+            ) || [],
+          backgroundColor: darkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(75, 192, 192, 0.6)",
+          borderColor: darkMode ? "rgba(255, 255, 255, 0.8)" : "rgba(75, 192, 192, 1)",
           borderWidth: 2,
           tension: 0.4,
           fill: true,
           pointRadius: 3,
-          pointBackgroundColor: darkMode 
-            ? 'rgba(255, 255, 255, 1)' 
-            : 'rgba(75, 192, 192, 1)',
-          pointBorderColor: darkMode 
-            ? 'rgba(0, 0, 0, 0.2)' 
-            : '#fff',
+          pointBackgroundColor: darkMode ? "rgba(255, 255, 255, 1)" : "rgba(75, 192, 192, 1)",
+          pointBorderColor: darkMode ? "rgba(0, 0, 0, 0.2)" : "#fff",
         },
       ],
     }),
@@ -84,12 +87,12 @@ function NetworkGenieChart({ title, data, chartType, color = "info", fontColor =
       plugins: {
         legend: {
           display: true,
-          position: 'top',
+          position: "top",
           labels: {
-            color: darkMode ? '#fff' : '#344767',
+            color: darkMode ? "#fff" : "#344767",
             font: {
               size: 11,
-              family: 'Roboto',
+              family: "Roboto",
             },
           },
         },
@@ -97,9 +100,9 @@ function NetworkGenieChart({ title, data, chartType, color = "info", fontColor =
           display: false,
         },
         tooltip: {
-          backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.95)',
-          titleColor: fontColor === 'dark' ? '#344767' : '#ffffff',
-          bodyColor: fontColor === 'dark' ? '#344767' : '#ffffff',
+          backgroundColor: darkMode ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.95)",
+          titleColor: fontColor === "dark" ? "#344767" : "#ffffff",
+          bodyColor: fontColor === "dark" ? "#344767" : "#ffffff",
           padding: 12,
           bodyFont: {
             size: 11,
@@ -111,7 +114,7 @@ function NetworkGenieChart({ title, data, chartType, color = "info", fontColor =
           },
           bodySpacing: 6,
           boxPadding: 6,
-          borderColor: 'rgba(0, 0, 0, 0.1)',
+          borderColor: "rgba(0, 0, 0, 0.1)",
           borderWidth: 1,
           cornerRadius: 8,
           displayColors: false,
@@ -125,15 +128,15 @@ function NetworkGenieChart({ title, data, chartType, color = "info", fontColor =
             drawOnChartArea: true,
             drawTicks: false,
             borderDash: [5, 5],
-            color: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+            color: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
           },
           ticks: {
             display: true,
             padding: 8,
-            color: darkMode ? '#fff' : '#344767',
+            color: darkMode ? "#fff" : "#344767",
             font: {
               size: 11,
-              family: 'Roboto',
+              family: "Roboto",
             },
           },
           title: {
@@ -149,11 +152,11 @@ function NetworkGenieChart({ title, data, chartType, color = "info", fontColor =
           },
           ticks: {
             display: true,
-            color: darkMode ? '#fff' : '#344767',
+            color: darkMode ? "#fff" : "#344767",
             padding: 8,
             font: {
               size: 11,
-              family: 'Roboto',
+              family: "Roboto",
             },
           },
           title: {
@@ -182,14 +185,10 @@ function NetworkGenieChart({ title, data, chartType, color = "info", fontColor =
 
   return (
     <>
-      <Card sx={{ height: "100%" }}>
+      <Card>
         <MDBox p={1}>
           <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-            <MDTypography
-              variant="h6"
-              fontWeight="medium"
-              color={fontColor}
-            >
+            <MDTypography variant="h6" fontWeight="medium" color={fontColor}>
               {title}
             </MDTypography>
             <MDBox display="flex" gap={0.5}>
@@ -200,7 +199,8 @@ function NetworkGenieChart({ title, data, chartType, color = "info", fontColor =
                   padding: "4px",
                   color: fontColor === "light" ? "#fff" : "#344767",
                   "&:hover": {
-                    backgroundColor: fontColor === "light" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                    backgroundColor:
+                      fontColor === "light" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
                   },
                 }}
               >
@@ -213,7 +213,8 @@ function NetworkGenieChart({ title, data, chartType, color = "info", fontColor =
                   padding: "4px",
                   color: fontColor === "light" ? "#fff" : "#344767",
                   "&:hover": {
-                    backgroundColor: fontColor === "light" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                    backgroundColor:
+                      fontColor === "light" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
                   },
                 }}
               >
@@ -246,7 +247,8 @@ function NetworkGenieChart({ title, data, chartType, color = "info", fontColor =
               sx={{
                 color: fontColor === "light" ? "#fff" : "#344767",
                 "&:hover": {
-                  backgroundColor: fontColor === "light" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                  backgroundColor:
+                    fontColor === "light" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
                 },
               }}
             >
@@ -279,7 +281,7 @@ NetworkGenieChart.propTypes = {
       })
     ),
   }),
-  chartType: PropTypes.oneOf(['bar_plot', 'time_series', 'piechart', 'scatter_plot']),
+  chartType: PropTypes.oneOf(["bar_plot", "time_series", "piechart", "scatter_plot"]),
   color: PropTypes.oneOf([
     "primary",
     "secondary",
@@ -294,4 +296,4 @@ NetworkGenieChart.propTypes = {
   showLabels: PropTypes.bool,
 };
 
-export default NetworkGenieChart; 
+export default NetworkGenieChart;

@@ -337,15 +337,6 @@ function MapContent() {
     });
   };
 
-  const createHexbinLayer = () => {
-    return new VectorLayer({
-      source: new VectorSource(),
-      title: "Hexbins",
-      visible: true,
-      style: createHexbinStyle,
-    });
-  };
-
   const updateHexbins = async () => {
     try {
       if (averages && Array.isArray(averages) && mapInstance) {
@@ -387,12 +378,21 @@ function MapContent() {
     }
   };
 
+  const getColorFromRSRP = (rsrp, minRSRP, maxRSRP) => {
+    const normalized = (rsrp - minRSRP) / (maxRSRP - minRSRP);
+    const red = Math.min(255, 255 * (1 - normalized) * 2);
+    const green = Math.min(255, 255 * normalized * 2);
+    const blue = 0;
+    return `rgba(${red}, ${green}, ${blue}, 1)`;
+  };
+
   const updateCoverageCapacity = async (coverageData) => {
     try {
       if (coverageData?.data && Array.isArray(coverageData.data) && mapInstance) {
         console.log("Updating coverage capacity layer with data:", coverageData.data);
-
-        const features = coverageData.data.map(({ h3_text_string, bn77_rsrp, bn5_rsrp }) => {
+        const minRSRP = Math.min(...coverageData.data.map((item) => item.rsrp));
+        const maxRSRP = Math.max(...coverageData.data.map((item) => item.rsrp));
+        const features = coverageData.data.map(({ h3_text_string, rsrp, bn5_rsrp }) => {
           const hexBoundary = h3.cellToBoundary(h3_text_string);
           const coordinates = [hexBoundary.map(([lat, lng]) => fromLonLat([lng, lat]))];
           const feature = new Feature({
@@ -401,8 +401,17 @@ function MapContent() {
 
           // Set coverage metrics on the feature
           feature.set("h3_index", h3_text_string);
-          feature.set("bn77_rsrp", bn77_rsrp);
+          feature.set("bn77_rsrp", rsrp);
           feature.set("bn5_rsrp", bn5_rsrp);
+          feature.setStyle(
+            new Style({
+              fill: new Fill({
+                color: getColorFromRSRP(rsrp, minRSRP, maxRSRP),
+              }),
+              stroke: getColorFromRSRP(rsrp, minRSRP, maxRSRP),
+              width: 1,
+            })
+          );
           return feature;
         });
 
@@ -412,33 +421,12 @@ function MapContent() {
           .getArray()
           .find((layer) => layer.get("title") === "coverage_capacity");
 
-        if (!coverageLayer) {
-          coverageLayer = new VectorLayer({
-            source: new VectorSource(),
-            title: "coverage_capacity",
-            style: (feature) =>
-              new Style({
-                fill: new Fill({
-                  color: `rgba(139, 69, 19, ${Math.min(0.8, 0.2 + feature.get("bn77_rsrp") / 100)})`,
-                }),
-                stroke: new Stroke({
-                  color: "rgba(139, 69, 19, 1)",
-                  width: 1,
-                }),
-              }),
-          });
-          mapInstance.addLayer(coverageLayer);
-        }
-
         const source = coverageLayer.getSource();
         source.clear();
         source.addFeatures(features);
 
         // Set visibility based on layerVisibility state
         coverageLayer.setVisible(layerVisibility["coverage_capacity"] || false);
-
-        // Force redraw
-        source.changed();
 
         console.log("Coverage capacity layer updated with", features.length, "features");
 
@@ -485,27 +473,6 @@ function MapContent() {
         }
       };
       fetchCoverageData();
-    }
-  }, [mapInstance]);
-
-  // Add effect to test coverage capacity with sample data
-  useEffect(() => {
-    if (mapInstance) {
-      const testData = {
-        data: [
-          {
-            bn77_rsrp: 8,
-            bn5_rsrp: 28,
-            h3_text_string: "8a2a10728537fff",
-          },
-          {
-            bn77_rsrp: 18,
-            bn5_rsrp: 38,
-            h3_text_string: "8a2a1072e26ffff",
-          },
-        ],
-      };
-      updateCoverageCapacity(testData);
     }
   }, [mapInstance]);
 

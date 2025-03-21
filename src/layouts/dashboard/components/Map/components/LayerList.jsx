@@ -66,7 +66,7 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
     {
       title: "Data Layers",
       layers: [
-        { id: "coverage_capacity", label: "Coverage Capacity (Brown)" },
+        { id: "coverage_capacity", label: "Coverage Capacity" },
         { id: "user_count", label: "User Count" },
         { id: "avg_dl_latency", label: "Avg Download Latency (Blue)" },
         { id: "total_dl_volume", label: "Total Download Volume" },

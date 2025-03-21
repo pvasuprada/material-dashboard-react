@@ -3,7 +3,10 @@ import { styled } from "@mui/material/styles";
 
 const LegendContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1),
-  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.default : theme.palette.background.paper,
+  backgroundColor:
+    theme.palette.mode === "dark"
+      ? theme.palette.background.default
+      : theme.palette.background.paper,
   borderRadius: theme.shape.borderRadius,
   marginTop: theme.spacing(0.5),
   border: `1px solid ${theme.palette.divider}`,
@@ -21,7 +24,7 @@ const LegendItem = styled(Box)(({ theme }) => ({
   },
   "& .MuiTypography-caption": {
     color: theme.palette.text.primary,
-  }
+  },
 }));
 
 const Legend = ({ layer, expanded }) => {
@@ -29,9 +32,9 @@ const Legend = ({ layer, expanded }) => {
     switch (layer.id) {
       case "coverage_capacity":
         return [
-          { color: "rgba(139, 69, 19, 0.2)", label: "Low Signal (RSRP < 20)" },
-          { color: "rgba(139, 69, 19, 0.5)", label: "Medium Signal (RSRP 20-50)" },
-          { color: "rgba(139, 69, 19, 0.8)", label: "High Signal (RSRP > 50)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low Signal (RSRP < 20)" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Signal (RSRP 20-50)" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High Signal (RSRP > 50)" },
         ];
       case "user_count":
         return [
@@ -73,10 +76,7 @@ const Legend = ({ layer, expanded }) => {
       <LegendContainer>
         {legendItems.map((item, index) => (
           <LegendItem key={index}>
-            <div
-              className="legend-swatch"
-              style={{ backgroundColor: item.color }}
-            />
+            <div className="legend-swatch" style={{ backgroundColor: item.color }} />
             <Typography variant="caption">{item.label}</Typography>
           </LegendItem>
         ))}
@@ -85,4 +85,4 @@ const Legend = ({ layer, expanded }) => {
   );
 };
 
-export default Legend; 
+export default Legend;
