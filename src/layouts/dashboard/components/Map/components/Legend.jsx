@@ -22,6 +22,12 @@ const LegendItem = styled(Box)(({ theme }) => ({
     marginRight: theme.spacing(1),
     border: `1px solid ${theme.palette.divider}`,
   },
+  "& .legend-icon": {
+    width: 20,
+    height: 20,
+    marginRight: theme.spacing(1),
+    objectFit: "contain",
+  },
   "& .MuiTypography-caption": {
     color: theme.palette.text.primary,
   },
@@ -30,6 +36,14 @@ const LegendItem = styled(Box)(({ theme }) => ({
 const Legend = ({ layer, expanded }) => {
   const getLegendContent = () => {
     switch (layer.id) {
+      case "sites_layer":
+        return [
+          {
+            icon: "/sector360/towericon.png",
+            label: "Site Location",
+            iconSize: "20px",
+          },
+        ];
       case "raw_coverage":
         return [
           {
@@ -88,15 +102,27 @@ const Legend = ({ layer, expanded }) => {
       <LegendContainer>
         {legendItems.map((item, index) => (
           <LegendItem key={index}>
-            <div
-              className="legend-swatch"
-              style={{
-                backgroundColor: item.color,
-                border: item.borderColor
-                  ? `${item.borderWidth || 1}px solid ${item.borderColor}`
-                  : undefined,
-              }}
-            />
+            {item.icon ? (
+              <img
+                src={item.icon}
+                alt={item.label}
+                className="legend-icon"
+                style={{
+                  width: item.iconSize || "20px",
+                  height: item.iconSize || "20px",
+                }}
+              />
+            ) : (
+              <div
+                className="legend-swatch"
+                style={{
+                  backgroundColor: item.color,
+                  border: item.borderColor
+                    ? `${item.borderWidth || 1}px solid ${item.borderColor}`
+                    : undefined,
+                }}
+              />
+            )}
             <Box>
               <Typography variant="caption">{item.label}</Typography>
               {item.description && (

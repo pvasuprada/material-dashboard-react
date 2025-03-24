@@ -34,7 +34,7 @@ import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { Feature } from "ol";
 import { Polygon, Point } from "ol/geom";
-import { Fill, Style, Stroke, Circle as CircleStyle } from "ol/style";
+import { Fill, Style, Stroke, Circle as CircleStyle, Icon } from "ol/style";
 import * as h3 from "h3-js";
 import { api } from "services/api";
 // Material Dashboard 2 React components
@@ -92,6 +92,21 @@ const controlsContainerStyle = {
   gap: "5px",
 };
 
+// Add sites layer initialization
+const createSitesLayer = () => {
+  return new VectorLayer({
+    title: "sites_layer",
+    source: new VectorSource(),
+    style: new Style({
+      image: new Icon({
+        src: "/sector360/towericon.png",
+        scale: 0.03,
+        anchor: [0.5, 0.5],
+      }),
+    }),
+  });
+};
+
 function MapContent() {
   const mapRef = useRef(null);
   const {
@@ -126,6 +141,7 @@ function MapContent() {
   const [clickedFeature, setClickedFeature] = useState(null);
   const [clickedCoordinate, setClickedCoordinate] = useState(null);
   const networkGenieLayers = useSelector(selectNetworkGenieLayers);
+  const gridData = useSelector((state) => state.grid.gridData);
 
   // Add effect to update data layers when averages change
   useEffect(() => {
@@ -955,6 +971,111 @@ function MapContent() {
       }
     }
   }, [mapInstance, networkGenieLayers, layerVisibility]);
+
+  // Replace the existing sites data effect with this new one
+  useEffect(() => {
+    if (mapInstance && gridData && gridData.length > 0) {
+      try {
+        // Create features from the grid data
+        const features = gridData.map((site) => {
+          const coordinates = fromLonLat([parseFloat(site.longitude), parseFloat(site.latitude)]);
+          const feature = new Feature({
+            geometry: new Point(coordinates),
+          });
+
+          // Add all site properties to the feature
+          Object.keys(site).forEach((key) => {
+            feature.set(key, site[key]);
+          });
+
+          return feature;
+        });
+
+        // Find or create the sites layer
+        let sitesLayer = mapInstance
+          .getLayers()
+          .getArray()
+          .find((layer) => layer.get("title") === "sites_layer");
+
+        if (!sitesLayer) {
+          sitesLayer = createSitesLayer();
+          mapInstance.addLayer(sitesLayer);
+          setOverlayLayers((prev) => ({
+            ...prev,
+            sites_layer: sitesLayer,
+          }));
+        }
+
+        // Update the layer source with new features
+        const source = sitesLayer.getSource();
+        source.clear();
+        source.addFeatures(features);
+
+        // Set visibility based on layerVisibility state
+        sitesLayer.setVisible(layerVisibility["sites_layer"] !== false); // Default to true if undefined
+
+        // If the layer is visible and we have features, fit to extent
+        if (layerVisibility["sites_layer"] !== false && features.length > 0) {
+          const extent = source.getExtent();
+          mapInstance.getView().fit(extent, {
+            padding: [50, 50, 50, 50],
+            duration: 1000,
+          });
+        }
+
+        // Add click interaction for popups
+        const updateSitePopup = (feature, coordinates) => {
+          if (!feature) return;
+
+          const properties = feature.getProperties();
+          delete properties.geometry; // Remove geometry from display
+
+          // Create HTML content for popup
+          const content = Object.entries(properties)
+            .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
+            .join("<br>");
+
+          // Show popup
+          popupRef.current.style.display = "block";
+          popupOverlayRef.current.setPosition(coordinates);
+
+          // Update popup content
+          const popupContent = document.getElementById("popup-content");
+          popupContent.innerHTML = content;
+        };
+
+        // Update click handler to handle site features
+        const existingClickListener = mapInstance.getListeners("click")[0];
+        if (existingClickListener) {
+          unByKey(existingClickListener);
+        }
+
+        mapInstance.on("click", (evt) => {
+          const feature = mapInstance.forEachFeatureAtPixel(evt.pixel, (feature) => feature);
+
+          if (feature) {
+            const coordinates = evt.coordinate;
+            if (feature.get("nwfid")) {
+              // This is a site feature
+              updateSitePopup(feature, coordinates);
+            } else {
+              // This is another type of feature (hexbin, etc.)
+              updatePopup(feature, coordinates);
+            }
+            setClickedFeature(feature);
+            setClickedCoordinate(coordinates);
+          } else {
+            setClickedFeature(null);
+            setClickedCoordinate(null);
+            popupRef.current.style.display = "none";
+            dispatch(clearSelectedLocation());
+          }
+        });
+      } catch (error) {
+        console.error("Error updating sites layer:", error);
+      }
+    }
+  }, [mapInstance, gridData, layerVisibility]);
 
   return (
     <Card>

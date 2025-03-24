@@ -72,6 +72,7 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
         { id: "avg_dl_latency", label: "Avg Download Latency (Blue)" },
         { id: "total_dl_volume", label: "Total Download Volume" },
         { id: "network_genie_layer_1", label: "Network Genie Layer 1" },
+        { id: "sites_layer", label: "Sites Layer" },
       ],
     },
   ];
