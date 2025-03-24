@@ -1,4 +1,4 @@
-import { Fill, Style, Stroke } from "ol/style";
+import { Fill, Style, Stroke, Icon } from "ol/style";
 import ImageLayer from "ol/layer/Image";
 import ImageWMS from "ol/source/ImageWMS";
 import { Vector as VectorLayer } from "ol/layer";
@@ -228,6 +228,20 @@ const createRawCoverageLayer = () => {
   });
 };
 
+const createSitesLayer = () => {
+  return new VectorLayer({
+    title: "sites_layer",
+    source: new VectorSource(),
+    style: new Style({
+      image: new Icon({
+        src: "/sector360/towericon.png",
+        scale: 0.03,
+        anchor: [0.5, 0.5],
+      }),
+    }),
+  });
+};
+
 // Example layer configurations
 export const defaultLayers = {
   geoserver: createWMSLayer({
@@ -247,6 +261,7 @@ export const defaultLayers = {
   user_count: createVectorLayer("User Count", [255, 0, 0]),
   avg_dl_latency: createVectorLayer("Avg DL Latency", [0, 0, 255]),
   total_dl_volume: createVectorLayer("Total DL Volume", [255, 192, 203]),
+  sites_layer: createSitesLayer(),
 };
 
 // Layer groups for the layer list

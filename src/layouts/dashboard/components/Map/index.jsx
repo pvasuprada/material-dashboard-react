@@ -34,7 +34,7 @@ import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { Feature } from "ol";
 import { Polygon, Point } from "ol/geom";
-import { Fill, Style, Stroke, Circle as CircleStyle, Icon } from "ol/style";
+import { Fill, Style, Stroke, Circle as CircleStyle, Icon, RegularShape } from "ol/style";
 import * as h3 from "h3-js";
 import { api } from "services/api";
 // Material Dashboard 2 React components
@@ -90,21 +90,6 @@ const controlsContainerStyle = {
   display: "flex",
   flexDirection: "column",
   gap: "5px",
-};
-
-// Add sites layer initialization
-const createSitesLayer = () => {
-  return new VectorLayer({
-    title: "sites_layer",
-    source: new VectorSource(),
-    style: new Style({
-      image: new Icon({
-        src: "/sector360/towericon.png",
-        scale: 0.03,
-        anchor: [0.5, 0.5],
-      }),
-    }),
-  });
 };
 
 function MapContent() {
@@ -574,14 +559,16 @@ function MapContent() {
 
       // Create a distinctive style for the selected location
       const style = new Style({
-        image: new CircleStyle({
-          radius: 4,
+        image: new RegularShape({
+          points: 4,
+          radius: 14,
+          angle: Math.PI / 4,
           fill: new Fill({
-            color: "#ff0000",
+            color: "transparent",
           }),
           stroke: new Stroke({
-            color: "#ffffff",
-            width: 1,
+            color: "#ff0000",
+            width: 2,
           }),
         }),
       });
@@ -998,7 +985,7 @@ function MapContent() {
           .find((layer) => layer.get("title") === "sites_layer");
 
         if (!sitesLayer) {
-          sitesLayer = createSitesLayer();
+          //sitesLayer = createSitesLayer();
           mapInstance.addLayer(sitesLayer);
           setOverlayLayers((prev) => ({
             ...prev,
@@ -1032,7 +1019,7 @@ function MapContent() {
 
           // Create HTML content for popup
           const content = Object.entries(properties)
-            .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
+            .map(([key, value]) => `<strong>${key.toUpperCase()}:</strong> ${value}`)
             .join("<br>");
 
           // Show popup
@@ -1123,6 +1110,7 @@ function MapContent() {
                 border: `1px solid ${theme.palette.divider}`,
                 minWidth: "150px",
                 zIndex: 1000,
+                fontSize: "10px",
               }}
             >
               <div id="popup-content" style={{ color: theme.palette.text.primary }}></div>
