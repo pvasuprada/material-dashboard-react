@@ -97,7 +97,8 @@ function NetworkGenie() {
     // Add user message with filter context if enabled
     const messageContent =
       useCurrentSelection && selectedFilters.market
-        ? `${inputMessage} (market: ${selectedFilters.market?.text || ""}, sector: ${selectedFilters.sector?.label || ""})`
+        ? //? `${inputMessage} (market: ${selectedFilters.market?.text || ""}, sector: ${selectedFilters.sector?.label || ""})`
+          `${inputMessage} in gNodeB: ${selectedFilters.gnodeb?.value || ""}`
         : inputMessage;
 
     const userMessage = {
@@ -190,7 +191,9 @@ function NetworkGenie() {
 
     const marketText = selectedFilters.market?.text || "";
     const sectorText = selectedFilters.sector?.label || "";
-    return `Ask NetworkGenie in market: ${marketText}${sectorText ? `, sector: ${sectorText}` : ""}`;
+    const gnodebText = selectedFilters.gnodeb?.label || "";
+
+    return `Ask NetworkGenie in gNodeB: ${gnodebText}`;
   };
 
   return (
@@ -217,23 +220,19 @@ function NetworkGenie() {
             </MDTypography>
           </MDBox>
         </MDBox>
-        <MDBox display="flex" alignItems="center" gap={2}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={useCurrentSelection}
-                onChange={(e) => setUseCurrentSelection(e.target.checked)}
-                size="small"
-                color="info"
-              />
-            }
-            label={
-              <MDTypography variant="button" fontWeight="regular" color="text">
-                Use Current Selection
-              </MDTypography>
-            }
-          />
-          <IconButton onClick={toggleFullScreen} color="info">
+        <MDBox display="flex" alignItems="center" gap={1}>
+          <MDBox display="flex" alignItems="center">
+            <Switch
+              checked={useCurrentSelection}
+              onChange={(e) => setUseCurrentSelection(e.target.checked)}
+              size="small"
+              color="info"
+            />
+            <MDTypography variant="caption" color="text">
+              Use Selection
+            </MDTypography>
+          </MDBox>
+          <IconButton onClick={toggleFullScreen} color="info" size="small">
             {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
           </IconButton>
         </MDBox>
