@@ -10,6 +10,8 @@ import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -32,11 +34,17 @@ function SiteGrid({ isEmbedded = false }) {
   const dispatch = useDispatch();
   const [menu, setMenu] = useState(null);
   const gridRef = useRef(null);
+  const [showSelectedOnly, setShowSelectedOnly] = useState(false);
 
   // Replace local state with Redux state
   const { gridData, loading } = useSelector((state) => state.grid);
   const gridConfig = useSelector((state) => state.grid.gridConfig);
   const selectedSites = useSelector(selectSelectedSites);
+
+  // Filter data based on showSelectedOnly
+  const filteredData = showSelectedOnly
+    ? gridData.filter((site) => selectedSites.some((selected) => selected.nwfid === site.nwfid))
+    : gridData;
 
   const handleRowClick = (rowData) => {
     const longitude = parseFloat(rowData.longitude);
@@ -220,17 +228,34 @@ function SiteGrid({ isEmbedded = false }) {
             Site Grid
           </MDTypography>
         </MDBox>
-        {!isEmbedded && (
-          <MDBox color="text" px={2}>
-            <Icon
-              sx={{ cursor: "pointer", fontWeight: "bold" }}
-              fontSize="small"
-              onClick={openMenu}
-            >
-              more_vert
-            </Icon>
-          </MDBox>
-        )}
+        <MDBox display="flex" alignItems="center" gap={2}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={showSelectedOnly}
+                onChange={(e) => setShowSelectedOnly(e.target.checked)}
+                color="info"
+                size="small"
+              />
+            }
+            label={
+              <MDTypography variant="button" fontWeight="regular" color="text">
+                Selected Only
+              </MDTypography>
+            }
+          />
+          {!isEmbedded && (
+            <MDBox color="text" px={2}>
+              <Icon
+                sx={{ cursor: "pointer", fontWeight: "bold" }}
+                fontSize="small"
+                onClick={openMenu}
+              >
+                more_vert
+              </Icon>
+            </MDBox>
+          )}
+        </MDBox>
         {renderMenu}
       </MDBox>
 
@@ -254,7 +279,15 @@ function SiteGrid({ isEmbedded = false }) {
 
       <MDBox>
         <DataTable
-          table={siteData}
+          table={{
+            columns: siteData.columns,
+            rows: filteredData.map((site) => ({
+              ...site,
+              latitude: parseFloat(site.latitude).toFixed(4),
+              longitude: parseFloat(site.longitude).toFixed(4),
+              clickEvent: () => handleRowClick(site),
+            })),
+          }}
           showTotalEntries={!isEmbedded}
           isSorted={true}
           noEndBorder
