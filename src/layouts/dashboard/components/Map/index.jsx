@@ -52,6 +52,7 @@ import {
   selectSelectedLocation,
   clearSelectedLocation,
   selectNetworkGenieLayers,
+  selectSelectedSites,
 } from "store/slices/mapSlice";
 import MDAlert from "components/MDAlert";
 import Overlay from "ol/Overlay";
@@ -66,6 +67,11 @@ import { defaultLayers, createHexbinStyle } from "./config/layers";
 import { MapProvider, useMap } from "./context/MapContext";
 import { MAPBOX_API_KEY } from "./config/keys";
 import { WKT } from "ol/format";
+import { extend as extendExtent } from "ol/extent";
+import { Fab } from "@mui/material";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import SiteGrid from "../SiteGrid";
 
 // Custom styles for the controls
 const controlStyle = {
@@ -127,6 +133,9 @@ function MapContent() {
   const [clickedCoordinate, setClickedCoordinate] = useState(null);
   const networkGenieLayers = useSelector(selectNetworkGenieLayers);
   const gridData = useSelector((state) => state.grid.gridData);
+  const selectedSites = useSelector(selectSelectedSites);
+  const [showGridInFullscreen, setShowGridInFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Add effect to update data layers when averages change
   useEffect(() => {
@@ -1064,6 +1073,107 @@ function MapContent() {
     }
   }, [mapInstance, gridData, layerVisibility]);
 
+  // Add effect to update selected sites visualization
+  useEffect(() => {
+    if (mapInstance && gridData) {
+      // Find or create the sites layer
+      let sitesLayer = mapInstance
+        .getLayers()
+        .getArray()
+        .find((layer) => layer.get("title") === "sites_layer");
+
+      if (sitesLayer) {
+        const source = sitesLayer.getSource();
+        const features = source.getFeatures();
+
+        // Update styles based on selection
+        features.forEach((feature) => {
+          const isSelected = selectedSites.some((site) => site.nwfid === feature.get("nwfid"));
+
+          const styles = [
+            // Base tower icon style
+            new Style({
+              image: new Icon({
+                src: "/sector360/towericon.png",
+                scale: 0.03,
+                anchor: [0.5, 0.5],
+              }),
+            }),
+          ];
+
+          // Add selection rectangle if selected
+          if (isSelected) {
+            styles.push(
+              new Style({
+                image: new RegularShape({
+                  points: 4,
+                  radius: 15,
+                  angle: Math.PI / 4,
+                  stroke: new Stroke({
+                    color: "#ff0000",
+                    width: 2,
+                  }),
+                  fill: new Fill({
+                    color: "rgba(255, 0, 0, 0.1)",
+                  }),
+                }),
+              })
+            );
+          }
+
+          feature.setStyle(styles);
+        });
+
+        // If there are selected sites, fit the view to show all of them
+        if (selectedSites.length > 0) {
+          const selectedFeatures = features.filter((feature) =>
+            selectedSites.some((site) => site.nwfid === feature.get("nwfid"))
+          );
+
+          if (selectedFeatures.length > 0) {
+            const extent = selectedFeatures.reduce((ext, feature) => {
+              const geom = feature.getGeometry();
+              return ext ? extendExtent(ext, geom.getExtent()) : geom.getExtent();
+            }, null);
+
+            if (extent) {
+              // Add padding to the extent
+              const padding = [50, 50, 50, 50];
+              mapInstance.getView().fit(extent, {
+                padding,
+                duration: 1000,
+                maxZoom: 16,
+                callback: () => {
+                  // After fitting, zoom out by 1 level
+                  const currentZoom = mapInstance.getView().getZoom();
+                  mapInstance.getView().animate({
+                    zoom: currentZoom - 1,
+                    duration: 250,
+                  });
+                },
+              });
+            }
+          }
+        }
+      }
+    }
+  }, [mapInstance, selectedSites, gridData]);
+
+  // Add fullscreen change listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      if (!document.fullscreenElement) {
+        setShowGridInFullscreen(false);
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
   return (
     <Card>
       <MDBox p={2}>
@@ -1130,6 +1240,46 @@ function MapContent() {
                 ×
               </div>
             </div>
+
+            {/* Grid Toggle Button in Fullscreen */}
+            {isFullscreen && (
+              <Fab
+                sx={{
+                  position: "absolute",
+                  bottom: showGridInFullscreen ? "40%" : 16,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  zIndex: 1000,
+                  bgcolor: theme.palette.info.main,
+                  "&:hover": {
+                    bgcolor: theme.palette.secondary.main, // Material-UI's blue[800]
+                  },
+                }}
+                size="small"
+                onClick={() => setShowGridInFullscreen(!showGridInFullscreen)}
+              >
+                {showGridInFullscreen ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+              </Fab>
+            )}
+
+            {/* Grid in Fullscreen */}
+            {isFullscreen && showGridInFullscreen && (
+              <MDBox
+                sx={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: "40%",
+                  backgroundColor: theme.palette.background.paper,
+                  boxShadow: theme.shadows[4],
+                  zIndex: 999,
+                  overflow: "auto",
+                }}
+              >
+                <SiteGrid isEmbedded={true} />
+              </MDBox>
+            )}
           </div>
         </MDBox>
       </MDBox>

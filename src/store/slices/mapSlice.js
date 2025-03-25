@@ -20,6 +20,7 @@ const initialState = {
   zoom: 4, // Default zoom level
   selectedLocation: null, // Add selected location state
   networkGenieLayers: [], // Array to store NetworkGenie layers data
+  selectedSites: [], // Add selected sites array
 };
 
 const mapSlice = createSlice({
@@ -67,6 +68,20 @@ const mapSlice = createSlice({
     clearNetworkGenieLayers: (state) => {
       state.networkGenieLayers = [];
     },
+    setSelectedSites: (state, action) => {
+      state.selectedSites = action.payload;
+    },
+    addSelectedSite: (state, action) => {
+      if (!state.selectedSites.find((site) => site.nwfid === action.payload.nwfid)) {
+        state.selectedSites.push(action.payload);
+      }
+    },
+    removeSelectedSite: (state, action) => {
+      state.selectedSites = state.selectedSites.filter((site) => site.nwfid !== action.payload);
+    },
+    clearSelectedSites: (state) => {
+      state.selectedSites = [];
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -101,6 +116,10 @@ export const {
   clearSelectedLocation,
   addNetworkGenieLayer,
   clearNetworkGenieLayers,
+  setSelectedSites,
+  addSelectedSite,
+  removeSelectedSite,
+  clearSelectedSites,
 } = mapSlice.actions;
 
 // Selectors
@@ -114,5 +133,6 @@ export const selectMapCenter = (state) => state.map.center;
 export const selectMapZoom = (state) => state.map.zoom;
 export const selectSelectedLocation = (state) => state.map.selectedLocation;
 export const selectNetworkGenieLayers = (state) => state.map.networkGenieLayers;
+export const selectSelectedSites = (state) => state.map.selectedSites;
 
 export default mapSlice.reducer;

@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import PropTypes from "prop-types";
 
 // @mui material components
 import Card from "@mui/material/Card";
@@ -7,6 +8,8 @@ import Icon from "@mui/material/Icon";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
+import Chip from "@mui/material/Chip";
+import Box from "@mui/material/Box";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -17,9 +20,15 @@ import DataTable from "examples/Tables/DataTable";
 import { api } from "services/api";
 import { updateGridConfig } from "store/slices/gridDataSlice";
 import { fetchFilteredData } from "store/slices/filterSlice";
-import { updateMapView, setSelectedLocation } from "store/slices/mapSlice";
+import {
+  updateMapView,
+  setSelectedLocation,
+  addSelectedSite,
+  removeSelectedSite,
+  selectSelectedSites,
+} from "store/slices/mapSlice";
 
-function SiteGrid() {
+function SiteGrid({ isEmbedded = false }) {
   const dispatch = useDispatch();
   const [menu, setMenu] = useState(null);
   const gridRef = useRef(null);
@@ -27,26 +36,78 @@ function SiteGrid() {
   // Replace local state with Redux state
   const { gridData, loading } = useSelector((state) => state.grid);
   const gridConfig = useSelector((state) => state.grid.gridConfig);
+  const selectedSites = useSelector(selectSelectedSites);
 
   const handleRowClick = (rowData) => {
     const longitude = parseFloat(rowData.longitude);
     const latitude = parseFloat(rowData.latitude);
 
     if (!isNaN(longitude) && !isNaN(latitude)) {
-      dispatch(
-        updateMapView({
-          center: [longitude, latitude],
-          zoom: 13,
-        })
-      );
-      dispatch(
-        setSelectedLocation({
-          longitude,
-          latitude,
-          siteData: rowData,
-        })
-      );
+      // Check if the site is already selected
+      const isSelected = selectedSites.some((site) => site.nwfid === rowData.nwfid);
+
+      if (!isSelected) {
+        // Add to selected sites
+        dispatch(addSelectedSite(rowData));
+
+        // If it's the only selected site, zoom to it
+        if (selectedSites.length === 0) {
+          dispatch(
+            updateMapView({
+              center: [longitude, latitude],
+              zoom: 13,
+            })
+          );
+        } else {
+          // Calculate extent of all selected sites
+          const sites = [...selectedSites, rowData];
+          const lngs = sites.map((site) => parseFloat(site.longitude));
+          const lats = sites.map((site) => parseFloat(site.latitude));
+
+          const minLng = Math.min(...lngs);
+          const maxLng = Math.max(...lngs);
+          const minLat = Math.min(...lats);
+          const maxLat = Math.max(...lats);
+
+          // Add padding to the extent
+          const lngPadding = (maxLng - minLng) * 0.1;
+          const latPadding = (maxLat - minLat) * 0.1;
+
+          dispatch(
+            updateMapView({
+              center: [(minLng + maxLng) / 2, (minLat + maxLat) / 2],
+              zoom: Math.min(
+                13,
+                calculateZoomLevel(
+                  minLng - lngPadding,
+                  maxLng + lngPadding,
+                  minLat - latPadding,
+                  maxLat + latPadding
+                )
+              ),
+            })
+          );
+        }
+      }
     }
+  };
+
+  const handleChipDelete = (nwfid) => {
+    dispatch(removeSelectedSite(nwfid));
+  };
+
+  // Helper function to calculate appropriate zoom level
+  const calculateZoomLevel = (minLng, maxLng, minLat, maxLat) => {
+    const lngDiff = maxLng - minLng;
+    const latDiff = maxLat - minLat;
+    const maxDiff = Math.max(lngDiff, latDiff);
+
+    // This is a simple approximation - adjust these values based on your needs
+    if (maxDiff > 5) return 5;
+    if (maxDiff > 2) return 7;
+    if (maxDiff > 1) return 9;
+    if (maxDiff > 0.5) return 11;
+    return 13;
   };
 
   const siteData = {
@@ -136,7 +197,7 @@ function SiteGrid() {
 
   if (loading) {
     return (
-      <Card>
+      <Card sx={isEmbedded ? { boxShadow: "none", borderRadius: 0 } : {}}>
         <MDBox display="flex" justifyContent="center" alignItems="center" p={3}>
           <CircularProgress />
         </MDBox>
@@ -145,42 +206,60 @@ function SiteGrid() {
   }
 
   return (
-    <Card ref={gridRef}>
-      <MDBox display="flex" justifyContent="space-between" alignItems="center" pt={2} pl={2} pr={2}>
+    <Card sx={isEmbedded ? { boxShadow: "none", borderRadius: 0 } : {}}>
+      <MDBox
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        pt={isEmbedded ? 1 : 2}
+        pl={2}
+        pr={2}
+      >
         <MDBox>
           <MDTypography variant="h6" gutterBottom>
             Site Grid
           </MDTypography>
-          {/* <MDBox display="flex" alignItems="center" lineHeight={0}>
+        </MDBox>
+        {!isEmbedded && (
+          <MDBox color="text" px={2}>
             <Icon
-              sx={{
-                fontWeight: "bold",
-                color: ({ palette: { info } }) => info.main,
-                mt: -0.5,
-              }}
+              sx={{ cursor: "pointer", fontWeight: "bold" }}
+              fontSize="small"
+              onClick={openMenu}
             >
-              cell_tower
+              more_vert
             </Icon>
-            <MDTypography variant="button" fontWeight="regular" color="text">
-              &nbsp;<strong>{siteData.rows.length} sites</strong> found
-            </MDTypography>
-          </MDBox> */}
-        </MDBox>
-        <MDBox color="text" px={2}>
-          <Icon sx={{ cursor: "pointer", fontWeight: "bold" }} fontSize="small" onClick={openMenu}>
-            more_vert
-          </Icon>
-        </MDBox>
+          </MDBox>
+        )}
         {renderMenu}
       </MDBox>
+
+      {/* Selected Sites Chips */}
+      {selectedSites.length > 0 && (
+        <MDBox px={2} py={isEmbedded ? 0.5 : 1}>
+          <Box display="flex" gap={1} flexWrap="wrap">
+            {selectedSites.map((site) => (
+              <Chip
+                key={site.nwfid}
+                label={`NWFID: ${site.nwfid}`}
+                onDelete={() => handleChipDelete(site.nwfid)}
+                color="info"
+                variant="outlined"
+                size="small"
+              />
+            ))}
+          </Box>
+        </MDBox>
+      )}
+
       <MDBox>
         <DataTable
           table={siteData}
-          showTotalEntries={true}
+          showTotalEntries={!isEmbedded}
           isSorted={true}
           noEndBorder
           entriesPerPage={gridConfig.pageSize}
-          canSearch={true}
+          canSearch={!isEmbedded}
           pagination={{ variant: "contained", color: "info" }}
           entriesPerPageText="Entries per page:"
           searchPlaceholder="Search sites..."
@@ -189,6 +268,7 @@ function SiteGrid() {
             dispatch(updateGridConfig({ pageSize: newPageSize }))
           }
           onRowClick={handleRowClick}
+          selectedRows={selectedSites.map((site) => site.nwfid)}
           sx={{
             "& .MuiInputBase-input": {
               color: "text.main",
@@ -207,6 +287,12 @@ function SiteGrid() {
               "&:hover": {
                 backgroundColor: "action.hover",
               },
+              "&.Mui-selected": {
+                backgroundColor: "action.selected",
+                "&:hover": {
+                  backgroundColor: "action.selected",
+                },
+              },
             },
           }}
         />
@@ -214,5 +300,9 @@ function SiteGrid() {
     </Card>
   );
 }
+
+SiteGrid.propTypes = {
+  isEmbedded: PropTypes.bool,
+};
 
 export default SiteGrid;
