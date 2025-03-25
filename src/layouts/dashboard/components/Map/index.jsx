@@ -53,6 +53,7 @@ import {
   clearSelectedLocation,
   selectNetworkGenieLayers,
   selectSelectedSites,
+  addSelectedSite,
 } from "store/slices/mapSlice";
 import MDAlert from "components/MDAlert";
 import Overlay from "ol/Overlay";
@@ -1054,6 +1055,18 @@ function MapContent() {
             if (feature.get("nwfid")) {
               // This is a site feature
               updateSitePopup(feature, coordinates);
+
+              // Get all properties of the site
+              const siteProperties = feature.getProperties();
+              delete siteProperties.geometry; // Remove geometry from the properties
+
+              // Check if site is already selected
+              const isSelected = selectedSites.some((site) => site.nwfid === siteProperties.nwfid);
+
+              if (!isSelected) {
+                // Add to selected sites
+                dispatch(addSelectedSite(siteProperties));
+              }
             } else {
               // This is another type of feature (hexbin, etc.)
               updatePopup(feature, coordinates);
