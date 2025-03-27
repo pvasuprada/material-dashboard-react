@@ -505,6 +505,10 @@ function MapContent() {
           // Fetch and update raw coverage data
           const rawCoverageData = await api.getRawCoverageCapacityData(params);
           updateRawCoverageLayer(rawCoverageData);
+
+          // Fetch and update interpolation data
+          const interpolationData = await api.getInterpolationData(params);
+          updateInterpolationLayer(interpolationData.data);
         } catch (error) {
           console.error("Error fetching coverage data:", error);
         }
@@ -569,6 +573,58 @@ function MapContent() {
       }
     } catch (error) {
       console.error("Error updating raw coverage layer:", error);
+    }
+  };
+
+  // Add function to update interpolation layer
+  const updateInterpolationLayer = (data) => {
+    if (!mapInstance || !data?.records) return;
+
+    try {
+      // Find the interpolation layer
+      const interpolationLayer = mapInstance
+        .getLayers()
+        .getArray()
+        .find((layer) => layer.get("title") === "interpolation");
+
+      if (!interpolationLayer) {
+        console.error("Interpolation layer not found");
+        return;
+      }
+
+      // Create features from the records
+      const features = data.records.map((record) => {
+        const hexBoundary = h3.cellToBoundary(record.h3_index);
+        const coordinates = [hexBoundary.map(([lat, lng]) => fromLonLat([lng, lat]))];
+        const feature = new Feature({
+          geometry: new Polygon(coordinates),
+        });
+
+        // Set properties
+        feature.set("avg_nr_rsrp", record.avg_nr_rsrp);
+        feature.set("h3_index", record.h3_index);
+
+        return feature;
+      });
+
+      // Update the layer source
+      const source = interpolationLayer.getSource();
+      source.clear();
+      source.addFeatures(features);
+
+      // Set visibility based on layerVisibility state
+      interpolationLayer.setVisible(layerVisibility["interpolation"] || false);
+
+      // If there are features and the layer is visible, fit to extent
+      if (features.length > 0 && layerVisibility["interpolation"]) {
+        const extent = source.getExtent();
+        mapInstance.getView().fit(extent, {
+          padding: [50, 50, 50, 50],
+          duration: 1000,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating interpolation layer:", error);
     }
   };
 

@@ -252,6 +252,64 @@ const createSitesLayer = () => {
   });
 };
 
+const createInterpolationLayer = () => {
+  return new VectorLayer({
+    source: new VectorSource(),
+    title: "interpolation",
+    visible: false,
+    style: (feature) => {
+      const value = feature.get("avg_nr_rsrp");
+      if (!value) return null;
+
+      // Get source and calculate min/max values
+      const source = feature.getSource?.() || feature.layer?.getSource();
+      let minValue = -140; // Default min RSRP
+      let maxValue = -70; // Default max RSRP
+
+      if (source) {
+        const features = source.getFeatures();
+        if (features.length > 0) {
+          const values = features.map((f) => f.get("avg_nr_rsrp")).filter((v) => v != null);
+          if (values.length > 0) {
+            minValue = Math.min(...values);
+            maxValue = Math.max(...values);
+          }
+        }
+      }
+
+      // Calculate normalized value between 0 and 1
+      const normalizedValue = (value - minValue) / (maxValue - minValue);
+
+      // Create color gradient from red (bad) through yellow (medium) to green (good)
+      let r, g, b;
+      if (normalizedValue <= 0.5) {
+        // Red to Yellow transition
+        r = 255;
+        g = Math.round(normalizedValue * 2 * 255);
+        b = 0;
+      } else {
+        // Yellow to Green transition
+        r = Math.round((1 - (normalizedValue - 0.5) * 2) * 255);
+        g = 255;
+        b = 0;
+      }
+
+      // Calculate opacity based on normalized value
+      const opacity = Math.min(0.8, 0.2 + normalizedValue * 0.6);
+
+      return new Style({
+        fill: new Fill({
+          color: `rgba(${r}, ${g}, ${b}, ${opacity})`,
+        }),
+        stroke: new Stroke({
+          color: `rgba(${r}, ${g}, ${b}, 1)`,
+          width: 1,
+        }),
+      });
+    },
+  });
+};
+
 // Example layer configurations
 export const defaultLayers = {
   geoserver: createWMSLayer({
@@ -268,6 +326,7 @@ export const defaultLayers = {
   }),
   coverage_capacity: createCoverageCapacityLayer(),
   raw_coverage: createRawCoverageLayer(),
+  interpolation: createInterpolationLayer(),
   user_count: createVectorLayer("User Count"),
   avg_dl_latency: createVectorLayer("Avg DL Latency"),
   total_dl_volume: createVectorLayer("Total DL Volume"),

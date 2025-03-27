@@ -53,6 +53,12 @@ const Legend = ({ layer, expanded }) => {
             borderWidth: 2,
           },
         ];
+      case "interpolation":
+        return [
+          { color: "rgba(255, 0, 0, 0.8)", label: "Poor Signal (-140 dBm)" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Signal (-105 dBm)" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "Good Signal (-70 dBm)" },
+        ];
       case "coverage_capacity":
         return [
           { color: "rgba(255, 0, 0, 0.8)", label: "Low Signal" },

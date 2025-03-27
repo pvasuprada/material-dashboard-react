@@ -212,4 +212,25 @@ export const api = {
       throw error;
     }
   },
+
+  getInterpolationData: async (params) => {
+    try {
+      const response = await apiClient.post("/interpolation", {
+        market_id: params?.market_id || "131",
+        gnb_id: params?.gnodeb,
+        sector: params?.sector || "104",
+        lat: params?.lat || 37.7749,
+        lon: params?.lon || -122.4194,
+        azimuth_deg: params?.azimuth_deg || 0,
+        beamwidth: params?.beamwidth || 120,
+        cell_radius_km: params?.cell_radius_km || 10,
+        resolution: 0,
+        date_range: params?.date_range || "2024-12-27;2025-01-08",
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching coverage capacity data:", error);
+      throw error;
+    }
+  },
 };
