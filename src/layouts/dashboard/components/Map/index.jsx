@@ -13,34 +13,48 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
+// React and Redux imports
 import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+// Material UI imports
 import Card from "@mui/material/Card";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
+import { Divider, Fab } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+// OpenLayers imports
 import "ol/ol.css";
 import Map from "ol/Map";
 import View from "ol/View";
-import TileLayer from "ol/layer/Tile";
-import ImageLayer from "ol/layer/Image";
-import OSM from "ol/source/OSM";
-import XYZ from "ol/source/XYZ";
-import ImageWMS from "ol/source/ImageWMS";
-import { fromLonLat } from "ol/proj";
-import Control from "ol/control/Control";
-import { defaults as defaultControls } from "ol/control";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { Feature } from "ol";
 import { Polygon, Point } from "ol/geom";
-import { Fill, Style, Stroke, Circle as CircleStyle, Icon, RegularShape } from "ol/style";
+import { Fill, Style, Stroke, Circle as CircleStyle, Icon, RegularShape, Text } from "ol/style";
+import { fromLonLat } from "ol/proj";
+import Control from "ol/control/Control";
+import { defaults as defaultControls } from "ol/control";
+import Overlay from "ol/Overlay";
+import { unByKey } from "ol/Observable";
+import { WKT } from "ol/format";
+import { extend as extendExtent } from "ol/extent";
+
+// Third party imports
 import * as h3 from "h3-js";
+
+// Local imports
 import { api } from "services/api";
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
-import MDTypography from "components/MDTypography";
-import { useDispatch, useSelector } from "react-redux";
+import { useMaterialUIController } from "context";
+import { MapControls } from "./components";
+import { createBasemaps } from "./config/basemaps";
+import { defaultLayers, metricConfigs } from "./config/layers";
+import { MapProvider, useMap } from "./context/MapContext";
+import SiteGrid from "../SiteGrid";
+
+// Redux actions and selectors
 import {
   selectMapAverages,
   selectMapExtent,
@@ -48,31 +62,19 @@ import {
   selectMapError,
   selectMapCenter,
   selectMapZoom,
-  updateMapView,
   selectSelectedLocation,
   clearSelectedLocation,
   selectNetworkGenieLayers,
   selectSelectedSites,
   addSelectedSite,
 } from "store/slices/mapSlice";
+
+// Material Dashboard 2 React components
+import MDTypography from "components/MDTypography";
 import MDAlert from "components/MDAlert";
-import Overlay from "ol/Overlay";
-import { unByKey } from "ol/Observable";
-import { useTheme } from "@mui/material/styles";
-import { useMaterialUIController } from "context";
-import { Divider } from "@mui/material";
-import { Radio } from "@mui/material";
-import { MapControls } from "./components";
-import { createBasemaps } from "./config/basemaps";
-import { defaultLayers, createHexbinStyle } from "./config/layers";
-import { MapProvider, useMap } from "./context/MapContext";
+import { Menu, MenuItem, Checkbox, FormControlLabel, Radio } from "@mui/material";
+import { MapProvider as MapProviderContext } from "./context/MapContext";
 import { MAPBOX_API_KEY } from "./config/keys";
-import { WKT } from "ol/format";
-import { extend as extendExtent } from "ol/extent";
-import { Fab } from "@mui/material";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import SiteGrid from "../SiteGrid";
 
 // Custom styles for the controls
 const controlStyle = {
@@ -143,23 +145,40 @@ function MapContent() {
     if (mapInstance && averages && Array.isArray(averages)) {
       console.log("Updating data layers with averages:", averages);
 
-      const features = averages.map(({ geobin, user_count, avg_dl_latency, total_dl_volume }) => {
-        const hexBoundary = h3.cellToBoundary(geobin);
+      const features = averages.map((average) => {
+        const hexBoundary = h3.cellToBoundary(average.geobin);
         const coordinates = [hexBoundary.map(([lat, lng]) => fromLonLat([lng, lat]))];
         const feature = new Feature({
           geometry: new Polygon(coordinates),
         });
 
         // Set all metrics on the feature
-        feature.set("user_count", user_count);
-        feature.set("geobin", geobin);
-        feature.set("avg_dl_latency", avg_dl_latency);
-        feature.set("total_dl_volume", total_dl_volume);
+        Object.keys(average).forEach((key) => {
+          if (key !== "geobin" && typeof average[key] === "number") {
+            feature.set(key, average[key]);
+          }
+        });
+        feature.set("geobin", average.geobin);
         return feature;
       });
 
       // Update all data layers with the same features
-      const dataLayers = ["user_count", "avg_dl_latency", "total_dl_volume"];
+      const dataLayers = [
+        "user_count",
+        "avg_dl_latency",
+        "total_dl_volume",
+        "avg_nr_dl_colume_share",
+        "avg_nr_rsrp",
+        "avg_nr_ul_volume_share",
+        "dl_connections_count",
+        "p10_dl_speed",
+        "p10_ul_speed",
+        "p50_dl_speed",
+        "p50_ul_speed",
+        "total_ul_volume",
+        "ul_connections_count",
+      ];
+
       dataLayers.forEach((layerId) => {
         const layer = mapInstance
           .getLayers()
@@ -807,32 +826,50 @@ function MapContent() {
     if (!feature || !coordinates) return;
 
     const geobin = feature.get("geobin");
-    const value = feature.get(selectedMetric);
 
     // Show popup
     popupRef.current.style.display = "block";
     popupOverlayRef.current.setPosition(coordinates);
 
-    // Get the metric label
-    const metricLabels = {
-      user_count: "User Count",
-      avg_dl_latency: "Avg Download Latency",
-      total_dl_volume: "Total Download Volume",
-    };
+    // Get all visible layers and their data
+    const visibleLayers = Object.entries(layerVisibility)
+      .filter(([_, isVisible]) => isVisible)
+      .map(([layerId]) => ({
+        id: layerId,
+        label: metricConfigs[layerId]?.label || layerId,
+        value: feature.get(layerId),
+        unit: metricConfigs[layerId]?.unit || "",
+      }))
+      .filter((layer) => layer.value !== undefined);
 
-    // Get the unit for the metric
-    const metricUnits = {
-      user_count: "",
-      avg_dl_latency: "ms",
-      total_dl_volume: "GB",
-    };
-
-    // Update popup content with only selected metric
+    // Update popup content with accordion for each visible layer
     const popupContent = document.getElementById("popup-content");
     popupContent.innerHTML = `
-      <div>
-        <strong>Geobin:</strong> ${geobin}<br>
-        <strong>${metricLabels[selectedMetric]}:</strong> ${value || "N/A"}${value ? ` ${metricUnits[selectedMetric]}` : ""}
+      <div style="max-height: 300px; overflow-y: auto;">
+        <div style="margin-bottom: 8px;">
+          <strong>Geobin:</strong> ${geobin}
+        </div>
+        ${visibleLayers
+          .map(
+            (layer, index) => `
+          <div style="
+            margin-bottom: 4px;
+            padding: 8px;
+            background-color: ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"};
+            border-radius: 4px;
+          ">
+            <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            ">
+              <strong>${layer.label}:</strong>
+              <span>${layer.value}${layer.unit ? ` ${layer.unit}` : ""}</span>
+            </div>
+          </div>
+        `
+          )
+          .join("")}
       </div>
     `;
   };
@@ -1303,9 +1340,9 @@ function MapContent() {
 // Wrap the component with the provider
 function MapComponent() {
   return (
-    <MapProvider>
+    <MapProviderContext>
       <MapContent />
-    </MapProvider>
+    </MapProviderContext>
   );
 }
 
