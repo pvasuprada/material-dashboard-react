@@ -505,10 +505,6 @@ function MapContent() {
           // Fetch and update raw coverage data
           const rawCoverageData = await api.getRawCoverageCapacityData(params);
           updateRawCoverageLayer(rawCoverageData);
-
-          // Fetch and update interpolation data
-          const interpolationData = await api.getInterpolationData(params);
-          updateInterpolationLayer(interpolationData.data);
         } catch (error) {
           console.error("Error fetching coverage data:", error);
         }
@@ -516,6 +512,44 @@ function MapContent() {
       fetchCoverageData();
     }
   }, [mapInstance, filterParams]);
+
+  // Separate effect for interpolation layer that depends on gridData
+  useEffect(() => {
+    if (mapInstance && gridData?.length > 0) {
+      const fetchInterpolationData = async () => {
+        try {
+          const defaultSite = gridData[0];
+          const interpolationParams = {
+            ...filterParams,
+            lat: defaultSite.latitude,
+            lon: defaultSite.longitude,
+            azimuth_deg: defaultSite.azimuth,
+            beamwidth: defaultSite.beamwidth || 120,
+            cell_radius_km: 10,
+            resolution: 0,
+          };
+
+          // Fetch and update interpolation data
+          const interpolationData = await api.getInterpolationData(interpolationParams);
+          updateInterpolationLayer(interpolationData.data);
+        } catch (error) {
+          console.error("Error fetching interpolation data:", error);
+        }
+      };
+      fetchInterpolationData();
+    } else if (mapInstance) {
+      // Clear interpolation layer if no gridData
+      const interpolationLayer = mapInstance
+        .getLayers()
+        .getArray()
+        .find((layer) => layer.get("title") === "interpolation");
+
+      if (interpolationLayer) {
+        const source = interpolationLayer.getSource();
+        source.clear();
+      }
+    }
+  }, [mapInstance, filterParams, gridData]);
 
   // Add function to update raw coverage layer
   const updateRawCoverageLayer = (rawCoverageData) => {
