@@ -51,7 +51,7 @@ import { useMaterialUIController } from "context";
 import { MapControls } from "./components";
 import { createBasemaps } from "./config/basemaps";
 import { defaultLayers, metricConfigs } from "./config/layers";
-import { MapProvider, useMap } from "./context/MapContext";
+import { MapProvider, useMap } from "../../../../context/MapContext";
 import SiteGrid from "../SiteGrid";
 
 // Redux actions and selectors
@@ -73,7 +73,7 @@ import {
 import MDTypography from "components/MDTypography";
 import MDAlert from "components/MDAlert";
 import { Menu, MenuItem, Checkbox, FormControlLabel, Radio } from "@mui/material";
-import { MapProvider as MapProviderContext } from "./context/MapContext";
+import { MapProvider as MapProviderContext } from "../../../../context/MapContext";
 import { MAPBOX_API_KEY } from "./config/keys";
 
 // Custom styles for the controls
@@ -135,6 +135,7 @@ function MapContent() {
   const [clickedFeature, setClickedFeature] = useState(null);
   const [clickedCoordinate, setClickedCoordinate] = useState(null);
   const networkGenieLayers = useSelector(selectNetworkGenieLayers);
+  const filterParams = useSelector((state) => state.map.selectedFilters);
   const gridData = useSelector((state) => state.grid.gridData);
   const selectedSites = useSelector(selectSelectedSites);
   const [showGridInFullscreen, setShowGridInFullscreen] = useState(false);
@@ -497,11 +498,12 @@ function MapContent() {
       // Fetch coverage capacity data when map instance is ready
       const fetchCoverageData = async () => {
         try {
-          const coverageData = await api.getCoverageCapacityData();
+          let params = filterParams;
+          const coverageData = await api.getCoverageCapacityData(params);
           updateCoverageCapacity(coverageData);
 
           // Fetch and update raw coverage data
-          const rawCoverageData = await api.getRawCoverageCapacityData({});
+          const rawCoverageData = await api.getRawCoverageCapacityData(params);
           updateRawCoverageLayer(rawCoverageData);
         } catch (error) {
           console.error("Error fetching coverage data:", error);
@@ -509,7 +511,7 @@ function MapContent() {
       };
       fetchCoverageData();
     }
-  }, [mapInstance]);
+  }, [mapInstance, filterParams]);
 
   // Add function to update raw coverage layer
   const updateRawCoverageLayer = (rawCoverageData) => {

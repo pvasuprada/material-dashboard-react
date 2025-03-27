@@ -1,5 +1,5 @@
 import { Menu, MenuItem } from "@mui/material";
-import { useMap } from "../context/MapContext";
+import { useMap } from "../../../../../context/MapContext";
 
 const Basemaps = ({ container, anchorEl, onClose, onBasemapChange }) => {
   const { basemaps } = useMap();
@@ -36,4 +36,4 @@ const Basemaps = ({ container, anchorEl, onClose, onBasemapChange }) => {
   );
 };
 
-export default Basemaps; 
+export default Basemaps;

@@ -5,7 +5,7 @@ import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
 import Icon from "@mui/material/Icon";
 import { useTheme } from "@mui/material/styles";
-import { useMap } from "../context/MapContext";
+import { useMap } from "../../../../../context/MapContext";
 
 const controlsContainerStyle = {
   position: "absolute",
@@ -17,12 +17,7 @@ const controlsContainerStyle = {
   zIndex: 1000,
 };
 
-const MapControls = ({
-  mapRef,
-  onZoomIn,
-  onZoomOut,
-  onFullscreenToggle,
-}) => {
+const MapControls = ({ mapRef, onZoomIn, onZoomOut, onFullscreenToggle }) => {
   const [basemapAnchorEl, setBasemapAnchorEl] = useState(null);
   const [layersAnchorEl, setLayersAnchorEl] = useState(null);
   const theme = useTheme();
@@ -109,4 +104,4 @@ const MapControls = ({
   );
 };
 
-export default MapControls; 
+export default MapControls;

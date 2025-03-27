@@ -9,7 +9,7 @@ import {
   IconButton,
 } from "@mui/material";
 import Icon from "@mui/material/Icon";
-import { useMap } from "../context/MapContext";
+import { useMap } from "../../../../../context/MapContext";
 import { useState } from "react";
 import Legend from "./Legend";
 
@@ -61,13 +61,15 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
       layers: [
         { id: "geoserver", label: "GeoServer Layer" },
         { id: "hurricanes", label: "Hurricanes" },
+        { id: "network_genie_layer_1", label: "Network Genie Layer 1" },
+        { id: "sites_layer", label: "Sites Layer" },
+        { id: "raw_coverage", label: "Raw Coverage" },
       ],
     },
     {
-      title: "Data Layers",
+      title: "UG Layers",
       layers: [
-        { id: "coverage_capacity", label: "Coverage Capacity" },
-        { id: "raw_coverage", label: "Raw Coverage" },
+        //{ id: "coverage_capacity", label: "Coverage Capacity" },
         { id: "user_count", label: "User Count" },
         { id: "avg_dl_latency", label: "Avg Download Latency" },
         { id: "total_dl_volume", label: "Total Download Volume" },
@@ -81,8 +83,6 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
         { id: "p50_ul_speed", label: "P50 UL Speed" },
         { id: "total_ul_volume", label: "Total UL Volume" },
         { id: "ul_connections_count", label: "UL Connections Count" },
-        { id: "network_genie_layer_1", label: "Network Genie Layer 1" },
-        { id: "sites_layer", label: "Sites Layer" },
       ],
     },
   ];

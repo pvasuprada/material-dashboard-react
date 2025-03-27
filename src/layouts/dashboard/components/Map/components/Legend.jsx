@@ -61,81 +61,81 @@ const Legend = ({ layer, expanded }) => {
         ];
       case "user_count":
         return [
-          { color: "rgba(255, 0, 0, 0.2)", label: "Low (1-2)" },
-          { color: "rgba(255, 0, 0, 0.5)", label: "Medium (3-5)" },
-          { color: "rgba(255, 0, 0, 0.8)", label: "High (>5)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "avg_dl_latency":
         return [
-          { color: "rgba(0, 0, 255, 0.2)", label: "Good (< 50ms)" },
-          { color: "rgba(0, 0, 255, 0.5)", label: "Medium (50-100ms)" },
-          { color: "rgba(0, 0, 255, 0.8)", label: "Poor (> 100ms)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "total_dl_volume":
         return [
-          { color: "rgba(255, 192, 203, 0.2)", label: "Low (< 1GB)" },
-          { color: "rgba(255, 192, 203, 0.5)", label: "Medium (1-3GB)" },
-          { color: "rgba(255, 192, 203, 0.8)", label: "High (> 3GB)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "avg_nr_dl_colume_share":
         return [
-          { color: "rgba(0, 255, 0, 0.2)", label: "Low (< 30%)" },
-          { color: "rgba(0, 255, 0, 0.5)", label: "Medium (30-70%)" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High (> 70%)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "avg_nr_rsrp":
         return [
-          { color: "rgba(255, 165, 0, 0.8)", label: "Poor (< -110 dBm)" },
-          { color: "rgba(255, 165, 0, 0.5)", label: "Fair (-110 to -90 dBm)" },
-          { color: "rgba(255, 165, 0, 0.2)", label: "Good (> -90 dBm)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "avg_nr_ul_volume_share":
         return [
-          { color: "rgba(128, 0, 128, 0.2)", label: "Low (< 30%)" },
-          { color: "rgba(128, 0, 128, 0.5)", label: "Medium (30-70%)" },
-          { color: "rgba(128, 0, 128, 0.8)", label: "High (> 70%)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "dl_connections_count":
         return [
-          { color: "rgba(0, 128, 128, 0.2)", label: "Low (1-3)" },
-          { color: "rgba(0, 128, 128, 0.5)", label: "Medium (4-7)" },
-          { color: "rgba(0, 128, 128, 0.8)", label: "High (>7)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "p10_dl_speed":
         return [
-          { color: "rgba(255, 69, 0, 0.2)", label: "Low (< 10 Mbps)" },
-          { color: "rgba(255, 69, 0, 0.5)", label: "Medium (10-30 Mbps)" },
-          { color: "rgba(255, 69, 0, 0.8)", label: "High (> 30 Mbps)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "p10_ul_speed":
         return [
-          { color: "rgba(70, 130, 180, 0.2)", label: "Low (< 5 Mbps)" },
-          { color: "rgba(70, 130, 180, 0.5)", label: "Medium (5-15 Mbps)" },
-          { color: "rgba(70, 130, 180, 0.8)", label: "High (> 15 Mbps)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "p50_dl_speed":
         return [
-          { color: "rgba(219, 112, 147, 0.2)", label: "Low (< 20 Mbps)" },
-          { color: "rgba(219, 112, 147, 0.5)", label: "Medium (20-50 Mbps)" },
-          { color: "rgba(219, 112, 147, 0.8)", label: "High (> 50 Mbps)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "p50_ul_speed":
         return [
-          { color: "rgba(72, 61, 139, 0.2)", label: "Low (< 10 Mbps)" },
-          { color: "rgba(72, 61, 139, 0.5)", label: "Medium (10-30 Mbps)" },
-          { color: "rgba(72, 61, 139, 0.8)", label: "High (> 30 Mbps)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "total_ul_volume":
         return [
-          { color: "rgba(154, 205, 50, 0.2)", label: "Low (< 1GB)" },
-          { color: "rgba(154, 205, 50, 0.5)", label: "Medium (1-2GB)" },
-          { color: "rgba(154, 205, 50, 0.8)", label: "High (> 2GB)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       case "ul_connections_count":
         return [
-          { color: "rgba(139, 69, 19, 0.2)", label: "Low (1-2)" },
-          { color: "rgba(139, 69, 19, 0.5)", label: "Medium (3-4)" },
-          { color: "rgba(139, 69, 19, 0.8)", label: "High (>4)" },
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
       default:
         return null;

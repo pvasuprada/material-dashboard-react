@@ -187,7 +187,7 @@ const createVectorLayer = (title) => {
       return [
         new Style({
           fill: new Fill({
-            color: `rgba(${r}, ${g}, ${b}, ${opacity})`,
+            color: `rgba(${r}, ${g}, ${b}, 1)`,
           }),
           stroke: new Stroke({
             color: `rgba(${r}, ${g}, ${b}, 1)`,
@@ -204,8 +204,8 @@ const createVectorLayer = (title) => {
               color: "black",
               width: 2,
             }),
-            font: "12px Arial",
-            overflow: true,
+            // font: "12px Arial",
+            // overflow: true,
           }),
         }),
       ];
@@ -299,10 +299,12 @@ export const layerGroups = [
       { id: "geoserver", label: "GeoServer Layer" },
       { id: "hurricanes", label: "Hurricanes" },
       { id: "hexbins", label: "Hexbins" },
+      { id: "sites_layer", label: "Sites Layer" },
+      { id: "raw_coverage", label: "Raw Coverage" },
     ],
   },
   {
-    title: "Data Layers",
+    title: "UG Layers",
     titleProps: {
       sx: {
         color: "text.primary",
