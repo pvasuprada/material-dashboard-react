@@ -6,30 +6,27 @@ export const fetchInitialOptions = createAsyncThunk(
   "filter/fetchInitialOptions",
   async (_, { rejectWithValue }) => {
     try {
-      const [markets, gnodebs] = await Promise.all([
-        api.getMarkets(),
-        api.getGnodebs()
-      ]);
+      const [markets, gnodebs] = await Promise.all([api.getMarkets(), api.getGnodebs()]);
 
       // Process markets data
-      const processedMarkets = markets.data.map(m => ({
+      const processedMarkets = markets.data.map((m) => ({
         text: m.market_text,
-        value: m.market
+        value: m.market,
       }));
 
       // Process gnodebs data - filter unique by label
       const uniqueGnodebs = Array.from(
-        new Map(gnodebs.data.map(item => [item.label, item])).values()
-      ).map(g => ({
+        new Map(gnodebs.data.map((item) => [item.label, item])).values()
+      ).map((g) => ({
         label: g.label,
         value: g.value,
         market_id: g.market_id,
-        gnb_str: g.gnb_str
+        gnb_str: g.gnb_str,
       }));
 
       return {
         markets: processedMarkets,
-        gnodebs: uniqueGnodebs
+        gnodebs: uniqueGnodebs,
       };
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch initial options");
@@ -45,12 +42,12 @@ export const fetchSectors = createAsyncThunk(
       const response = await api.getSectors({
         nwfid,
         du: parseInt(du),
-        trafficType: ["FWA"]
+        trafficType: ["FWA"],
       });
-      
-      return response.data.map(s => ({
+
+      return response.data.map((s) => ({
         value: s.sector,
-        label: `Sector ${s.sector}`
+        label: `Sector ${s.sector}`,
       }));
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch sectors");
@@ -145,15 +142,43 @@ const filterSlice = createSlice({
     updateSelectedFilters: (state, action) => {
       // Check if gnodeb has changed
       const gnodebChanged = state.selectedFilters.gnodeb?.value !== action.payload.gnodeb?.value;
-      
-      // Update filters
-      state.selectedFilters = action.payload;
-      
-      // Clear sectors if gnodeb changed
+
+      // If gnodeb changed, clear sectors first
       if (gnodebChanged) {
         state.data.sectors = [];
-        state.selectedFilters.sector = null;
       }
+
+      // Update filters with proper structure validation
+      state.selectedFilters = {
+        market: action.payload.market
+          ? {
+              text: action.payload.market.text,
+              value: action.payload.market.value,
+            }
+          : null,
+        gnodeb: action.payload.gnodeb
+          ? {
+              label: action.payload.gnodeb.label,
+              value: action.payload.gnodeb.value,
+              market_id: action.payload.gnodeb.market_id,
+              gnb_str: action.payload.gnodeb.gnb_str,
+            }
+          : null,
+        // Update sector whenever it's provided in the payload
+        sector: action.payload.sector
+          ? {
+              value: action.payload.sector.value,
+              label: action.payload.sector.label,
+            }
+          : null,
+        trafficType: action.payload.trafficType || "FWA",
+        dateRange: {
+          startDate:
+            action.payload.dateRange?.startDate ||
+            new Date(new Date().setMonth(new Date().getMonth() - 1)),
+          endDate: action.payload.dateRange?.endDate || new Date(),
+        },
+      };
     },
     resetFilters: (state) => {
       state.selectedFilters = initialState.selectedFilters;

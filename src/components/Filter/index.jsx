@@ -70,13 +70,30 @@ function Filter() {
 
   const handleApply = async () => {
     const newFilters = {
-      market,
-      gnodeb,
-      sector,
+      market: market
+        ? {
+            text: market.text,
+            value: market.value,
+          }
+        : null,
+      gnodeb: gnodeb
+        ? {
+            label: gnodeb.label,
+            value: gnodeb.value,
+            market_id: gnodeb.market_id,
+            gnb_str: gnodeb.gnb_str,
+          }
+        : null,
+      sector: sector
+        ? {
+            value: sector.value,
+            label: sector.label,
+          }
+        : null,
       trafficType,
       dateRange: {
-        startDate,
-        endDate,
+        startDate: startDate.toDate(),
+        endDate: endDate.toDate(),
       },
     };
 
@@ -100,13 +117,13 @@ function Filter() {
     );
   }
 
-  const handleMarketChangeforGnodeb = async(newValue)=>{
-    const selectedMarket = markets.find(market => market.value === parseInt(newValue?.market_id));
+  const handleMarketChangeforGnodeb = async (newValue) => {
+    const selectedMarket = markets.find((market) => market.value === parseInt(newValue?.market_id));
     setMarket({
-      text: selectedMarket?selectedMarket.text:'',
-      value: newValue?.market_id
-    })
-  }
+      text: selectedMarket ? selectedMarket.text : "",
+      value: newValue?.market_id,
+    });
+  };
 
   return (
     <MDBox>
@@ -127,10 +144,12 @@ function Filter() {
         </MDTypography>
       </MDBox>
 
-      <Divider sx={{ 
-        backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)", 
-        my: 1 
-      }} />
+      <Divider
+        sx={{
+          backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+          my: 1,
+        }}
+      />
 
       <MDBox px={2} py={0.5}>
         <MDBox mb={1.5}>
@@ -160,14 +179,12 @@ function Filter() {
             isOptionEqualToValue={(option, value) => option?.value === value?.value}
             filterOptions={(options, { inputValue }) => {
               if (inputValue.length < 3) return [];
-              return options.filter(
-                option => option.label.toLowerCase().includes(inputValue.toLowerCase())
+              return options.filter((option) =>
+                option.label.toLowerCase().includes(inputValue.toLowerCase())
               );
             }}
-            noOptionsText={inputValue => 
-              inputValue.length < 3 
-                ? "Type at least 3 characters to search" 
-                : "No options found"
+            noOptionsText={(inputValue) =>
+              inputValue.length < 3 ? "Type at least 3 characters to search" : "No options found"
             }
             label="GNODEB"
             color={darkMode ? "white" : "dark"}
@@ -229,10 +246,12 @@ function Filter() {
         </MDBox>
       </MDBox>
 
-      <Divider sx={{ 
-        backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)", 
-        my: 1 
-      }} />
+      <Divider
+        sx={{
+          backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+          my: 1,
+        }}
+      />
 
       <MDBox px={2} py={1} display="flex" gap={1}>
         <MDButton
