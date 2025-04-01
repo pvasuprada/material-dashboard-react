@@ -505,6 +505,12 @@ function MapContent() {
           // Fetch and update raw coverage data
           const rawCoverageData = await api.getRawCoverageCapacityData(params);
           updateRawCoverageLayer(rawCoverageData);
+
+          // Fetch and update population data
+          console.log("Fetching population data...");
+          const populationData = await api.getPops();
+          console.log("Received population data:", populationData);
+          updatePopulationLayer(populationData);
         } catch (error) {
           console.error("Error fetching coverage data:", error);
         }
@@ -659,6 +665,74 @@ function MapContent() {
       }
     } catch (error) {
       console.error("Error updating interpolation layer:", error);
+    }
+  };
+
+  // Add function to update population layer
+  const updatePopulationLayer = (data) => {
+    if (!mapInstance) {
+      console.error("Map instance not available");
+      return;
+    }
+    if (!data?.data) {
+      console.error("Invalid population data:", data);
+      return;
+    }
+
+    try {
+      console.log("Updating population layer with data:", data);
+      // Find the population layer
+      const populationLayer = mapInstance
+        .getLayers()
+        .getArray()
+        .find((layer) => layer.get("title") === "population");
+
+      if (!populationLayer) {
+        console.error("Population layer not found in map layers");
+        return;
+      }
+
+      // Create features from the records
+      const features = data.data.map((record) => {
+        const hexBoundary = h3.cellToBoundary(record.h3_string_text);
+        const coordinates = [hexBoundary.map(([lat, lng]) => fromLonLat([lng, lat]))];
+        const feature = new Feature({
+          geometry: new Polygon(coordinates),
+        });
+
+        // Set properties
+        feature.set("pops", record.pops);
+        feature.set("h3_index", record.h3_string_text);
+        feature.set("units", record.units);
+
+        return feature;
+      });
+
+      console.log(`Created ${features.length} population features`);
+
+      // Update the layer source
+      const source = populationLayer.getSource();
+      source.clear();
+      source.addFeatures(features);
+
+      // Set visibility based on layerVisibility state
+      const isVisible = layerVisibility["population"] || false;
+      console.log("Setting population layer visibility to:", isVisible);
+      populationLayer.setVisible(isVisible);
+
+      // If there are features and the layer is visible, fit to extent
+      if (features.length > 0 && isVisible) {
+        const extent = source.getExtent();
+        mapInstance.getView().fit(extent, {
+          padding: [50, 50, 50, 50],
+          duration: 1000,
+        });
+      }
+
+      source.changed();
+      console.log("Population layer update complete");
+    } catch (error) {
+      console.error("Error updating population layer:", error);
     }
   };
 
@@ -932,6 +1006,37 @@ function MapContent() {
         }
       }
     });
+
+    // Handle population layer specifically
+    if (layerTitle === "population") {
+      const h3Index = feature.get("h3_index");
+      const pops = feature.get("pops");
+
+      const popupContent = document.getElementById("popup-content");
+      popupContent.innerHTML = `
+        <div style="max-height: 300px; overflow-y: auto;">
+          <div style="margin-bottom: 8px;">
+            <strong>H3 Index:</strong> ${h3Index || "N/A"}
+          </div>
+          <div style="
+            margin-bottom: 4px;
+            padding: 8px;
+            background-color: ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"};
+            border-radius: 4px;
+          ">
+            <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            ">
+              <strong>Population:</strong>
+              <span>${pops !== undefined ? pops.toFixed(2) : "N/A"}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
 
     // Handle interpolation layer specifically
     if (layerTitle === "interpolation") {

@@ -16,6 +16,7 @@ export const MapProvider = ({ children }) => {
     coverage_capacity: false,
     network_genie_layer_1: true,
     sites_layer: true,
+    population: false,
   });
   const [selectedMetric, setSelectedMetric] = useState("user_count");
 

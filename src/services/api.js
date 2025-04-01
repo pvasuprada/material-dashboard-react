@@ -233,4 +233,14 @@ export const api = {
       throw error;
     }
   },
+
+  getPops: async () => {
+    try {
+      const response = await apiClient.post("/pops");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching pops data:", error);
+      throw error;
+    }
+  },
 };

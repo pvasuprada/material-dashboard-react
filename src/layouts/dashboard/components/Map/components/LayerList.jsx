@@ -65,6 +65,7 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
         { id: "sites_layer", label: "Sites Layer" },
         { id: "raw_coverage", label: "Raw Coverage" },
         { id: "interpolation", label: "Interpolation" },
+        { id: "population", label: "Population Layer" },
       ],
     },
     {

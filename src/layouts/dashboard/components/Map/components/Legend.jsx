@@ -59,6 +59,12 @@ const Legend = ({ layer, expanded }) => {
           { color: "rgba(255, 255, 0, 0.8)", label: "Medium Signal (-105 dBm)" },
           { color: "rgba(0, 255, 0, 0.8)", label: "Good Signal (-70 dBm)" },
         ];
+      case "population":
+        return [
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low Population" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Population" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High Population" },
+        ];
       case "coverage_capacity":
         return [
           { color: "rgba(255, 0, 0, 0.8)", label: "Low Signal" },
