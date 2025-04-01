@@ -915,13 +915,54 @@ function MapContent() {
 
   // Function to update popup content
   const updatePopup = (feature, coordinates) => {
-    if (!feature || !coordinates) return;
-
-    const geobin = feature.get("geobin");
+    if (!feature || !coordinates || !mapInstance) return;
 
     // Show popup
     popupRef.current.style.display = "block";
     popupOverlayRef.current.setPosition(coordinates);
+
+    // Get the layer that the feature belongs to
+    let layerTitle;
+    mapInstance.getLayers().forEach((layer) => {
+      const source = layer.getSource();
+      if (source && source.getFeatures) {
+        const features = source.getFeatures();
+        if (features && features.includes(feature)) {
+          layerTitle = layer.get("title");
+        }
+      }
+    });
+
+    // Handle interpolation layer specifically
+    if (layerTitle === "interpolation") {
+      const h3Index = feature.get("h3_index");
+      const rsrp = feature.get("avg_nr_rsrp");
+
+      const popupContent = document.getElementById("popup-content");
+      popupContent.innerHTML = `
+        <div style="max-height: 300px; overflow-y: auto;">
+          <div style="margin-bottom: 8px;">
+            <strong>Geobin:</strong> ${h3Index || "N/A"}
+          </div>
+          <div style="
+            margin-bottom: 4px;
+            padding: 8px;
+            background-color: ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"};
+            border-radius: 4px;
+          ">
+            <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            ">
+              <strong>RSRP:</strong>
+              <span>${rsrp !== undefined ? `${rsrp.toFixed(2)} dBm` : "N/A"}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
 
     // Get all visible layers and their data
     const visibleLayers = Object.entries(layerVisibility)
@@ -939,11 +980,11 @@ function MapContent() {
     popupContent.innerHTML = `
       <div style="max-height: 300px; overflow-y: auto;">
         <div style="margin-bottom: 8px;">
-          <strong>Geobin:</strong> ${geobin}
+          <strong>Geobin:</strong> ${feature.get("geobin") || "N/A"}
         </div>
         ${visibleLayers
           .map(
-            (layer, index) => `
+            (layer) => `
           <div style="
             margin-bottom: 4px;
             padding: 8px;
