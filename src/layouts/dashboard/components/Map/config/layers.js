@@ -365,6 +365,21 @@ const createPopulationLayer = () => {
   });
 };
 
+const createBuildingLayer = () => {
+  return new VectorLayer({
+    source: new VectorSource(),
+    title: "building",
+    visible: false,
+    style: new Style({
+      image: new Icon({
+        src: "/sector360/buildingicon.png",
+        scale: 0.03,
+        anchor: [0.5, 0.5],
+      }),
+    }),
+  });
+};
+
 // Example layer configurations
 export const defaultLayers = {
   geoserver: createWMSLayer({
@@ -383,6 +398,7 @@ export const defaultLayers = {
   raw_coverage: createRawCoverageLayer(),
   interpolation: createInterpolationLayer(),
   population: createPopulationLayer(),
+  building: createBuildingLayer(),
   user_count: createVectorLayer("User Count"),
   avg_dl_latency: createVectorLayer("Avg DL Latency"),
   total_dl_volume: createVectorLayer("Total DL Volume"),

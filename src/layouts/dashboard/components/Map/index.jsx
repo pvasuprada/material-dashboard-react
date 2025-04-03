@@ -511,6 +511,10 @@ function MapContent() {
           const populationData = await api.getPops();
           console.log("Received population data:", populationData);
           updatePopulationLayer(populationData);
+
+          // Update building layer with the same population data
+          console.log("Updating building layer with H3 locations...");
+          updateBuildingLayer(populationData);
         } catch (error) {
           console.error("Error fetching coverage data:", error);
         }
@@ -1007,6 +1011,35 @@ function MapContent() {
       }
     });
 
+    // Handle building layer specifically
+    if (layerTitle === "building") {
+      const h3Index = feature.get("h3_index");
+
+      const popupContent = document.getElementById("popup-content");
+      popupContent.innerHTML = `
+        <div style="max-height: 300px; overflow-y: auto;">
+          <div style="margin-bottom: 8px;">
+            <strong>H3 Index:</strong> ${h3Index || "N/A"}
+          </div>
+          <div style="
+            margin-bottom: 4px;
+            padding: 8px;
+            background-color: ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"};
+            border-radius: 4px;
+          ">
+            <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            ">
+              <strong>Building Location</strong>
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
     // Handle population layer specifically
     if (layerTitle === "population") {
       const h3Index = feature.get("h3_index");
@@ -1461,6 +1494,73 @@ function MapContent() {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
+
+  // Add function to update building layer
+  const updateBuildingLayer = (data) => {
+    if (!mapInstance) {
+      console.error("Map instance not available");
+      return;
+    }
+    if (!data?.data) {
+      console.error("Invalid building data:", data);
+      return;
+    }
+
+    try {
+      console.log("Updating building layer with data:", data);
+      // Find the building layer
+      const buildingLayer = mapInstance
+        .getLayers()
+        .getArray()
+        .find((layer) => layer.get("title") === "building");
+
+      if (!buildingLayer) {
+        console.error("Building layer not found in map layers");
+        return;
+      }
+
+      // Create features from the records
+      const features = data.data.map((record) => {
+        const hexCenter = h3.cellToLatLng(record.h3_string_text);
+        const [lat, lng] = hexCenter;
+        const coordinates = fromLonLat([lng, lat]);
+        const feature = new Feature({
+          geometry: new Point(coordinates),
+        });
+
+        // Set properties
+        feature.set("h3_index", record.h3_string_text);
+
+        return feature;
+      });
+
+      console.log(`Created ${features.length} building features`);
+
+      // Update the layer source
+      const source = buildingLayer.getSource();
+      source.clear();
+      source.addFeatures(features);
+
+      // Set visibility based on layerVisibility state
+      const isVisible = layerVisibility["building"] || false;
+      console.log("Setting building layer visibility to:", isVisible);
+      buildingLayer.setVisible(isVisible);
+
+      // If there are features and the layer is visible, fit to extent
+      if (features.length > 0 && isVisible) {
+        const extent = source.getExtent();
+        mapInstance.getView().fit(extent, {
+          padding: [50, 50, 50, 50],
+          duration: 1000,
+        });
+      }
+
+      source.changed();
+      console.log("Building layer update complete");
+    } catch (error) {
+      console.error("Error updating building layer:", error);
+    }
+  };
 
   return (
     <Card>
