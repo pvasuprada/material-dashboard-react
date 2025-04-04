@@ -1677,11 +1677,7 @@ function MapContent() {
 
 // Wrap the component with the provider
 function MapComponent() {
-  return (
-    <MapProviderContext>
-      <MapContent />
-    </MapProviderContext>
-  );
+  return <MapContent />;
 }
 
 export default MapComponent;

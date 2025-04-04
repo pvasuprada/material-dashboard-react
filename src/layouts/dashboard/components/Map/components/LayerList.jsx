@@ -2,19 +2,20 @@ import {
   Menu,
   MenuItem,
   Checkbox,
-  Radio,
   FormControlLabel,
   Divider,
   Typography,
   IconButton,
 } from "@mui/material";
 import Icon from "@mui/material/Icon";
-import { useMap } from "../../../../../context/MapContext";
 import { useState } from "react";
+
+import { useMap } from "../../../../../context/MapContext";
+import { metricConfigs } from "../config/layers";
 import Legend from "./Legend";
 
-const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange }) => {
-  const { layerVisibility, selectedMetric, mapInstance, overlayLayers } = useMap();
+const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
+  const { layerVisibility, mapInstance, overlayLayers } = useMap();
   const [expandedLegends, setExpandedLegends] = useState({});
 
   const handleZoomToLayer = (layerId) => {
@@ -55,6 +56,16 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
     }));
   };
 
+  // Get the list of UG layers that have been added and are visible
+  const addedUGLayers = metricConfigs
+    ? Object.entries(metricConfigs)
+        .filter(([id]) => layerVisibility[id] === true)
+        .map(([id, config]) => ({
+          id,
+          label: config.label,
+        }))
+    : [];
+
   const layerGroups = [
     {
       title: "Base Layers",
@@ -69,26 +80,15 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
         { id: "building", label: "Building Layer" },
       ],
     },
-    {
-      title: "UG Layers",
-      layers: [
-        //{ id: "coverage_capacity", label: "Coverage Capacity" },
-        { id: "user_count", label: "User Count" },
-        { id: "avg_dl_latency", label: "Avg Download Latency" },
-        { id: "total_dl_volume", label: "Total Download Volume" },
-        { id: "avg_nr_dl_colume_share", label: "Avg NR DL Volume Share" },
-        { id: "avg_nr_rsrp", label: "Avg NR RSRP" },
-        { id: "avg_nr_ul_volume_share", label: "Avg NR UL Volume Share" },
-        { id: "dl_connections_count", label: "DL Connections Count" },
-        { id: "p10_dl_speed", label: "P10 DL Speed" },
-        { id: "p10_ul_speed", label: "P10 UL Speed" },
-        { id: "p50_dl_speed", label: "P50 DL Speed" },
-        { id: "p50_ul_speed", label: "P50 UL Speed" },
-        { id: "total_ul_volume", label: "Total UL Volume" },
-        { id: "ul_connections_count", label: "UL Connections Count" },
-      ],
-    },
   ];
+
+  // Only add UG Layers group if there are added layers
+  if (addedUGLayers.length > 0) {
+    layerGroups.push({
+      title: "UG Layers",
+      layers: addedUGLayers,
+    });
+  }
 
   return (
     <Menu
@@ -107,66 +107,50 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle, onMetricChange
             </Typography>
           </MenuItem>
 
-          {group.type === "radio"
-            ? // Render radio options for metrics
-              group.options.map((option) => (
-                <MenuItem key={option.id}>
-                  <FormControlLabel
-                    control={
-                      <Radio
-                        checked={selectedMetric === option.id}
-                        onChange={() => onMetricChange(option.id)}
-                      />
-                    }
-                    label={option.label}
-                  />
-                </MenuItem>
-              ))
-            : // Render checkboxes for layers
-              group.layers.map((layer) => (
-                <div key={layer.id}>
-                  <MenuItem
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={layerVisibility[layer.id]}
-                          onChange={() => onLayerToggle(layer.id)}
-                        />
-                      }
-                      label={layer.label}
+          {group.layers.map((layer) => (
+            <div key={layer.id}>
+              <MenuItem
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={layerVisibility[layer.id] || false}
+                      onChange={() => onLayerToggle(layer.id)}
                     />
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleLegend(layer.id);
-                        }}
-                        style={{ marginLeft: 8 }}
-                      >
-                        <Icon>{expandedLegends[layer.id] ? "expand_less" : "expand_more"}</Icon>
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleZoomToLayer(layer.id);
-                        }}
-                        style={{ marginLeft: 8 }}
-                      >
-                        <Icon>zoom_in</Icon>
-                      </IconButton>
-                    </div>
-                  </MenuItem>
-                  <Legend layer={layer} expanded={expandedLegends[layer.id]} />
+                  }
+                  label={layer.label}
+                />
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleLegend(layer.id);
+                    }}
+                    style={{ marginLeft: 8 }}
+                  >
+                    <Icon>{expandedLegends[layer.id] ? "expand_less" : "expand_more"}</Icon>
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleZoomToLayer(layer.id);
+                    }}
+                    style={{ marginLeft: 8 }}
+                  >
+                    <Icon>zoom_in</Icon>
+                  </IconButton>
                 </div>
-              ))}
+              </MenuItem>
+              <Legend layer={layer} expanded={expandedLegends[layer.id]} />
+            </div>
+          ))}
         </div>
       ))}
     </Menu>

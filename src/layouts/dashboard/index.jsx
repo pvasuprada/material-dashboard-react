@@ -48,6 +48,7 @@ import { useSidenav } from "context/SidenavContext";
 import zIndex from "@mui/material/styles/zIndex";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useChartOrder } from "context/chartOrderContext";
+import { MapProvider } from "context/MapContext";
 
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
@@ -97,9 +98,9 @@ function Dashboard({ children }) {
     if (viewMode === "carousel") {
       interval = setInterval(() => {
         const orderedVisibleCharts = chartOrder
-          .map(index => chartsData[index])
-          .filter(chart => chart && chart.visible);
-        
+          .map((index) => chartsData[index])
+          .filter((chart) => chart && chart.visible);
+
         setActiveSlide((prev) =>
           prev === orderedVisibleCharts.length - (miniSidenav ? 4 : 3) ? 0 : prev + 1
         );
@@ -243,40 +244,42 @@ function Dashboard({ children }) {
   };
 
   const renderChartSkeletons = () => {
-    const skeletonCount = viewMode === "row" ? 3 : (miniSidenav ? 4 : 3);
-    return Array(skeletonCount).fill(0).map((_, index) => (
-      <Grid 
-        item 
-        xs={12} 
-        md={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} 
-        lg={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)} 
-        key={index}
-      >
-        <MDBox mb={3}>
-          <Card>
-            <MDBox p={2}>
-              <MDBox mb={1}>
-                <Skeleton 
-                  variant="text" 
-                  width={150} 
-                  sx={{ 
+    const skeletonCount = viewMode === "row" ? 3 : miniSidenav ? 4 : 3;
+    return Array(skeletonCount)
+      .fill(0)
+      .map((_, index) => (
+        <Grid
+          item
+          xs={12}
+          md={viewMode === "row" ? 12 : miniSidenav ? 3 : 4}
+          lg={viewMode === "row" ? 12 : miniSidenav ? 3 : 4}
+          key={index}
+        >
+          <MDBox mb={3}>
+            <Card>
+              <MDBox p={2}>
+                <MDBox mb={1}>
+                  <Skeleton
+                    variant="text"
+                    width={150}
+                    sx={{
+                      backgroundColor: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+                    }}
+                  />
+                </MDBox>
+                <Skeleton
+                  variant="rectangular"
+                  height={200}
+                  sx={{
+                    borderRadius: 2,
                     backgroundColor: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
                   }}
                 />
               </MDBox>
-              <Skeleton 
-                variant="rectangular" 
-                height={200}
-                sx={{ 
-                  borderRadius: 2,
-                  backgroundColor: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
-                }}
-              />
-            </MDBox>
-          </Card>
-        </MDBox>
-      </Grid>
-    ));
+            </Card>
+          </MDBox>
+        </Grid>
+      ));
   };
 
   const renderChartContent = (chart) => {
@@ -343,8 +346,8 @@ function Dashboard({ children }) {
 
     if (viewMode === "carousel") {
       const orderedVisibleCharts = chartOrder
-        .map(index => chartsData[index])
-        .filter(chart => chart && chart.visible);
+        .map((index) => chartsData[index])
+        .filter((chart) => chart && chart.visible);
 
       return (
         <Carousel
@@ -398,8 +401,8 @@ function Dashboard({ children }) {
                       <Grid
                         item
                         xs={12}
-                        md={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)}
-                        lg={viewMode === "row" ? 12 : (miniSidenav ? 3 : 4)}
+                        md={viewMode === "row" ? 12 : miniSidenav ? 3 : 4}
+                        lg={viewMode === "row" ? 12 : miniSidenav ? 3 : 4}
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
@@ -409,9 +412,7 @@ function Dashboard({ children }) {
                           zIndex: snapshot.isDragging ? 1 : "auto",
                         }}
                       >
-                        <MDBox mb={3}>
-                          {renderChartContent(chart)}
-                        </MDBox>
+                        <MDBox mb={3}>{renderChartContent(chart)}</MDBox>
                       </Grid>
                     )}
                   </Draggable>
@@ -433,103 +434,103 @@ function Dashboard({ children }) {
   const hasVisibleCharts = visibleCharts.length > 0;
 
   return (
-    <DashboardLayout>
-      <DashboardNavbar />
-      <MDBox pt={2} pb={2}>
-        <MDBox display="flex" justifyContent="space-between" alignItems="center">
-          <MDBox display="flex" gap={1} sx={{ zIndex: 10000 }}>
-            <MDButtonSmall
-              variant={activeSection === "dashboards" ? "contained" : "outlined"}
-              color={sidenavColor}
-              onClick={() => handleSectionChange("dashboards")}
-            >
-              Dashboards
-            </MDButtonSmall>
-            <MDButtonSmall
-              variant={activeSection === "filters" ? "contained" : "outlined"}
-              color={sidenavColor}
-              onClick={() => handleSectionChange("filters")}
-            >
-              Filters
-            </MDButtonSmall>
-            <MDButtonSmall
-              variant={activeSection === "insights" ? "contained" : "outlined"}
-              color={sidenavColor}
-              onClick={() => handleSectionChange("insights")}
-            >
-              Insights
-            </MDButtonSmall>
-          </MDBox>
-
-          {hasVisibleCharts && (
-            <MDBox display="flex" alignItems="center">
-              <IconButton
-                onClick={() => toggleViewMode("grid")}
-                sx={{
-                  color: darkMode ? "white" : "dark",
-                  backgroundColor: viewMode === "grid" ? "rgba(0,0,0,0.05)" : "transparent",
-                  mr: 1,
-                  padding: "6px",
-                }}
+    <MapProvider>
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={2} pb={2}>
+          <MDBox display="flex" justifyContent="space-between" alignItems="center">
+            <MDBox display="flex" gap={1} sx={{ zIndex: 10000 }}>
+              <MDButtonSmall
+                variant={activeSection === "dashboards" ? "contained" : "outlined"}
+                color={sidenavColor}
+                onClick={() => handleSectionChange("dashboards")}
               >
-                <ViewModuleIcon sx={{ fontSize: "1.2rem" }} />
-              </IconButton>
-              <IconButton
-                onClick={() => toggleViewMode("carousel")}
-                sx={{
-                  color: darkMode ? "white" : "dark",
-                  backgroundColor: viewMode === "carousel" ? "rgba(0,0,0,0.05)" : "transparent",
-                  mr: 1,
-                  padding: "6px",
-                }}
+                Dashboards
+              </MDButtonSmall>
+              <MDButtonSmall
+                variant={activeSection === "filters" ? "contained" : "outlined"}
+                color={sidenavColor}
+                onClick={() => handleSectionChange("filters")}
               >
-                <ViewCarouselIcon sx={{ fontSize: "1.2rem" }} />
-              </IconButton>
-              <IconButton
-                onClick={() => toggleViewMode("row")}
-                sx={{
-                  color: darkMode ? "white" : "dark",
-                  backgroundColor: viewMode === "row" ? "rgba(0,0,0,0.05)" : "transparent",
-                  padding: "6px",
-                }}
+                Filters
+              </MDButtonSmall>
+              <MDButtonSmall
+                variant={activeSection === "insights" ? "contained" : "outlined"}
+                color={sidenavColor}
+                onClick={() => handleSectionChange("insights")}
               >
-                <ViewStreamIcon sx={{ fontSize: "1.2rem" }} />
-              </IconButton>
+                Insights
+              </MDButtonSmall>
             </MDBox>
-          )}
+
+            {hasVisibleCharts && (
+              <MDBox display="flex" alignItems="center">
+                <IconButton
+                  onClick={() => toggleViewMode("grid")}
+                  sx={{
+                    color: darkMode ? "white" : "dark",
+                    backgroundColor: viewMode === "grid" ? "rgba(0,0,0,0.05)" : "transparent",
+                    mr: 1,
+                    padding: "6px",
+                  }}
+                >
+                  <ViewModuleIcon sx={{ fontSize: "1.2rem" }} />
+                </IconButton>
+                <IconButton
+                  onClick={() => toggleViewMode("carousel")}
+                  sx={{
+                    color: darkMode ? "white" : "dark",
+                    backgroundColor: viewMode === "carousel" ? "rgba(0,0,0,0.05)" : "transparent",
+                    mr: 1,
+                    padding: "6px",
+                  }}
+                >
+                  <ViewCarouselIcon sx={{ fontSize: "1.2rem" }} />
+                </IconButton>
+                <IconButton
+                  onClick={() => toggleViewMode("row")}
+                  sx={{
+                    color: darkMode ? "white" : "dark",
+                    backgroundColor: viewMode === "row" ? "rgba(0,0,0,0.05)" : "transparent",
+                    padding: "6px",
+                  }}
+                >
+                  <ViewStreamIcon sx={{ fontSize: "1.2rem" }} />
+                </IconButton>
+              </MDBox>
+            )}
+          </MDBox>
+          {children}
         </MDBox>
-        {children}
-      </MDBox>
-      <MDBox pt={1} pb={1}>
-        <Grid container spacing={2}>
-          {renderStatistics()}
-        </Grid>
-        <MDBox mt={6}>
-          {renderDraggableCharts()}
+        <MDBox pt={1} pb={1}>
+          <Grid container spacing={2}>
+            {renderStatistics()}
+          </Grid>
+          <MDBox mt={6}>{renderDraggableCharts()}</MDBox>
+          {/* <Insights /> */}
         </MDBox>
-        {/* <Insights /> */}
-      </MDBox>
-      <MDBox>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={6} lg={8}>
-            <Map />
+        <MDBox>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6} lg={8}>
+              <Map />
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+              {/* <OrdersOverview /> */}
+              <NetworkGenie />
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={6} lg={4}>
-            {/* <OrdersOverview /> */}
-            <NetworkGenie />
+        </MDBox>
+        <MDBox mt={4.5}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={12} lg={12}>
+              {/* <Projects /> */}
+              <SiteGrid />
+            </Grid>
           </Grid>
-        </Grid>
-      </MDBox>
-      <MDBox mt={4.5}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={12} lg={12}>
-            {/* <Projects /> */}
-            <SiteGrid />
-          </Grid>
-        </Grid>
-      </MDBox>
-      {/* <Footer /> */}
-    </DashboardLayout>
+        </MDBox>
+        {/* <Footer /> */}
+      </DashboardLayout>
+    </MapProvider>
   );
 }
 

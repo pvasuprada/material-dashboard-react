@@ -4,7 +4,7 @@ import { Vector as VectorSource } from "ol/source";
 import ImageWMS from "ol/source/ImageWMS";
 import { Fill, Style, Stroke, Icon, Text } from "ol/style";
 
-export const metricConfigs = {
+const metricConfigs = {
   user_count: {
     label: "User Count",
     color: [255, 0, 0], // Red
@@ -85,7 +85,7 @@ export const metricConfigs = {
   },
 };
 
-export const createHexbinStyle = (feature, metric) => {
+const createHexbinStyle = (feature, metric) => {
   const config = metricConfigs[metric];
   const value = feature.get(metric);
   const opacity = value ? config.normalizer(value) : 0.2;
@@ -102,7 +102,7 @@ export const createHexbinStyle = (feature, metric) => {
   });
 };
 
-export const createHexbinLayer = (title = "Hexbins", metric = "user_count") => {
+const createHexbinLayer = (title = "Hexbins", metric = "user_count") => {
   return new VectorLayer({
     source: new VectorSource(),
     title: title,
@@ -111,7 +111,7 @@ export const createHexbinLayer = (title = "Hexbins", metric = "user_count") => {
   });
 };
 
-export const createWMSLayer = ({ url, layers, title, visible = true, params = {} }) => {
+const createWMSLayer = ({ url, layers, title, visible = true, params = {} }) => {
   return new ImageLayer({
     source: new ImageWMS({
       url: url,
@@ -204,8 +204,6 @@ const createVectorLayer = (title) => {
               color: "black",
               width: 2,
             }),
-            // font: "12px Arial",
-            // overflow: true,
           }),
         }),
       ];
@@ -380,8 +378,7 @@ const createBuildingLayer = () => {
   });
 };
 
-// Example layer configurations
-export const defaultLayers = {
+const defaultLayers = {
   geoserver: createWMSLayer({
     url: "https://ahocevar.com/geoserver/wms",
     layers: "topp:states",
@@ -415,8 +412,7 @@ export const defaultLayers = {
   sites_layer: createSitesLayer(),
 };
 
-// Layer groups for the layer list
-export const layerGroups = [
+const layerGroups = [
   {
     title: "Base Layers",
     titleProps: {
@@ -461,3 +457,13 @@ export const layerGroups = [
     ],
   },
 ];
+
+export {
+  metricConfigs,
+  createHexbinStyle,
+  createHexbinLayer,
+  createWMSLayer,
+  createVectorLayer,
+  defaultLayers,
+  layerGroups,
+};

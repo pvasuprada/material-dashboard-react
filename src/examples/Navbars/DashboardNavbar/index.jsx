@@ -33,6 +33,7 @@ import Icon from "@mui/material/Icon";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDInput from "components/MDInput";
+import NavbarSearch from "components/NavbarSearch";
 
 // Material Dashboard 2 React example components
 import Breadcrumbs from "examples/Breadcrumbs";
@@ -265,16 +266,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
             })}
           >
             <MDBox pr={1}>
-              <MDInput
-                label="Search here"
-                size="small"
-                sx={{
-                  "& .MuiInputBase-root": {
-                    height: "32px",
-                    fontSize: "0.875rem",
-                  },
-                }}
-              />
+              <NavbarSearch />
             </MDBox>
             <MDBox color={light ? "white" : "inherit"}>
               <Link to="/authentication/sign-in/basic">

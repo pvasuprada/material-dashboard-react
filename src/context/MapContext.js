@@ -10,16 +10,14 @@ export const MapProvider = ({ children }) => {
   const [layerVisibility, setLayerVisibility] = useState({
     hurricanes: false,
     geoserver: false,
-    user_count: true,
-    avg_dl_latency: false,
-    total_dl_volume: false,
-    coverage_capacity: false,
     network_genie_layer_1: true,
     sites_layer: true,
+    raw_coverage: false,
+    interpolation: false,
     population: false,
     building: false,
   });
-  const [selectedMetric, setSelectedMetric] = useState("user_count");
+  const [selectedMetric, setSelectedMetric] = useState(null);
 
   const value = {
     mapInstance,
