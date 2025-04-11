@@ -7,6 +7,7 @@ export const MapProvider = ({ children }) => {
   const [basemaps, setBasemaps] = useState(null);
   const [overlayLayers, setOverlayLayers] = useState(null);
   const [currentBasemap, setCurrentBasemap] = useState("light");
+  const [addedLayers, setAddedLayers] = useState(new Set());
   const [layerVisibility, setLayerVisibility] = useState({
     hurricanes: false,
     geoserver: false,
@@ -28,6 +29,8 @@ export const MapProvider = ({ children }) => {
     setOverlayLayers,
     currentBasemap,
     setCurrentBasemap,
+    addedLayers,
+    setAddedLayers,
     layerVisibility,
     setLayerVisibility,
     selectedMetric,

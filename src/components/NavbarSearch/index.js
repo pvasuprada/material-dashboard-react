@@ -11,9 +11,9 @@ import {
 import { styled } from "@mui/material/styles";
 import { useState, useEffect } from "react";
 
-import { useMap } from "../../context/MapContext";
 import { metricConfigs } from "layouts/dashboard/components/Map/config/layers";
 import { defaultLayers } from "layouts/dashboard/components/Map/config/layers";
+import { useMap } from "../../context/MapContext";
 
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   width: 300,
@@ -54,8 +54,15 @@ const AutocompleteSearch = () => {
   const [inputValue, setInputValue] = useState("");
   const [selectedOption, setSelectedOption] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
-  const { mapInstance, setLayerVisibility, overlayLayers, setOverlayLayers, setSelectedMetric } =
-    useMap();
+  const {
+    mapInstance,
+    setLayerVisibility,
+    overlayLayers,
+    setOverlayLayers,
+    setSelectedMetric,
+    addedLayers,
+    setAddedLayers,
+  } = useMap();
 
   const searchOptions = Object.entries(metricConfigs).map(([id, config]) => ({
     id,
@@ -94,14 +101,21 @@ const AutocompleteSearch = () => {
       const id = option.id;
       console.log("Found matching option:", option);
 
-      // First update visibility and selected metric
+      // Add to added layers set
+      setAddedLayers((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(id);
+        return newSet;
+      });
+
+      // Update visibility
       setLayerVisibility((prev) => ({
         ...prev,
         [id]: true,
       }));
       setSelectedMetric(id);
 
-      // Then handle the layer
+      // Handle the layer
       if (!overlayLayers?.[id]) {
         console.log("Layer not in overlayLayers, adding from defaultLayers");
         const layer = defaultLayers[id];

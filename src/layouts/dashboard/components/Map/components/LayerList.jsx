@@ -15,7 +15,7 @@ import { metricConfigs } from "../config/layers";
 import Legend from "./Legend";
 
 const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
-  const { layerVisibility, mapInstance, overlayLayers } = useMap();
+  const { layerVisibility, mapInstance, overlayLayers, addedLayers } = useMap();
   const [expandedLegends, setExpandedLegends] = useState({});
 
   const handleZoomToLayer = (layerId) => {
@@ -56,10 +56,10 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
     }));
   };
 
-  // Get the list of UG layers that have been added and are visible
+  // Get the list of UG layers that have been added
   const addedUGLayers = metricConfigs
     ? Object.entries(metricConfigs)
-        .filter(([id]) => layerVisibility[id] === true)
+        .filter(([id]) => addedLayers.has(id)) // Show all added layers
         .map(([id, config]) => ({
           id,
           label: config.label,
