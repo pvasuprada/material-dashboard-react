@@ -171,7 +171,9 @@ function Filter() {
             value={gnodeb}
             onChange={(event, newValue) => {
               setGnodeb(newValue);
-              handleMarketChangeforGnodeb(newValue);
+              if (newValue) {
+                handleMarketChangeforGnodeb(newValue);
+              }
               setSector(null);
             }}
             options={data.gnodebs || []}

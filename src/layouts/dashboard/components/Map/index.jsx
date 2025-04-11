@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 // Material UI imports
 import Card from "@mui/material/Card";
-import { Divider, Fab } from "@mui/material";
+import { CircularProgress, Divider, Fab } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -1574,6 +1574,20 @@ function MapContent() {
             position: "relative",
           }}
         >
+          {/* Loading indicator */}
+          {loading && (
+            <MDBox
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                zIndex: 1000,
+              }}
+            >
+              <CircularProgress />
+            </MDBox>
+          )}
           <div
             ref={mapRef}
             style={{

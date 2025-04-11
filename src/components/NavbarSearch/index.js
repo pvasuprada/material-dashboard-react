@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import { metricConfigs } from "layouts/dashboard/components/Map/config/layers";
 import { defaultLayers } from "layouts/dashboard/components/Map/config/layers";
 import { useMap } from "../../context/MapContext";
+import MDButton from "components/MDButton";
 
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   width: 300,
@@ -224,10 +225,12 @@ const AutocompleteSearch = () => {
           Are you sure you want to add {selectedOption?.label} to the map and layer list?
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancel}>Cancel</Button>
-          <Button onClick={handleConfirm} variant="contained" color="primary">
+          <MDButton onClick={handleCancel} variant="outlined" color="dark">
+            Cancel
+          </MDButton>
+          <MDButton onClick={handleConfirm} variant="outlined" color="dark">
             Add Layer
-          </Button>
+          </MDButton>
         </DialogActions>
       </Dialog>
     </>

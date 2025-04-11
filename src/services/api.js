@@ -74,7 +74,7 @@ export const api = {
       const response = await apiClient.post("/sectors", {
         nwfid: params.nwfid,
         du: params.du,
-        trafficType: params.trafficType || ["FWA"],
+        trafficType: params.trafficType,
       });
       return response.data;
     } catch (error) {
@@ -87,7 +87,7 @@ export const api = {
   getSiteData: async (params) => {
     try {
       const response = await apiClient.post("/dynamic-query-executor/sector-360/sites-mv", {
-        market: params?.market_id?.value || "131",
+        market: params?.market_id?.value,
       });
       return response.data;
     } catch (error) {
