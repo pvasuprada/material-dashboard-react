@@ -196,15 +196,6 @@ function MapContent() {
           console.log(`Setting visibility for ${layerId}: ${layerVisibility[layerId]}`);
 
           source.changed();
-
-          // If the layer is visible, fit to its extent
-          if (layerVisibility[layerId] && features.length > 0) {
-            const extent = source.getExtent();
-            mapInstance.getView().fit(extent, {
-              padding: [50, 50, 50, 50],
-              duration: 1000,
-            });
-          }
         } else {
           console.error(
             `Layer ${layerId} not found in map layers:`,
