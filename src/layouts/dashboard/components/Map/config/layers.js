@@ -83,6 +83,27 @@ const metricConfigs = {
     unit: "",
     normalizer: (value) => Math.min(0.8, 0.2 + value * 0.1),
   },
+  rec_cnt: {
+    label: "Record Count",
+    color: [75, 192, 192], // Teal
+    unit: "",
+    normalizer: (value) => Math.min(0.8, 0.2 + value * 0.1),
+    category: "truecall",
+  },
+  erab_drop_pct: {
+    label: "ERAB Drop Percentage",
+    color: [153, 102, 255], // Purple
+    unit: "%",
+    normalizer: (value) => Math.min(0.8, 0.2 + value * 0.1),
+    category: "truecall",
+  },
+  volte_erab_drop_pct: {
+    label: "VoLTE ERAB Drop Percentage",
+    color: [255, 159, 64], // Orange
+    unit: "%",
+    normalizer: (value) => Math.min(0.8, 0.2 + value * 0.1),
+    category: "truecall",
+  },
 };
 
 const createHexbinStyle = (feature, metric) => {
@@ -187,7 +208,7 @@ const createVectorLayer = (title) => {
       return [
         new Style({
           fill: new Fill({
-            color: `rgba(${r}, ${g}, ${b}, 1)`,
+            color: `rgba(${r}, ${g}, ${b}, ${opacity})`,
           }),
           stroke: new Stroke({
             color: `rgba(${r}, ${g}, ${b}, 1)`,
@@ -378,6 +399,64 @@ const createBuildingLayer = () => {
   });
 };
 
+const createTruecallLayer = (title) => {
+  const id = title.toLowerCase().replace(/\s+/g, "_");
+  return new VectorLayer({
+    source: new VectorSource(),
+    title: id,
+    visible: false,
+    style: (feature) => {
+      // Use the pre-calculated color stored in the feature
+      const color = feature.get("color");
+      const value = feature.get(id);
+
+      if (color) {
+        const fillColor = color;
+        const strokeColor = color.replace(/,[^,]+\)/, ",1)"); // Set full opacity for stroke
+
+        return [
+          new Style({
+            fill: new Fill({
+              color: fillColor,
+            }),
+            stroke: new Stroke({
+              color: strokeColor,
+              width: 1,
+            }),
+          }),
+          new Style({
+            text: new Text({
+              text: value ? value.toFixed(2).toString() : "",
+              fill: new Fill({
+                color: "white",
+              }),
+              stroke: new Stroke({
+                color: "black",
+                width: 2,
+              }),
+              font: "12px sans-serif",
+              overflow: true,
+              textAlign: "center",
+              textBaseline: "middle",
+            }),
+          }),
+        ];
+      }
+
+      // Fallback style if no color is set
+      return new Style({
+        fill: new Fill({
+          color: "rgba(200, 200, 200, 0.6)",
+        }),
+        stroke: new Stroke({
+          color: "rgba(100, 100, 100, 1)",
+          width: 1,
+        }),
+      });
+    },
+  });
+};
+
 const defaultLayers = {
   geoserver: createWMSLayer({
     url: "https://ahocevar.com/geoserver/wms",
@@ -410,6 +489,9 @@ const defaultLayers = {
   total_ul_volume: createVectorLayer("Total UL Volume"),
   ul_connections_count: createVectorLayer("UL Connections Count"),
   sites_layer: createSitesLayer(),
+  rec_cnt: createTruecallLayer("Record Count"),
+  erab_drop_pct: createTruecallLayer("ERAB Drop Percentage"),
+  volte_erab_drop_pct: createTruecallLayer("VoLTE ERAB Drop Percentage"),
 };
 
 const layerGroups = [
@@ -454,6 +536,21 @@ const layerGroups = [
       { id: "p50_ul_speed", label: "P50 UL Speed" },
       { id: "total_ul_volume", label: "Total UL Volume" },
       { id: "ul_connections_count", label: "UL Connections Count" },
+    ],
+  },
+  {
+    title: "Truecall Layers",
+    titleProps: {
+      sx: {
+        color: "text.primary",
+        fontWeight: 600,
+        mb: 1,
+      },
+    },
+    layers: [
+      { id: "rec_cnt", label: "Record Count" },
+      { id: "erab_drop_pct", label: "ERAB Drop Percentage" },
+      { id: "volte_erab_drop_pct", label: "VoLTE ERAB Drop Percentage" },
     ],
   },
 ];

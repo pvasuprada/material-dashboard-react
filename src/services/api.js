@@ -243,4 +243,20 @@ export const api = {
       throw error;
     }
   },
+
+  getTruecallData: async (params) => {
+    try {
+      const response = await apiClient.post("/dynamic_truecall_data", {
+        market: params?.market || "138",
+        gnodeb: params?.gnodeb || "138242",
+        kpi_name: params?.kpi_name || "rec_cnt",
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching truecall data:", error);
+      throw error;
+    }
+  },
 };
+
+export default api;

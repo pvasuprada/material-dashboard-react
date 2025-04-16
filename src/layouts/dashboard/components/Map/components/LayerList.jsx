@@ -59,7 +59,17 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
   // Get the list of UG layers that have been added
   const addedUGLayers = metricConfigs
     ? Object.entries(metricConfigs)
-        .filter(([id]) => addedLayers.has(id)) // Show all added layers
+        .filter(([id, config]) => addedLayers.has(id) && config.category !== "truecall") // Filter out truecall layers
+        .map(([id, config]) => ({
+          id,
+          label: config.label,
+        }))
+    : [];
+
+  // Get the list of added Truecall layers
+  const addedTruecallLayers = metricConfigs
+    ? Object.entries(metricConfigs)
+        .filter(([id, config]) => addedLayers.has(id) && config.category === "truecall")
         .map(([id, config]) => ({
           id,
           label: config.label,
@@ -87,6 +97,14 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
     layerGroups.push({
       title: "UG Layers",
       layers: addedUGLayers,
+    });
+  }
+
+  // Add Truecall Layers group if there are added truecall layers
+  if (addedTruecallLayers.length > 0) {
+    layerGroups.push({
+      title: "Truecall Layers",
+      layers: addedTruecallLayers,
     });
   }
 

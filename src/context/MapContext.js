@@ -17,6 +17,9 @@ export const MapProvider = ({ children }) => {
     interpolation: false,
     population: false,
     building: false,
+    rec_cnt: false,
+    erab_drop_pct: false,
+    volte_erab_drop_pct: false,
   });
   const [selectedMetric, setSelectedMetric] = useState(null);
 

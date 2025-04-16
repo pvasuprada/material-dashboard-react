@@ -149,6 +149,24 @@ const Legend = ({ layer, expanded }) => {
           { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
           { color: "rgba(0, 255, 0, 0.8)", label: "High" },
         ];
+      case "rec_cnt":
+        return [
+          { color: "rgba(255, 0, 0, 0.8)", label: "Low Count" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Count" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "High Count" },
+        ];
+      case "erab_drop_pct":
+        return [
+          { color: "rgba(255, 0, 0, 0.8)", label: "High Drop Rate" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Drop Rate" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "Low Drop Rate" },
+        ];
+      case "volte_erab_drop_pct":
+        return [
+          { color: "rgba(255, 0, 0, 0.8)", label: "High Drop Rate" },
+          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Drop Rate" },
+          { color: "rgba(0, 255, 0, 0.8)", label: "Low Drop Rate" },
+        ];
       default:
         return null;
     }
