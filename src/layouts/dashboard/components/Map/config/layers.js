@@ -9,18 +9,38 @@ const metricConfigs = {
     label: "User Count",
     color: [255, 0, 0], // Red
     unit: "",
+    visualization: {
+      type: "classbreak",
+      breaks: [
+        { min: 0, max: 10, label: "0-10 Users", color: [255, 0, 0] },
+        { min: 11, max: 20, label: "11-20 Users", color: [255, 165, 0] },
+        { min: 21, max: 30, label: "21-30 Users", color: [255, 255, 0] },
+        { min: 31, max: Infinity, label: "31+ Users", color: [0, 255, 0] },
+      ],
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value * 0.2),
   },
   avg_dl_latency: {
     label: "Avg Download Latency",
     color: [0, 0, 255], // Blue
     unit: "ms",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for high latency
+      maxColor: [0, 255, 0], // Green for low latency
+      inverse: true, // Higher values are worse
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value / 10),
   },
   total_dl_volume: {
     label: "Total Download Volume",
     color: [255, 192, 203], // Pink
     unit: "GB",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      maxColor: [0, 255, 0], // Green for high volume
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value / 5),
   },
   avg_nr_dl_colume_share: {
@@ -33,7 +53,16 @@ const metricConfigs = {
     label: "Avg NR RSRP",
     color: [255, 165, 0], // Orange
     unit: "dBm",
-    normalizer: (value) => Math.min(0.8, 0.2 + (value + 140) / 70), // Normalize from typical range -140 to -70
+    visualization: {
+      type: "classbreak",
+      breaks: [
+        { min: -140, max: -120, label: "Poor Signal (-140 to -120 dBm)", color: [255, 0, 0] },
+        { min: -120, max: -100, label: "Fair Signal (-120 to -100 dBm)", color: [255, 165, 0] },
+        { min: -100, max: -80, label: "Good Signal (-100 to -80 dBm)", color: [255, 255, 0] },
+        { min: -80, max: -70, label: "Excellent Signal (-80 to -70 dBm)", color: [0, 255, 0] },
+      ],
+    },
+    normalizer: (value) => Math.min(0.8, 0.2 + (value + 140) / 70),
   },
   avg_nr_ul_volume_share: {
     label: "Avg NR UL Volume Share",
@@ -104,13 +133,80 @@ const metricConfigs = {
     normalizer: (value) => Math.min(0.8, 0.2 + value * 0.1),
     category: "truecall",
   },
+  connection_status: {
+    label: "Connection Status",
+    color: [128, 0, 128], // Purple
+    unit: "",
+    visualization: {
+      type: "category",
+      categories: [
+        { value: "connected", label: "Connected", color: [0, 255, 0] },
+        { value: "disconnected", label: "Disconnected", color: [255, 0, 0] },
+        { value: "idle", label: "Idle", color: [255, 165, 0] },
+        { value: "unknown", label: "Unknown", color: [128, 128, 128] },
+      ],
+    },
+  },
+};
+
+// Helper function to get color based on visualization type and value
+const getColorForValue = (value, config) => {
+  if (!config.visualization) {
+    // Fallback to default color if no visualization config
+    return config.color;
+  }
+
+  switch (config.visualization.type) {
+    case "dynamic": {
+      if (value === undefined || value === null) return config.color;
+
+      // Get min/max from source if available, otherwise use defaults
+      const minValue = config.visualization.minValue || 0;
+      const maxValue = config.visualization.maxValue || 100;
+
+      // Normalize value between 0 and 1
+      let normalizedValue = (value - minValue) / (maxValue - minValue);
+
+      // Invert if specified
+      if (config.visualization.inverse) {
+        normalizedValue = 1 - normalizedValue;
+      }
+
+      // Interpolate between min and max colors
+      const minColor = config.visualization.minColor;
+      const maxColor = config.visualization.maxColor;
+
+      return [
+        Math.round(minColor[0] + (maxColor[0] - minColor[0]) * normalizedValue),
+        Math.round(minColor[1] + (maxColor[1] - minColor[1]) * normalizedValue),
+        Math.round(minColor[2] + (maxColor[2] - minColor[2]) * normalizedValue),
+      ];
+    }
+
+    case "classbreak": {
+      if (value === undefined || value === null) return config.color;
+
+      const break_ = config.visualization.breaks.find((b) => value >= b.min && value <= b.max);
+      return break_ ? break_.color : config.color;
+    }
+
+    case "category": {
+      if (value === undefined || value === null) return config.color;
+
+      const category = config.visualization.categories.find((c) => c.value === value);
+      return category ? category.color : config.color;
+    }
+
+    default:
+      return config.color;
+  }
 };
 
 const createHexbinStyle = (feature, metric) => {
   const config = metricConfigs[metric];
   const value = feature.get(metric);
   const opacity = value ? config.normalizer(value) : 0.2;
-  const [r, g, b] = config.color;
+  const [r, g, b] = getColorForValue(value, config);
 
   return new Style({
     fill: new Fill({

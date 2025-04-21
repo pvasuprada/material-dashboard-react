@@ -1,5 +1,6 @@
 import { Box, Collapse, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { metricConfigs } from "../config/layers";
 
 const LegendContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1),
@@ -35,6 +36,49 @@ const LegendItem = styled(Box)(({ theme }) => ({
 
 const Legend = ({ layer, expanded }) => {
   const getLegendContent = () => {
+    // First check if the layer has a visualization config in metricConfigs
+    const config = metricConfigs[layer.id];
+    if (config?.visualization) {
+      switch (config.visualization.type) {
+        case "dynamic": {
+          // For dynamic, show a gradient from min to max
+          const minColor = config.visualization.minColor;
+          const maxColor = config.visualization.maxColor;
+          return [
+            {
+              color: `rgba(${minColor[0]}, ${minColor[1]}, ${minColor[2]}, 0.8)`,
+              label: config.visualization.inverse ? "High" : "Low",
+            },
+            {
+              color: `rgba(${(minColor[0] + maxColor[0]) / 2}, ${
+                (minColor[1] + maxColor[1]) / 2
+              }, ${(minColor[2] + maxColor[2]) / 2}, 0.8)`,
+              label: "Medium",
+            },
+            {
+              color: `rgba(${maxColor[0]}, ${maxColor[1]}, ${maxColor[2]}, 0.8)`,
+              label: config.visualization.inverse ? "Low" : "High",
+            },
+          ];
+        }
+        case "classbreak": {
+          // For classbreak, show each break point
+          return config.visualization.breaks.map((break_) => ({
+            color: `rgba(${break_.color[0]}, ${break_.color[1]}, ${break_.color[2]}, 0.8)`,
+            label: break_.label,
+          }));
+        }
+        case "category": {
+          // For category, show each category
+          return config.visualization.categories.map((cat) => ({
+            color: `rgba(${cat.color[0]}, ${cat.color[1]}, ${cat.color[2]}, 0.8)`,
+            label: cat.label,
+          }));
+        }
+      }
+    }
+
+    // Fallback to original switch case for layers without visualization config
     switch (layer.id) {
       case "sites_layer":
         return [
