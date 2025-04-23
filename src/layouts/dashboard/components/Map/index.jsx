@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 // Material UI imports
 import Card from "@mui/material/Card";
-import { CircularProgress, Divider, Fab } from "@mui/material";
+import { CircularProgress, Fab } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -50,7 +50,7 @@ import MDBox from "components/MDBox";
 import { useMaterialUIController } from "context";
 import { MapControls } from "./components";
 import { createBasemaps } from "./config/basemaps";
-import { defaultLayers, metricConfigs } from "./config/layers";
+import { defaultLayers, metricConfigs, getColorForValue } from "./config/layers";
 import { MapProvider, useMap } from "../../../../context/MapContext";
 import SiteGrid from "../SiteGrid";
 
@@ -141,7 +141,7 @@ function MapContent() {
   const [showGridInFullscreen, setShowGridInFullscreen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Add effect to update data layers when averages change
+  // Update the layer update effect
   useEffect(() => {
     if (mapInstance && averages && Array.isArray(averages)) {
       console.log("Updating data layers with averages:", averages);
@@ -190,6 +190,37 @@ function MapContent() {
           const source = layer.getSource();
           source.clear();
           source.addFeatures(features.map((f) => f.clone()));
+
+          // Update layer style with new visualization system
+          layer.setStyle((feature) => {
+            const value = feature.get(layerId);
+            if (!value) return null;
+
+            const config = metricConfigs[layerId];
+            if (!config) return null;
+
+            const [r, g, b] = getColorForValue(value, config);
+
+            return new Style({
+              fill: new Fill({
+                color: `rgba(${r}, ${g}, ${b}, 1)`, // Set opacity to 1
+              }),
+              stroke: new Stroke({
+                color: `rgba(${r}, ${g}, ${b}, 1)`,
+                width: 1,
+              }),
+              text: new Text({
+                text: value.toFixed(1).toString(),
+                fill: new Fill({
+                  color: "white",
+                }),
+                stroke: new Stroke({
+                  color: "black",
+                  width: 2,
+                }),
+              }),
+            });
+          });
 
           // Ensure layer visibility matches the state
           layer.setVisible(layerVisibility[layerId] || false);
@@ -314,38 +345,6 @@ function MapContent() {
       element: element,
     });
     return customControl;
-  };
-
-  const getColorForMetric = (feature) => {
-    const value = feature.get(selectedMetric);
-    let opacity = 0.2;
-
-    if (value) {
-      // Normalize the value between 0.2 and 0.8 for opacity
-      switch (selectedMetric) {
-        case "user_count":
-          opacity = Math.min(0.8, 0.2 + value * 0.2);
-          break;
-        case "avg_dl_latency":
-          opacity = Math.min(0.8, 0.2 + value / 10); // Assuming max latency of 10
-          break;
-        case "total_dl_volume":
-          opacity = Math.min(0.8, 0.2 + value / 5); // Assuming max volume of 5
-          break;
-        default:
-          opacity = 0.5;
-      }
-    }
-
-    // Different colors for different metrics
-    const colors = {
-      user_count: [255, 0, 0], // Red
-      avg_dl_latency: [0, 0, 255], // Blue
-      total_dl_volume: [255, 192, 203], // Pink
-    };
-
-    const [r, g, b] = colors[selectedMetric] || colors.user_count;
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   };
 
   const createHexbinStyle = (feature) => {
@@ -1551,6 +1550,47 @@ function MapContent() {
     } catch (error) {
       console.error("Error updating building layer:", error);
     }
+  };
+
+  // Update createVectorLayer to use the new visualization system
+  const createVectorLayer = (title) => {
+    const id = title.toLowerCase().replace(/\s+/g, "_");
+    return new VectorLayer({
+      source: new VectorSource(),
+      title: id,
+      visible: false,
+      style: (feature) => {
+        const value = feature.get(id);
+        if (!value) return null;
+
+        // Get the metric config
+        const config = metricConfigs[id];
+        if (!config) return null;
+
+        // Get color based on visualization type
+        const [r, g, b] = getColorForValue(value, config);
+
+        return new Style({
+          fill: new Fill({
+            color: `rgba(${r}, ${g}, ${b}, 1)`, // Set opacity to 1
+          }),
+          stroke: new Stroke({
+            color: `rgba(${r}, ${g}, ${b}, 1)`,
+            width: 1,
+          }),
+          text: new Text({
+            text: value.toFixed(1).toString(),
+            fill: new Fill({
+              color: "white",
+            }),
+            stroke: new Stroke({
+              color: "black",
+              width: 2,
+            }),
+          }),
+        });
+      },
+    });
   };
 
   return (

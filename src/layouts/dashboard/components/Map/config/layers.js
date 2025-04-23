@@ -659,4 +659,5 @@ export {
   createVectorLayer,
   defaultLayers,
   layerGroups,
+  getColorForValue,
 };
