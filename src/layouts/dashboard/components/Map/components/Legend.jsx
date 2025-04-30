@@ -43,6 +43,7 @@ const Legend = ({ layer, expanded }) => {
         case "dynamic": {
           // For dynamic, show a gradient from min to max
           const minColor = config.visualization.minColor;
+          const midColor = config.visualization.midColor;
           const maxColor = config.visualization.maxColor;
           return [
             {
@@ -50,9 +51,7 @@ const Legend = ({ layer, expanded }) => {
               label: config.visualization.inverse ? "High" : "Low",
             },
             {
-              color: `rgba(${(minColor[0] + maxColor[0]) / 2}, ${
-                (minColor[1] + maxColor[1]) / 2
-              }, ${(minColor[2] + maxColor[2]) / 2}, 0.8)`,
+              color: `rgba(${midColor[0]}, ${midColor[1]}, ${midColor[2]}, 0.8)`,
               label: "Medium",
             },
             {

@@ -19,8 +19,14 @@ import { Style, Fill, Stroke, Text } from "ol/style";
 import api from "services/api";
 
 import MDButton from "components/MDButton";
-import { metricConfigs, defaultLayers } from "layouts/dashboard/components/Map/config/layers";
+import {
+  metricConfigs,
+  defaultLayers,
+  getColorForValue,
+} from "layouts/dashboard/components/Map/config/layers";
 import { useMap } from "../../context/MapContext";
+import truecallParameters from "layouts/dashboard/components/Map/config/truecallParameters.json";
+import dayjs from "dayjs";
 
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   width: 300,
@@ -88,7 +94,7 @@ const AutocompleteSearch = () => {
     }
   }, [mapInstance]);
 
-  const addLayer = async (layerId) => {
+  const addTrueCallLayer = async (layerId) => {
     console.log("Adding layer:", layerId);
     console.log("Map instance:", mapInstance);
 
@@ -112,7 +118,7 @@ const AutocompleteSearch = () => {
       console.log("Found matching option:", option);
 
       // Check if it's a Truecall layer
-      const isTruecallLayer = ["rec_cnt", "erab_drop_pct", "volte_erab_drop_pct"].includes(id);
+      const isTruecallLayer = Object.keys(truecallParameters).includes(id);
 
       if (isTruecallLayer) {
         // Validate required parameters
@@ -126,6 +132,8 @@ const AutocompleteSearch = () => {
             market: selectedFilters.market.value,
             gnodeb: selectedFilters.gnodeb.value,
             kpi_name: id,
+            startdate: selectedFilters.dateRange.startDate.toISOString().split("T")[0],
+            enddate: selectedFilters.dateRange.endDate.toISOString().split("T")[0],
           });
 
           // Update the layer with the received data
@@ -138,8 +146,10 @@ const AutocompleteSearch = () => {
 
                 // Calculate min and max values for color scaling
                 const values = response.map((item) => item[id]); // Use the layer id (rec_cnt, erab_drop_pct, etc.)
-                const minValue = Math.min(...values);
-                const maxValue = Math.max(...values);
+                // const minValue = Math.min(...values);
+                // const maxValue = Math.max(...values);
+                const minValue = values.reduce((min, value) => Math.min(min, value), Infinity);
+                const maxValue = values.reduce((max, value) => Math.max(max, value), -Infinity);
                 const midValue = (minValue + maxValue) / 2;
 
                 console.log("Value ranges for", id, ":", { minValue, maxValue, midValue, values });
@@ -164,24 +174,20 @@ const AutocompleteSearch = () => {
                   // Set the metric value as a property
                   feature.set(id, value);
 
-                  // Calculate color based on value
-                  let r, g, b;
-                  if (value <= midValue) {
-                    // Red to Yellow transition
-                    r = 255;
-                    g = Math.round(((value - minValue) / (midValue - minValue)) * 255);
-                    b = 0;
-                  } else {
-                    // Yellow to Green transition
-                    r = Math.round(((maxValue - value) / (maxValue - midValue)) * 255);
-                    g = 255;
-                    b = 0;
-                  }
-
+                  if (!value) return null;
+                  const config = metricConfigs[layerId];
+                  if (!config) return null;
+                  const [r, g, b] = getColorForValue(value, config);
                   // Set color and text style properties
                   feature.set("color", `rgba(${r}, ${g}, ${b})`);
                   feature.set("geobin", item.h3_index);
-                  feature.set("text", value.toFixed(2).toString());
+                  if (typeof value === "number") {
+                    feature.set("text", value.toFixed(2).toString());
+                  } else if (typeof value === "string") {
+                    feature.set("text", value);
+                  } else {
+                    feature.set("text", "Invalid value");
+                  }
                   feature.set("textStyle", {
                     fill: "white",
                     stroke: "black",
@@ -229,7 +235,6 @@ const AutocompleteSearch = () => {
                             width: textStyle.strokeWidth,
                           }),
                           font: textStyle.font,
-                          overflow: true,
                           textAlign: "center",
                           textBaseline: "middle",
                         }),
@@ -341,7 +346,7 @@ const AutocompleteSearch = () => {
 
   const handleConfirm = () => {
     if (selectedOption) {
-      addLayer(selectedOption.id);
+      addTrueCallLayer(selectedOption.id);
     }
     setOpenConfirm(false);
     setSelectedOption(null);

@@ -1,0 +1,20 @@
+{
+    "h_key": {
+        "label": "H-Key"
+    },
+    "vendor": {
+        "label": "Vendor"
+    },
+    "vendors": {
+        "label": "Vendors"
+    },
+    "erab_drop_pct": {
+        "label": "ERAB Drop Percentage"
+    },
+    "volte_erab_drop_pct": {
+        "label": "VoLTE ERAB Drop Percentage"
+    },
+    "rsrq_db_avg": {
+        "label": "RSRQ (dB)"
+    }
+}

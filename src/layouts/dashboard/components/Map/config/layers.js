@@ -27,6 +27,7 @@ const metricConfigs = {
     visualization: {
       type: "dynamic",
       minColor: [255, 0, 0], // Red for high latency
+      midColor: [255, 255, 0], // Yellow for medium latency
       maxColor: [0, 255, 0], // Green for low latency
       inverse: true, // Higher values are worse
     },
@@ -39,6 +40,7 @@ const metricConfigs = {
     visualization: {
       type: "dynamic",
       minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
       maxColor: [0, 255, 0], // Green for high volume
     },
     normalizer: (value) => Math.min(0.8, 0.2 + value / 5),
@@ -47,6 +49,13 @@ const metricConfigs = {
     label: "Avg NR DL Volume Share",
     color: [0, 255, 0], // Green
     unit: "%",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+      inverse: true,
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value),
   },
   avg_nr_rsrp: {
@@ -68,54 +77,116 @@ const metricConfigs = {
     label: "Avg NR UL Volume Share",
     color: [128, 0, 128], // Purple
     unit: "%",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+      inverse: true,
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value),
   },
   dl_connections_count: {
     label: "DL Connections Count",
     color: [0, 128, 128], // Teal
     unit: "",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value * 0.1),
   },
   p10_dl_speed: {
     label: "P10 DL Speed",
     color: [255, 69, 0], // Red-Orange
     unit: "Mbps",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+      inverse: true,
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value / 50),
   },
   p10_ul_speed: {
     label: "P10 UL Speed",
     color: [70, 130, 180], // Steel Blue
     unit: "Mbps",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+      inverse: true,
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value / 30),
   },
   p50_dl_speed: {
     label: "P50 DL Speed",
     color: [219, 112, 147], // Pale Violet Red
     unit: "Mbps",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+      inverse: true,
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value / 100),
   },
   p50_ul_speed: {
     label: "P50 UL Speed",
     color: [72, 61, 139], // Dark Slate Blue
     unit: "Mbps",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+      inverse: true,
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value / 50),
   },
   total_ul_volume: {
     label: "Total UL Volume",
     color: [154, 205, 50], // Yellow Green
     unit: "GB",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+      inverse: true,
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value / 3),
   },
   ul_connections_count: {
     label: "UL Connections Count",
     color: [139, 69, 19], // Saddle Brown
     unit: "",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+      inverse: true,
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value * 0.1),
   },
   rec_cnt: {
     label: "Record Count",
     color: [75, 192, 192], // Teal
     unit: "",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0],
+      midColor: [255, 255, 0],
+      maxColor: [0, 255, 0],
+      inverse: false,
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value * 0.1),
     category: "truecall",
   },
@@ -123,6 +194,13 @@ const metricConfigs = {
     label: "ERAB Drop Percentage",
     color: [153, 102, 255], // Purple
     unit: "%",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+      inverse: true,
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value * 0.1),
     category: "truecall",
   },
@@ -130,23 +208,72 @@ const metricConfigs = {
     label: "VoLTE ERAB Drop Percentage",
     color: [255, 159, 64], // Orange
     unit: "%",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+      inverse: true,
+    },
     normalizer: (value) => Math.min(0.8, 0.2 + value * 0.1),
     category: "truecall",
   },
-  connection_status: {
-    label: "Connection Status",
+  vendor: {
+    label: "Vendor",
     color: [128, 0, 128], // Purple
     unit: "",
     visualization: {
       type: "category",
       categories: [
-        { value: "connected", label: "Connected", color: [0, 255, 0] },
-        { value: "disconnected", label: "Disconnected", color: [255, 0, 0] },
-        { value: "idle", label: "Idle", color: [255, 165, 0] },
-        { value: "unknown", label: "Unknown", color: [128, 128, 128] },
+        { value: "Samsung", label: "Samsung", color: [0, 255, 0] },
+        { value: "Nokia", label: "Nokia", color: [255, 0, 0] },
       ],
     },
+    category: "truecall",
   },
+  vendors: {
+    label: "Vendors",
+    color: [128, 0, 128], // Purple
+    unit: "",
+    visualization: {
+      type: "category",
+      categories: [
+        { value: "Samsung", label: "Samsung", color: [0, 255, 0] },
+        { value: "Nokia", label: "Nokia", color: [255, 0, 0] },
+        { value: "Nokia,Samsung", label: "Nokia,Samsung", color: [255, 165, 0] },
+        { value: "Samsung,Nokia", label: "Samsung,Nokia", color: [255, 165, 0] },
+      ],
+    },
+    category: "truecall",
+  },
+  rsrq_db_avg: {
+    label: "RSRQ (dB)",
+    color: [128, 0, 128], // Purple
+    unit: "",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+      inverse: true,
+    },
+    category: "truecall",
+  },
+
+  // connection_status: {
+  //   label: "Connection Status",
+  //   color: [128, 0, 128], // Purple
+  //   unit: "",
+  //   visualization: {
+  //     type: "category",
+  //     categories: [
+  //       { value: "connected", label: "Connected", color: [0, 255, 0] },
+  //       { value: "disconnected", label: "Disconnected", color: [255, 0, 0] },
+  //       { value: "idle", label: "Idle", color: [255, 165, 0] },
+  //       { value: "unknown", label: "Unknown", color: [128, 128, 128] },
+  //     ],
+  //   },
+  // },
 };
 
 // Helper function to get color based on visualization type and value
@@ -174,13 +301,24 @@ const getColorForValue = (value, config) => {
 
       // Interpolate between min and max colors
       const minColor = config.visualization.minColor;
+      const midColor = config.visualization.midColor;
       const maxColor = config.visualization.maxColor;
 
-      return [
-        Math.round(minColor[0] + (maxColor[0] - minColor[0]) * normalizedValue),
-        Math.round(minColor[1] + (maxColor[1] - minColor[1]) * normalizedValue),
-        Math.round(minColor[2] + (maxColor[2] - minColor[2]) * normalizedValue),
-      ];
+      if (normalizedValue <= 0.5) {
+        const t = normalizedValue * 2;
+        return [
+          Math.round(minColor[0] + (midColor[0] - minColor[0]) * t),
+          Math.round(minColor[1] + (midColor[1] - minColor[1]) * t),
+          Math.round(minColor[2] + (midColor[2] - minColor[2]) * t),
+        ];
+      } else {
+        const t = (normalizedValue - 0.5) * 2;
+        return [
+          Math.round(midColor[0] + (maxColor[0] - midColor[0]) * t),
+          Math.round(midColor[1] + (maxColor[1] - midColor[1]) * t),
+          Math.round(midColor[2] + (maxColor[2] - midColor[2]) * t),
+        ];
+      }
     }
 
     case "classbreak": {
@@ -200,23 +338,6 @@ const getColorForValue = (value, config) => {
     default:
       return config.color;
   }
-};
-
-const createHexbinStyle = (feature, metric) => {
-  const config = metricConfigs[metric];
-  const value = feature.get(metric);
-  const opacity = value ? config.normalizer(value) : 0.2;
-  const [r, g, b] = getColorForValue(value, config);
-
-  return new Style({
-    fill: new Fill({
-      color: `rgba(${r}, ${g}, ${b}, ${opacity})`,
-    }),
-    stroke: new Stroke({
-      color: `rgba(${r}, ${g}, ${b}, 1)`,
-      width: 1,
-    }),
-  });
 };
 
 const createHexbinLayer = (title = "Hexbins", metric = "user_count") => {
@@ -245,86 +366,6 @@ const createVectorLayer = (title) => {
     source: new VectorSource(),
     title: id,
     visible: false,
-    style: (feature) => {
-      const value = feature.get(id);
-      if (!value) return null;
-
-      // Get source and calculate min/max values
-      const source = feature.getSource?.() || feature.layer?.getSource();
-      let minValue = 0;
-      let maxValue = 100;
-
-      if (source) {
-        const features = source.getFeatures();
-        if (features.length > 0) {
-          const values = features.map((f) => f.get(id)).filter((v) => v != null);
-          if (values.length > 0) {
-            minValue = Math.min(...values);
-            maxValue = Math.max(...values);
-          }
-        }
-      }
-
-      // Calculate normalized value between 0 and 1
-      let normalizedValue;
-
-      // Special handling for RSRP which is typically negative
-      if (id === "avg_nr_rsrp") {
-        // RSRP typically ranges from -140 to -70 dBm
-        normalizedValue = (value + 140) / 70; // Maps -140 to 0 and -70 to 1
-      } else {
-        normalizedValue = (value - minValue) / (maxValue - minValue);
-      }
-
-      // Create color gradient from red (bad) through yellow/orange (medium) to green (good)
-      let r, g, b;
-
-      // For metrics where higher values are worse (like latency)
-      const inverseMetrics = ["avg_dl_latency"];
-      if (inverseMetrics.includes(id)) {
-        normalizedValue = 1 - normalizedValue;
-      }
-
-      if (normalizedValue <= 0.5) {
-        // Red to Yellow transition
-        r = 255;
-        g = Math.round(normalizedValue * 2 * 255);
-        b = 0;
-      } else {
-        // Yellow to Green transition
-        r = Math.round((1 - (normalizedValue - 0.5) * 2) * 255);
-        g = 255;
-        b = 0;
-      }
-
-      // Calculate opacity based on normalized value
-      const opacity = Math.min(0.8, 0.2 + normalizedValue * 0.6);
-
-      // Create styles array with both fill/stroke and text
-      return [
-        new Style({
-          fill: new Fill({
-            color: `rgba(${r}, ${g}, ${b}, ${opacity})`,
-          }),
-          stroke: new Stroke({
-            color: `rgba(${r}, ${g}, ${b}, 1)`,
-            width: 1,
-          }),
-        }),
-        new Style({
-          text: new Text({
-            text: value.toFixed(1).toString(),
-            fill: new Fill({
-              color: "white",
-            }),
-            stroke: new Stroke({
-              color: "black",
-              width: 2,
-            }),
-          }),
-        }),
-      ];
-    },
   });
 };
 
@@ -531,7 +572,6 @@ const createTruecallLayer = (title) => {
                 width: 2,
               }),
               font: "12px sans-serif",
-              overflow: true,
               textAlign: "center",
               textBaseline: "middle",
             }),
@@ -588,6 +628,9 @@ const defaultLayers = {
   rec_cnt: createTruecallLayer("Record Count"),
   erab_drop_pct: createTruecallLayer("ERAB Drop Percentage"),
   volte_erab_drop_pct: createTruecallLayer("VoLTE ERAB Drop Percentage"),
+  vendor: createTruecallLayer("Vendor"),
+  vendors: createTruecallLayer("Vendors"),
+  rsrq_db_avg: createTruecallLayer("RSRQ (dB) Avg"),
 };
 
 const layerGroups = [
@@ -647,14 +690,15 @@ const layerGroups = [
       { id: "rec_cnt", label: "Record Count" },
       { id: "erab_drop_pct", label: "ERAB Drop Percentage" },
       { id: "volte_erab_drop_pct", label: "VoLTE ERAB Drop Percentage" },
+      { id: "vendor", label: "Vendor" },
+      { id: "vendors", label: "Vendors" },
+      { id: "rsrq_db_avg", label: "RSRQ (dB) Avg" },
     ],
   },
 ];
 
 export {
   metricConfigs,
-  createHexbinStyle,
-  createHexbinLayer,
   createWMSLayer,
   createVectorLayer,
   defaultLayers,

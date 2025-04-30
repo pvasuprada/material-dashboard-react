@@ -20,6 +20,9 @@ export const MapProvider = ({ children }) => {
     rec_cnt: false,
     erab_drop_pct: false,
     volte_erab_drop_pct: false,
+    vendor: false,
+    vendors: false,
+    rsrq_db_avg: false,
   });
   const [selectedMetric, setSelectedMetric] = useState(null);
 
