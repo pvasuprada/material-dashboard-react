@@ -24,6 +24,10 @@ export const MapProvider = ({ children }) => {
     vendor: false,
     vendors: false,
     rsrq_db_avg: false,
+    in_avg_rsrq_db: false,
+    in_num_of_rrc_connection_attempts: false,
+    in_num_of_drops: false,
+    in_sum_rlc_pdu_dl_volume_md: false,
   });
   const [selectedMetric, setSelectedMetric] = useState(null);
 

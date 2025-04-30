@@ -259,6 +259,56 @@ const metricConfigs = {
     },
     category: "truecall",
   },
+  in_avg_rsrq_db: {
+    label: "Average RSRQ (dB)",
+    color: [75, 0, 130], // Indigo
+    unit: "dB",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for poor RSRQ
+      midColor: [255, 255, 0], // Yellow for medium RSRQ
+      maxColor: [0, 255, 0], // Green for good RSRQ
+      inverse: true,
+    },
+    category: "truecall",
+  },
+  in_num_of_rrc_connection_attempts: {
+    label: "RRC Connection Attempts",
+    color: [0, 128, 128], // Teal
+    unit: "",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low attempts
+      midColor: [255, 255, 0], // Yellow for medium attempts
+      maxColor: [0, 255, 0], // Green for high attempts
+    },
+    category: "truecall",
+  },
+  in_num_of_drops: {
+    label: "Number of Drops",
+    color: [139, 0, 0], // Dark Red
+    unit: "",
+    visualization: {
+      type: "dynamic",
+      minColor: [0, 255, 0], // Green for low drops
+      midColor: [255, 255, 0], // Yellow for medium drops
+      maxColor: [255, 0, 0], // Red for high drops
+      inverse: true,
+    },
+    category: "truecall",
+  },
+  in_sum_rlc_pdu_dl_volume_md: {
+    label: "RLC PDU DL Volume",
+    color: [0, 0, 139], // Dark Blue
+    unit: "MB",
+    visualization: {
+      type: "dynamic",
+      minColor: [255, 0, 0], // Red for low volume
+      midColor: [255, 255, 0], // Yellow for medium volume
+      maxColor: [0, 255, 0], // Green for high volume
+    },
+    category: "truecall",
+  },
 
   // connection_status: {
   //   label: "Connection Status",
@@ -641,6 +691,10 @@ const defaultLayers = {
   vendor: createTruecallLayer("Vendor"),
   vendors: createTruecallLayer("Vendors"),
   rsrq_db_avg: createTruecallLayer("RSRQ (dB) Avg"),
+  in_avg_rsrq_db: createTruecallLayer("Average RSRQ (dB)"),
+  in_num_of_rrc_connection_attempts: createTruecallLayer("RRC Connection Attempts"),
+  in_num_of_drops: createTruecallLayer("Number of Drops"),
+  in_sum_rlc_pdu_dl_volume_md: createTruecallLayer("RLC PDU DL Volume"),
 };
 
 const layerGroups = [
@@ -704,6 +758,10 @@ const layerGroups = [
       { id: "vendor", label: "Vendor" },
       { id: "vendors", label: "Vendors" },
       { id: "rsrq_db_avg", label: "RSRQ (dB) Avg" },
+      { id: "in_avg_rsrq_db", label: "Average RSRQ (dB)" },
+      { id: "in_num_of_rrc_connection_attempts", label: "RRC Connection Attempts" },
+      { id: "in_num_of_drops", label: "Number of Drops" },
+      { id: "in_sum_rlc_pdu_dl_volume_md", label: "RLC PDU DL Volume" },
     ],
   },
 ];

@@ -16,5 +16,17 @@
     },
     "rsrq_db_avg": {
         "label": "RSRQ (dB)"
+    },
+    "in_avg_rsrq_db": {
+        "label": "Average RSRQ (dB)"
+    },
+    "in_num_of_rrc_connection_attempts": {
+        "label": "RRC Connection Attempts"
+    },
+    "in_num_of_drops": {
+        "label": "Number of Drops"
+    },
+    "in_sum_rlc_pdu_dl_volume_md": {
+        "label": "RLC PDU DL Volume"
     }
 }
