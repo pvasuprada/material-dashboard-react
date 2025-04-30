@@ -1593,6 +1593,51 @@ function MapContent() {
     });
   };
 
+  const updatePopulationWmsLayer = async () => {
+    if (!mapInstance) return;
+
+    try {
+      const response = await api.getPopulationWmsLayer();
+
+      // Find the population WMS layer
+      const populationWmsLayer = mapInstance
+        .getLayers()
+        .getArray()
+        .find((layer) => layer.get("title") === "population_wms");
+
+      if (populationWmsLayer && response.data) {
+        // Update the layer's source with new parameters if needed
+        const source = populationWmsLayer.getSource();
+        source.updateParams({
+          ...source.getParams(),
+          LAYERS: response.data.layer_name || "PopulationWms",
+          // Add any other parameters from the response
+          ...response.data.params,
+        });
+
+        // Set visibility based on layerVisibility state
+        populationWmsLayer.setVisible(layerVisibility["population_wms"] || false);
+
+        // If the layer is visible, fit to its extent if available
+        if (layerVisibility["population_wms"] && response.data.extent) {
+          const [minx, miny, maxx, maxy] = response.data.extent;
+          const extent = [...fromLonLat([minx, miny]), ...fromLonLat([maxx, maxy])];
+          mapInstance.getView().fit(extent, {
+            padding: [50, 50, 50, 50],
+            duration: 1000,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error updating population WMS layer:", error);
+    }
+  };
+
+  // Add effect to update population WMS layer
+  useEffect(() => {
+    updatePopulationWmsLayer();
+  }, [mapInstance, filterParams]);
+
   return (
     <Card>
       <MDBox p={2}>
