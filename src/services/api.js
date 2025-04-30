@@ -57,6 +57,17 @@ export const api = {
     }
   },
 
+  // Get Population WMS Layer
+  getPopulationWmsLayer: async () => {
+    try {
+      const response = await apiClient.get("/mv-extent");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching population WMS layer:", error);
+      throw error;
+    }
+  },
+
   // GNODEBs
   getGnodebs: async () => {
     try {

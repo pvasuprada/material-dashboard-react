@@ -600,6 +600,16 @@ const defaultLayers = {
     title: "geoserver",
     visible: false,
   }),
+  population_wms: createWMSLayer({
+    url: `${import.meta.env.VITE_API_URL}/wms`,
+    layers: "PopulationWms",
+    title: "population_wms",
+    visible: false,
+    params: {
+      FORMAT: "image/png",
+      TRANSPARENT: true,
+    },
+  }),
   hurricanes: createWMSLayer({
     url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Hurricanes/MapServer/0",
     layers: "0",
@@ -645,6 +655,7 @@ const layerGroups = [
     },
     layers: [
       { id: "geoserver", label: "GeoServer Layer" },
+      { id: "population_wms", label: "Population WMS Layer" },
       { id: "hurricanes", label: "Hurricanes" },
       { id: "hexbins", label: "Hexbins" },
       { id: "sites_layer", label: "Sites Layer" },

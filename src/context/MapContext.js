@@ -11,6 +11,7 @@ export const MapProvider = ({ children }) => {
   const [layerVisibility, setLayerVisibility] = useState({
     hurricanes: false,
     geoserver: false,
+    population_wms: false,
     network_genie_layer_1: true,
     sites_layer: true,
     raw_coverage: false,
