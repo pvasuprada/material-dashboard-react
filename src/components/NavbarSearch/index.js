@@ -25,7 +25,7 @@ import {
   getColorForValue,
 } from "layouts/dashboard/components/Map/config/layers";
 import { useMap } from "../../context/MapContext";
-import truecallParameters from "layouts/dashboard/components/Map/config/truecallParameters.json";
+import truecallParameters from "layouts/dashboard/components/Map/config/truecall.json";
 import dayjs from "dayjs";
 
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({

@@ -1,15 +1,20 @@
+import Alert from "@mui/material/Alert";
+import CircularProgress from "@mui/material/CircularProgress";
+import Divider from "@mui/material/Divider";
+import Icon from "@mui/material/Icon";
+import Tooltip from "@mui/material/Tooltip";
+
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
+
+import MDAutocomplete from "components/MDAutocomplete";
 import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
-import MDTypography from "components/MDTypography";
-import MDAutocomplete from "components/MDAutocomplete";
 import MDDatePicker from "components/MDDatePicker";
-import CircularProgress from "@mui/material/CircularProgress";
-import Tooltip from "@mui/material/Tooltip";
-import Icon from "@mui/material/Icon";
-import Divider from "@mui/material/Divider";
+import MDTypography from "components/MDTypography";
+
+import { useMaterialUIController } from "context";
 import {
   fetchInitialOptions,
   fetchSectors,
@@ -17,7 +22,6 @@ import {
   updateSelectedFilters,
   resetFilters,
 } from "store/slices/filterSlice";
-import { useMaterialUIController } from "context";
 
 function Filter() {
   const dispatch = useDispatch();
@@ -34,6 +38,7 @@ function Filter() {
   );
   const [endDate, setEndDate] = useState(dayjs(selectedFilters.dateRange.endDate || new Date()));
   const [isFiltersChanged, setIsFiltersChanged] = useState(false);
+  const [validationError, setValidationError] = useState("");
   const markets = useSelector((state) => state.filter.markets);
 
   useEffect(() => {
@@ -68,7 +73,32 @@ function Filter() {
     setEndDate(dayjs(new Date()));
   };
 
+  const validateFilters = () => {
+    if (!market) {
+      setValidationError("Market is required");
+      return false;
+    }
+    if (!gnodeb) {
+      setValidationError("GNODEB is required");
+      return false;
+    }
+    if (!trafficType) {
+      setValidationError("Traffic Type is required");
+      return false;
+    }
+    if (!startDate || !endDate) {
+      setValidationError("Start Date and End Date are required");
+      return false;
+    }
+    setValidationError("");
+    return true;
+  };
+
   const handleApply = async () => {
+    if (!validateFilters()) {
+      return;
+    }
+
     const newFilters = {
       market: market
         ? {
@@ -151,6 +181,25 @@ function Filter() {
         }}
       />
 
+      {validationError && (
+        <MDBox px={2} py={1}>
+          <Alert
+            severity="error"
+            sx={{
+              fontSize: "0.75rem",
+              whiteSpace: "normal",
+              "& .MuiAlert-message": {
+                overflow: "hidden",
+                textOverflow: "unset",
+                whiteSpace: "normal",
+              },
+            }}
+          >
+            {validationError}
+          </Alert>
+        </MDBox>
+      )}
+
       <MDBox px={2} py={0.5}>
         <MDBox mb={1.5}>
           <MDAutocomplete
@@ -160,7 +209,14 @@ function Filter() {
             options={data.markets || []}
             getOptionLabel={(option) => option?.text || ""}
             isOptionEqualToValue={(option, value) => option?.value === value?.value}
-            label="Market"
+            label={
+              <MDBox display="flex" alignItems="center">
+                Market
+                <MDTypography color="error" component="span" fontSize="0.875rem" ml={0.5}>
+                  *
+                </MDTypography>
+              </MDBox>
+            }
             color={darkMode ? "white" : "dark"}
             loading={loading}
           />
@@ -188,7 +244,14 @@ function Filter() {
             noOptionsText={(inputValue) =>
               inputValue.length < 3 ? "Type at least 3 characters to search" : "No options found"
             }
-            label="GNODEB"
+            label={
+              <MDBox display="flex" alignItems="center">
+                GNODEB
+                <MDTypography color="error" component="span" fontSize="0.875rem" ml={0.5}>
+                  *
+                </MDTypography>
+              </MDBox>
+            }
             color={darkMode ? "white" : "dark"}
             loading={loading}
           />
@@ -213,7 +276,14 @@ function Filter() {
             value={trafficType}
             onChange={(event, newValue) => setTrafficType(newValue)}
             options={data.trafficTypes || []}
-            label="Traffic Type"
+            label={
+              <MDBox display="flex" alignItems="center">
+                Traffic Type
+                <MDTypography color="error" component="span" fontSize="0.875rem" ml={0.5}>
+                  *
+                </MDTypography>
+              </MDBox>
+            }
             color={darkMode ? "white" : "dark"}
             loading={loading}
           />
@@ -222,7 +292,14 @@ function Filter() {
           <MDBox mb={1.5}>
             <MDDatePicker
               input={{
-                label: "Start Date",
+                label: (
+                  <MDBox display="flex" alignItems="center">
+                    Start Date
+                    <MDTypography color="error" component="span" fontSize="0.875rem" ml={0.5}>
+                      *
+                    </MDTypography>
+                  </MDBox>
+                ),
                 size: "small",
               }}
               value={startDate}
@@ -235,7 +312,14 @@ function Filter() {
           <MDBox>
             <MDDatePicker
               input={{
-                label: "End Date",
+                label: (
+                  <MDBox display="flex" alignItems="center">
+                    End Date
+                    <MDTypography color="error" component="span" fontSize="0.875rem" ml={0.5}>
+                      *
+                    </MDTypography>
+                  </MDBox>
+                ),
                 size: "small",
               }}
               value={endDate}
