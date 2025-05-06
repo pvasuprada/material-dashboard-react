@@ -1,6 +1,4 @@
-import { Feature } from "ol";
-import { Polygon } from "ol/geom";
-import { fromLonLat } from "ol/proj";
+// MUI imports
 import {
   Autocomplete,
   TextField,
@@ -11,22 +9,28 @@ import {
   DialogActions,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+
+// React and third-party imports
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import * as h3 from "h3-js";
+import { Feature } from "ol";
+import { Polygon } from "ol/geom";
+import { fromLonLat } from "ol/proj";
 import { Style, Fill, Stroke, Text } from "ol/style";
+import * as h3 from "h3-js";
+import dayjs from "dayjs";
 
-import api from "services/api";
-
-import MDButton from "components/MDButton";
+// Local imports
+import truecallParameters from "layouts/dashboard/components/Map/config/truecall.json";
 import {
   metricConfigs,
   defaultLayers,
   getColorForValue,
 } from "layouts/dashboard/components/Map/config/layers";
+import api from "services/api";
+import MDButton from "components/MDButton";
 import { useMap } from "../../context/MapContext";
-import truecallParameters from "layouts/dashboard/components/Map/config/truecall.json";
-import dayjs from "dayjs";
+import { useInsights } from "context/insightsContext";
 
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   width: 300,
@@ -75,6 +79,7 @@ const AutocompleteSearch = () => {
     setSelectedMetric,
     setAddedLayers,
   } = useMap();
+  const { updateChartVisibility } = useInsights();
 
   // Get market and gnodeb from Redux state
   const selectedFilters = useSelector((state) => state.filter.selectedFilters);
@@ -287,6 +292,30 @@ const AutocompleteSearch = () => {
         return newState;
       });
       setSelectedMetric(id);
+
+      // Update chart visibility for UG layers
+      if (option && option.category === "ug") {
+        // Map layer IDs to chart titles
+        const chartTitleMap = {
+          user_count: "User Count",
+          avg_dl_latency: "Avg DL Latency",
+          total_dl_volume: "Total DL Volume",
+          total_ul_volume: "Total UL Volume",
+          avg_nr_dl_colume_share: "Avg NR DL Volume Share",
+          avg_nr_ul_volume_share: "Avg NR UL Volume Share",
+          dl_connections_count: "DL Connections Count",
+          ul_connections_count: "UL Connections Count",
+          p10_dl_speed: "P10 DL Speed",
+          p10_ul_speed: "P10 UL Speed",
+          p50_dl_speed: "P50 DL Speed",
+          p50_ul_speed: "P50 UL Speed",
+        };
+
+        const chartTitle = chartTitleMap[id];
+        if (chartTitle) {
+          updateChartVisibility(chartTitle);
+        }
+      }
 
       // Handle the layer
       if (!overlayLayers?.[id]) {

@@ -5,7 +5,7 @@ export const getChartsConfig = (chartData = [], xData = [], isDarkMode = false) 
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "User Count",
-      visible: true,
+      visible: false,
       showLabels: false,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
@@ -21,7 +21,7 @@ export const getChartsConfig = (chartData = [], xData = [], isDarkMode = false) 
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "Avg DL Latency",
-      visible: true,
+      visible: false,
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
@@ -37,7 +37,7 @@ export const getChartsConfig = (chartData = [], xData = [], isDarkMode = false) 
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "Total DL Volume",
-      visible: true,
+      visible: false,
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
@@ -53,7 +53,7 @@ export const getChartsConfig = (chartData = [], xData = [], isDarkMode = false) 
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "Total UL Volume",
-      visible: true,
+      visible: false,
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
@@ -69,7 +69,7 @@ export const getChartsConfig = (chartData = [], xData = [], isDarkMode = false) 
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "Traffic Sources",
-      visible: true,
+      visible: false,
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
@@ -87,7 +87,7 @@ export const getChartsConfig = (chartData = [], xData = [], isDarkMode = false) 
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "User Engagement",
-      visible: true,
+      visible: false,
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
@@ -110,7 +110,7 @@ export const getChartsConfig = (chartData = [], xData = [], isDarkMode = false) 
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "Project Completion",
-      visible: true,
+      visible: false,
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
@@ -127,7 +127,7 @@ export const getChartsConfig = (chartData = [], xData = [], isDarkMode = false) 
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "Monthly Revenue",
-      visible: true,
+      visible: false,
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
