@@ -400,7 +400,10 @@ const createHexbinLayer = (title = "Hexbins", metric = "user_count") => {
 };
 
 const createWMSLayer = ({ url, layers, title, visible = true, params = {} }) => {
-  return new ImageLayer({
+  const username = import.meta.env.VITE_APP_KINETICA_USERNAME;
+  const password = import.meta.env.VITE_APP_KINETICA_PASSWORD;
+  const authHeader = "Basic " + btoa(username + ":" + password);
+  let layer = new ImageLayer({
     source: new ImageWMS({
       url: url,
       params: { LAYERS: layers, ...params },
@@ -408,6 +411,21 @@ const createWMSLayer = ({ url, layers, title, visible = true, params = {} }) => 
     title: title,
     visible: visible,
   });
+  layer.getSource().setImageLoadFunction((image, src) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", src, true);
+    xhr.setRequestHeader("Authorization", authHeader);
+    xhr.responseType = "blob";
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const blob = xhr.response;
+        const imageUrl = URL.createObjectURL(blob);
+        image.src = imageUrl;
+      }
+    };
+    xhr.send();
+  });
+  return layer;
 };
 
 const createVectorLayer = (title) => {
@@ -651,7 +669,9 @@ const defaultLayers = {
     visible: false,
   }),
   population_wms: createWMSLayer({
-    url: `${import.meta.env.VITE_API_URL}/wms`,
+    url: import.meta.env.VITE_APP_USE_WMS_PROXY
+      ? import.meta.env.VITE_APP_WMS_PROXY_URL
+      : import.meta.env.VITE_APP_WMS_URL,
     layers: "PopulationWms",
     title: "population_wms",
     visible: false,

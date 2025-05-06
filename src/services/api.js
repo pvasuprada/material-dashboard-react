@@ -58,10 +58,10 @@ export const api = {
   },
 
   // Get Population WMS Layer
-  getPopulationWmsLayer: async () => {
+  getPopulationWmsLayer: async (params) => {
     try {
-      const response = await apiClient.get("/mv-extent");
-      return response.data;
+      const response = await apiClient.post("layers/mv-extent", params);
+      return response.data.layersResponse;
     } catch (error) {
       console.error("Error fetching population WMS layer:", error);
       throw error;

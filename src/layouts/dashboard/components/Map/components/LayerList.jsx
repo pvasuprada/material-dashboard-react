@@ -6,6 +6,7 @@ import {
   Divider,
   Typography,
   IconButton,
+  duration,
 } from "@mui/material";
 import Icon from "@mui/material/Icon";
 import { useState } from "react";
@@ -13,6 +14,7 @@ import { useState } from "react";
 import { useMap } from "../../../../../context/MapContext";
 import { metricConfigs } from "../config/layers";
 import Legend from "./Legend";
+import { fromLonLat } from "ol/proj";
 
 const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
   const { layerVisibility, mapInstance, overlayLayers, addedLayers } = useMap();
@@ -38,11 +40,19 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
       }
     }
     // For WMS layers
-    else if (source.getImageExtent) {
-      const extent = source.getImageExtent();
-      if (extent) {
+    else {
+      const layerExtent = layer.getProperties().extent;
+      if (layerExtent) {
+        const { minX, minY, maxX, maxY } = layerExtent;
+        const extent = [...fromLonLat([minX, minY]), ...fromLonLat([maxX, maxY])];
         mapInstance.getView().fit(extent, {
           padding: [50, 50, 50, 50],
+          duration: 1000,
+        });
+      } else {
+        const view = mapInstance.getView();
+        view.animate({
+          zoom: Math.max(view.getZoom() - 0.5, 0),
           duration: 1000,
         });
       }
@@ -80,13 +90,14 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
     {
       title: "Base Layers",
       layers: [
-        { id: "geoserver", label: "GeoServer Layer" },
-        { id: "hurricanes", label: "Hurricanes" },
+        //{ id: "geoserver", label: "GeoServer Layer" },
+        //{ id: "hurricanes", label: "Hurricanes" },
         { id: "network_genie_layer_1", label: "Network Genie Layer 1" },
         { id: "sites_layer", label: "Sites Layer" },
         { id: "raw_coverage", label: "Raw Coverage" },
         { id: "interpolation", label: "Interpolation" },
-        { id: "population", label: "Population Layer" },
+        //{ id: "population", label: "Population Layer" },
+        { id: "population_wms", label: "Population WMS Layer" },
         { id: "building", label: "Building Layer" },
       ],
     },

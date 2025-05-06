@@ -1597,7 +1597,21 @@ function MapContent() {
     if (!mapInstance) return;
 
     try {
-      const response = await api.getPopulationWmsLayer();
+      let params = {
+        commonFilters: {
+          market: "NYMETRO",
+        },
+        layersPayload: [
+          {
+            featureName: "sector360",
+            queryName: "coverage-pops",
+            wktColumnName: "geom",
+            latitudeColumnName: "",
+            longitudeColumnName: "",
+          },
+        ],
+      };
+      const response = await api.getPopulationWmsLayer(params);
 
       // Find the population WMS layer
       const populationWmsLayer = mapInstance
@@ -1605,23 +1619,60 @@ function MapContent() {
         .getArray()
         .find((layer) => layer.get("title") === "population_wms");
 
-      if (populationWmsLayer && response.data) {
+      if (populationWmsLayer && response) {
         // Update the layer's source with new parameters if needed
         const source = populationWmsLayer.getSource();
         source.updateParams({
           ...source.getParams(),
-          LAYERS: response.data.layer_name || "PopulationWms",
+          LAYERS:
+            response.find((item) => item.queryName === "coverage-pops")?.mvName || "PopulationWms",
+          DOPOINTS: "true",
+          DOSHAPES: "true",
+          DOTRACKS: "false",
+          BLUR_RADIUS: "2",
+          POINTSIZES: "2,2,2,2,2",
+          POINTSHAPES: "circle,circle,circle,circle,circle",
+          SRS: "EPSG:3857",
+          USE_POINT_RENDERER: "true",
+          COLORMAP: "jet",
+          POINTCOLORS: "ff002fa1,ff03bee3,ff7bff87,fffeb800,ffec0000",
+          SHAPELINECOLORS: "ff002fa1,ff03bee3,ff7bff87,fffeb800,ffec0000",
+          SHAPEFILLCOLORS: "ff002fa1,ff03bee3,ff7bff87,fffeb800,ffec0000",
+          SHAPELINEWIDTHS: "2,2,2,2,2",
+          TRACKHEADCOLORS: "4a00e0",
+          TRACKHEADSIZES: "1",
+          TRACKMARKERCOLORS: "4a00e0",
+          TRACKLINECOLORS: "ca2c92",
+          TRACKLINEWIDTHS: "1",
+          ANTIALIASING: "true",
+          DOSYMBOLOGY: "false",
+          STYLES: "cb_raster",
+          GEO_ATTR: "geom",
+          LABELS_INTRALEVEL_SEPARATION: "4",
+          LABELS_INTERLEVEL_SEPARATION: "25",
+          CB_ATTR: "pops",
+          CB_VALS: "0.00:1000.00,1000.00-2000.00,2000.00-3000.00,3000.00-4000.00,4000.00-Infinity",
+
           // Add any other parameters from the response
           ...response.data.params,
         });
-
+        populationWmsLayer.getSource().on("imageloaderror", function (event) {
+          updatePopulationWmsLayer();
+        });
         // Set visibility based on layerVisibility state
         populationWmsLayer.setVisible(layerVisibility["population_wms"] || false);
-
+        populationWmsLayer.setProperties({
+          extent: response.find((item) => item.queryName === "coverage-pops")?.extent,
+        });
         // If the layer is visible, fit to its extent if available
-        if (layerVisibility["population_wms"] && response.data.extent) {
-          const [minx, miny, maxx, maxy] = response.data.extent;
-          const extent = [...fromLonLat([minx, miny]), ...fromLonLat([maxx, maxy])];
+        if (
+          layerVisibility["population_wms"] &&
+          response.find((item) => item.queryName === "coverage-pops")?.extent
+        ) {
+          const [minX, minY, maxX, maxY] = response.find(
+            (item) => item.queryName === "coverage-pops"
+          )?.extent;
+          const extent = [...fromLonLat([minX, minY]), ...fromLonLat([maxX, maxY])];
           mapInstance.getView().fit(extent, {
             padding: [50, 50, 50, 50],
             duration: 1000,

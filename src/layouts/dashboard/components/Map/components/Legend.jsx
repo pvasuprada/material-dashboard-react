@@ -108,6 +108,14 @@ const Legend = ({ layer, expanded }) => {
           { color: "rgba(255, 255, 0, 0.8)", label: "Medium Population" },
           { color: "rgba(0, 255, 0, 0.8)", label: "High Population" },
         ];
+      case "population_wms":
+        return [
+          { color: "rgba(0, 47, 161, 0.8)", label: "0-1000" },
+          { color: "rgba(3, 190, 227, 0.8)", label: "1000-2000" },
+          { color: "rgba(123, 255, 87, 0.8)", label: "2000-3000" },
+          { color: "rgba(255, 184, 0, 0.8)", label: "3000-4000" },
+          { color: "rgba(236, 0, 0, 0.8)", label: "4000+" },
+        ];
       case "coverage_capacity":
         return [
           { color: "rgba(255, 0, 0, 0.8)", label: "Low Signal" },

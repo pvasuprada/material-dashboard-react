@@ -21,6 +21,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { MaterialUIControllerProvider } from "context";
 import { store } from "store";
+import "regenerator-runtime/runtime";
 
 const container = document.getElementById("root");
 const root = createRoot(container);
