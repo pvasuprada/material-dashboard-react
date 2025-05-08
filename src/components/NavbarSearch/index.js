@@ -124,18 +124,23 @@ const AutocompleteSearch = () => {
       if (id === "vpi_analysis") {
         try {
           console.log("Fetching VPI data...");
-          const response = await api.getVPIData();
-          console.log("VPI API Response:", response);
-          const transformedData = transformVPIData(response);
-          console.log("Transformed VPI data:", transformedData);
-          setVPIData(transformedData);
+          const fetchAndSetVPIData = async () => {
+            const response = await api.getVPIData();
+            console.log("VPI API Response:", response);
+            const transformedData = transformVPIData(response);
+            console.log("Transformed VPI data:", transformedData);
+            setVPIData(transformedData);
 
-          // First update the VPI data
-          await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay to ensure VPI data is set
+            // Small delay to ensure VPI data is set before updating visibility
+            await new Promise((resolve) => setTimeout(resolve, 100));
 
-          // Then update chart visibility using exact title
-          console.log("Setting VPI Analysis chart visibility to true");
-          updateChartVisibility("VPI Analysis", true);
+            // Update chart visibility
+            console.log("Setting VPI Analysis chart visibility to true");
+            updateChartVisibility("VPI Analysis", true);
+          };
+
+          // Execute immediately
+          await fetchAndSetVPIData();
 
           setInputValue("");
           setOpenConfirm(false);

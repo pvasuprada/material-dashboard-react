@@ -1,9 +1,9 @@
+import PropTypes from "prop-types";
 import { createContext, useContext, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import PropTypes from "prop-types";
+import { useMaterialUIController } from "context";
 import { getChartsConfig } from "layouts/dashboard/data/chartsConfig";
 import { getDashboardConfig } from "layouts/dashboard/data/dashboardConfig";
-import { useMaterialUIController } from "context";
 import api from "services/api";
 import { transformVPIData } from "layouts/dashboard/data/transformers";
 
@@ -35,30 +35,19 @@ export function InsightsProvider({ children }) {
 
     // Preserve visibility states from current charts
     setChartsData((prevCharts) => {
-      return newChartsData.map((newChart) => {
+      const updatedCharts = newChartsData.map((newChart) => {
         const existingChart = prevCharts.find((chart) => chart.title === newChart.title);
         if (existingChart) {
           return { ...newChart, visible: existingChart.visible };
         }
         return newChart;
       });
+      return updatedCharts;
     });
 
-    // If VPI Analysis is visible, refresh its data
-    const vpiChart = chartsData.find((chart) => chart.title === "VPI Analysis");
-    if (vpiChart?.visible) {
-      const fetchVPIData = async () => {
-        try {
-          const response = await api.getVPIData();
-          const transformedData = transformVPIData(response);
-          setVPIData(transformedData);
-        } catch (error) {
-          console.error("Error refreshing VPI data:", error);
-        }
-      };
-      fetchVPIData();
-    }
-  }, [chartData, xData, statistics, darkMode]);
+    // Update dashboard data
+    setDashboardData(getDashboardConfig(statistics));
+  }, [chartData, xData, vpiData, darkMode, statistics]);
 
   const updateInsightVisibility = (id) => {
     setDashboardData((prev) => ({
