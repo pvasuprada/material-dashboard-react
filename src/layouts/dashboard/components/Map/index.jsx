@@ -119,7 +119,7 @@ function MapContent() {
   } = useMap();
 
   const averages = useSelector(selectMapAverages);
-  const extent = useSelector(selectMapExtent);
+  const extentRedux = useSelector(selectMapExtent);
   const loading = useSelector(selectMapLoading);
   const error = useSelector(selectMapError);
   const popupRef = useRef(null);
@@ -453,14 +453,14 @@ function MapContent() {
         console.log("Coverage capacity layer updated with", features.length, "features");
 
         // Update view extent if needed
-        if (extent && features.length > 0) {
-          const { xmin, ymin, xmax, ymax } = extent;
-          const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
-          mapInstance.getView().fit(transformedExtent, {
-            padding: [50, 50, 50, 50],
-            duration: 1000,
-          });
-        }
+        // if (extent && features.length > 0) {
+        //   const { xmin, ymin, xmax, ymax } = extent;
+        //   const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
+        //   mapInstance.getView().fit(transformedExtent, {
+        //     padding: [50, 50, 50, 50],
+        //     duration: 1000,
+        //   });
+        // }
       }
     } catch (error) {
       console.error("Error updating coverage capacity layer:", error);
@@ -840,16 +840,16 @@ function MapContent() {
   }, [averages]);
 
   // Add effect to handle extent changes
-  useEffect(() => {
-    if (mapInstance && extent) {
-      const { xmin, ymin, xmax, ymax } = extent;
-      const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
-      mapInstance.getView().fit(transformedExtent, {
-        padding: [50, 50, 50, 50],
-        duration: 1000,
-      });
-    }
-  }, [extent]);
+  // useEffect(() => {
+  //   if (mapInstance && extent) {
+  //     const { xmin, ymin, xmax, ymax } = extent;
+  //     const transformedExtent = [...fromLonLat([xmin, ymin]), ...fromLonLat([xmax, ymax])];
+  //     mapInstance.getView().fit(transformedExtent, {
+  //       padding: [50, 50, 50, 50],
+  //       duration: 1000,
+  //     });
+  //   }
+  // }, [extent]);
 
   // Add effect to handle center/zoom changes from Redux
   useEffect(() => {

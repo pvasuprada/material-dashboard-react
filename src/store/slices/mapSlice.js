@@ -5,10 +5,10 @@ const initialState = {
   layers: [],
   data: [],
   extent: {
-    xmin: -124.708281,
-    ymin: 46.665252,
-    xmax: -121.432472,
-    ymax: 48.992177,
+    xmin: null,
+    ymin: null,
+    xmax: null,
+    ymax: null,
   },
   averages: [
     // { geobin: "8928c204a5bffff", user_count: 1, avg_dl_latency: 3, total_dl_volume: 2 },

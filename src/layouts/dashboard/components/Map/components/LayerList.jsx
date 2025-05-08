@@ -86,22 +86,31 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
         }))
     : [];
 
+  // Get the list of added coverage and infrastructure layers
+  const addedOnDemandLayers = [
+    { id: "raw_coverage", label: "Raw Coverage", category: "coverage" },
+    { id: "interpolation", label: "Interpolation", category: "coverage" },
+    { id: "building", label: "Building Layer", category: "infrastructure" },
+    { id: "population_wms", label: "Population WMS Layer", category: "demographics" },
+  ].filter((layer) => addedLayers.has(layer.id));
+
   const layerGroups = [
     {
       title: "Base Layers",
       layers: [
-        //{ id: "geoserver", label: "GeoServer Layer" },
-        //{ id: "hurricanes", label: "Hurricanes" },
         { id: "network_genie_layer_1", label: "Network Genie Layer 1" },
         { id: "sites_layer", label: "Sites Layer" },
-        { id: "raw_coverage", label: "Raw Coverage" },
-        { id: "interpolation", label: "Interpolation" },
-        //{ id: "population", label: "Population Layer" },
-        { id: "population_wms", label: "Population WMS Layer" },
-        { id: "building", label: "Building Layer" },
       ],
     },
   ];
+
+  // Add Coverage & Infrastructure group if there are any added special layers
+  if (addedOnDemandLayers.length > 0) {
+    layerGroups.push({
+      title: "Coverage & Infrastructure",
+      layers: addedOnDemandLayers,
+    });
+  }
 
   // Only add UG Layers group if there are added layers
   if (addedUGLayers.length > 0) {

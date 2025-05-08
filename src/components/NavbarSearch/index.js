@@ -92,6 +92,30 @@ const AutocompleteSearch = () => {
       description: "Add VPI Analysis chart to dashboard",
       category: "charts",
     },
+    {
+      id: "raw_coverage",
+      label: "Add Raw Coverage Layer",
+      description: "Add Raw Coverage layer to map",
+      category: "coverage",
+    },
+    {
+      id: "interpolation",
+      label: "Add Interpolation Layer",
+      description: "Add Interpolation layer to map",
+      category: "coverage",
+    },
+    {
+      id: "building",
+      label: "Add Building Layer",
+      description: "Add Building layer to map",
+      category: "infrastructure",
+    },
+    {
+      id: "population_wms",
+      label: "Add Population WMS Layer",
+      description: "Add Population WMS layer to map",
+      category: "demographics",
+    },
     ...Object.entries(metricConfigs).map(([id, config]) => ({
       id,
       label: `Add ${config.label}`,
@@ -149,6 +173,34 @@ const AutocompleteSearch = () => {
           console.error("Error fetching VPI data:", error);
           return;
         }
+      }
+
+      // Handle special layers (raw_coverage, interpolation, building, population_wms)
+      const specialLayers = ["raw_coverage", "interpolation", "building", "population_wms"];
+      if (specialLayers.includes(id)) {
+        console.log("Adding special layer:", id);
+
+        // Add to added layers set
+        setAddedLayers((prev) => {
+          const newSet = new Set(prev);
+          newSet.add(id);
+          return newSet;
+        });
+
+        // Update visibility
+        setLayerVisibility((prev) => ({
+          ...prev,
+          [id]: true,
+        }));
+
+        // If the layer exists in overlayLayers, make it visible
+        if (overlayLayers?.[id]) {
+          overlayLayers[id].setVisible(true);
+        }
+
+        setInputValue("");
+        setOpenConfirm(false);
+        return;
       }
 
       // Check if it's a Truecall layer
