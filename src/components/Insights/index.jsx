@@ -37,14 +37,11 @@ function Insights() {
         Charts Insights
       </MDTypography>
       <FormGroup>
-        {chartsData.charts.map((chart) => (
+        {chartsData.map((chart) => (
           <FormControlLabel
             key={chart.title}
             control={
-              <Switch
-                checked={chart.visible}
-                onChange={(e) => updateChartVisibility(chart.title, e.target.checked)}
-              />
+              <Switch checked={chart.visible} onChange={() => updateChartVisibility(chart.title)} />
             }
             label={chart.title}
           />

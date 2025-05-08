@@ -1,4 +1,4 @@
-export const getChartsConfig = (chartData = [], xData = [], isDarkMode = false) => ({
+export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode = false) => ({
   charts: [
     {
       type: "line",
@@ -140,6 +140,22 @@ export const getChartsConfig = (chartData = [], xData = [], isDarkMode = false) 
         ],
       },
       height: "10rem",
+    },
+    {
+      type: "multiLine",
+      color: isDarkMode ? "dark" : "light",
+      fontColor: isDarkMode ? "white" : "dark",
+      title: "VPI Analysis",
+      description: "Computation Utilization by Band Group and Sector",
+      visible: false,
+      showLabels: true,
+      gridSize: { xs: 12, md: 6, lg: 4 },
+      data: {
+        labels: vpiData?.labels || [],
+        datasets: Array.isArray(vpiData?.datasets) ? vpiData.datasets : [],
+        description: "Shows computation utilization across different band groups for each sector",
+        date: new Date().toLocaleDateString(),
+      },
     },
   ],
 });

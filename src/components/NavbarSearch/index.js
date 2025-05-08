@@ -31,6 +31,7 @@ import api from "services/api";
 import MDButton from "components/MDButton";
 import { useMap } from "../../context/MapContext";
 import { useInsights } from "context/insightsContext";
+import { transformVPIData } from "layouts/dashboard/data/transformers";
 
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   width: 300,
@@ -79,17 +80,25 @@ const AutocompleteSearch = () => {
     setSelectedMetric,
     setAddedLayers,
   } = useMap();
-  const { updateChartVisibility } = useInsights();
+  const { updateChartVisibility, setVPIData } = useInsights();
 
   // Get market and gnodeb from Redux state
   const selectedFilters = useSelector((state) => state.filter.selectedFilters);
 
-  const searchOptions = Object.entries(metricConfigs).map(([id, config]) => ({
-    id,
-    label: `Add ${config.label}`,
-    description: `Add ${config.label} layer to map`,
-    category: config.category || "ug",
-  }));
+  const searchOptions = [
+    {
+      id: "vpi_analysis",
+      label: "Add VPI Analysis",
+      description: "Add VPI Analysis chart to dashboard",
+      category: "charts",
+    },
+    ...Object.entries(metricConfigs).map(([id, config]) => ({
+      id,
+      label: `Add ${config.label}`,
+      description: `Add ${config.label} layer to map`,
+      category: config.category || "ug",
+    })),
+  ];
 
   // Debug log when mapInstance changes
   useEffect(() => {
@@ -101,17 +110,6 @@ const AutocompleteSearch = () => {
 
   const addTrueCallLayer = async (layerId) => {
     console.log("Adding layer:", layerId);
-    console.log("Map instance:", mapInstance);
-
-    if (!layerId) {
-      console.warn("No layer ID provided");
-      return;
-    }
-
-    if (!mapInstance) {
-      console.warn("Map instance not available");
-      return;
-    }
 
     // Find the option that matches either by ID or by label
     const option = searchOptions.find(
@@ -121,6 +119,32 @@ const AutocompleteSearch = () => {
     if (option) {
       const id = option.id;
       console.log("Found matching option:", option);
+
+      // Special handling for VPI Analysis
+      if (id === "vpi_analysis") {
+        try {
+          console.log("Fetching VPI data...");
+          const response = await api.getVPIData();
+          console.log("VPI API Response:", response);
+          const transformedData = transformVPIData(response);
+          console.log("Transformed VPI data:", transformedData);
+          setVPIData(transformedData);
+
+          // First update the VPI data
+          await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay to ensure VPI data is set
+
+          // Then update chart visibility using exact title
+          console.log("Setting VPI Analysis chart visibility to true");
+          updateChartVisibility("VPI Analysis", true);
+
+          setInputValue("");
+          setOpenConfirm(false);
+          return;
+        } catch (error) {
+          console.error("Error fetching VPI data:", error);
+          return;
+        }
+      }
 
       // Check if it's a Truecall layer
       const isTruecallLayer = Object.keys(truecallParameters).includes(id);
@@ -369,7 +393,12 @@ const AutocompleteSearch = () => {
   const handleOptionSelect = (event, option) => {
     if (option) {
       setSelectedOption(option);
-      setOpenConfirm(true);
+      if (option.id === "vpi_analysis") {
+        // For VPI Analysis, execute immediately without confirmation
+        addTrueCallLayer(option.id);
+      } else {
+        setOpenConfirm(true);
+      }
     }
   };
 

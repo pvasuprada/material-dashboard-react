@@ -270,6 +270,37 @@ export const api = {
       throw error;
     }
   },
+
+  getVPIData: async () => {
+    console.log("Starting VPI data fetch...");
+    try {
+      // For testing, return sample data
+      const sampleData = [
+        { sect: 1, bandgrp: "SUB1", computilcurr: 45.5 },
+        { sect: 1, bandgrp: "SUB3", computilcurr: 62.3 },
+        { sect: 1, bandgrp: "MB", computilcurr: 78.1 },
+        { sect: 2, bandgrp: "SUB1", computilcurr: 55.2 },
+        { sect: 2, bandgrp: "SUB3", computilcurr: 68.9 },
+        { sect: 2, bandgrp: "MB", computilcurr: 82.4 },
+        { sect: 3, bandgrp: "SUB1", computilcurr: 48.7 },
+        { sect: 3, bandgrp: "SUB3", computilcurr: 65.1 },
+        { sect: 3, bandgrp: "MB", computilcurr: 79.8 },
+      ];
+
+      console.log("Sample VPI data:", sampleData);
+      return sampleData;
+
+      // Uncomment the below code and remove the sample data when the API is ready
+      /*const response = await apiClient.post("/minerva-service/vpidata", {
+        enodeb: 68793,
+        sec: 2,
+      });
+      return response.data;*/
+    } catch (error) {
+      console.error("Error in getVPIData:", error);
+      throw error;
+    }
+  },
 };
 
 export default api;

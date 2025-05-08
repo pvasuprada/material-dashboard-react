@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import PropTypes from "prop-types";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -49,6 +49,9 @@ import zIndex from "@mui/material/styles/zIndex";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useChartOrder } from "context/chartOrderContext";
 import { MapProvider } from "context/MapContext";
+import { transformVPIData } from "./data/transformers";
+import api from "services/api";
+import ReportsMultiLineChart from "examples/Charts/LineCharts/ReportsMultiLineChart";
 
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
@@ -62,7 +65,7 @@ function Dashboard({ children }) {
   const { loading: filterLoading } = useSelector((state) => state.filter);
   const selectedFilters = useSelector((state) => state.filter.selectedFilters);
   const { chartOrder, updateChartOrder } = useChartOrder();
-  const [viewMode, setViewMode] = useState("carousel"); // 'grid' or 'carousel' or 'row'
+  const [viewMode, setViewMode] = useState("carousel");
   const [activeSlide, setActiveSlide] = useState(0);
 
   const responsive = {
@@ -109,7 +112,11 @@ function Dashboard({ children }) {
     return () => clearInterval(interval);
   }, [viewMode, chartsData, chartOrder, miniSidenav]);
 
-  //const chartsConfig = getChartsConfig(chartData, xData);
+  const chartsConfig = useMemo(() => {
+    return chartsData;
+  }, [chartsData]);
+
+  console.log("Current charts config:", chartsConfig);
 
   if (!isDataLoaded) {
     return null;
@@ -302,6 +309,7 @@ function Dashboard({ children }) {
     const ChartComponent = {
       bar: ReportsBarChartComponent,
       line: ReportsLineChartComponent,
+      multiLine: ReportsMultiLineChart,
       bubble: BubbleChart,
       doughnut: DoughnutChart,
       pie: PieChart,

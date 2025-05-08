@@ -4,6 +4,8 @@ import PropTypes from "prop-types";
 import { getChartsConfig } from "layouts/dashboard/data/chartsConfig";
 import { getDashboardConfig } from "layouts/dashboard/data/dashboardConfig";
 import { useMaterialUIController } from "context";
+import api from "services/api";
+import { transformVPIData } from "layouts/dashboard/data/transformers";
 
 const InsightsContext = createContext();
 
@@ -12,8 +14,11 @@ export function InsightsProvider({ children }) {
   const { statistics } = useSelector((state) => state.dashboard);
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
+  const [vpiData, setVPIData] = useState(null);
 
-  const [chartsData, setChartsData] = useState(getChartsConfig(chartData, xData, darkMode).charts);
+  const [chartsData, setChartsData] = useState(
+    getChartsConfig(chartData, xData, null, darkMode).charts
+  );
   const [dashboardData, setDashboardData] = useState(getDashboardConfig(statistics));
   // const [dashboardData, setDashboardData] = useState([
   //   { id: 1, title: "Users", value: "281", unit: "", visible: false },
@@ -24,12 +29,35 @@ export function InsightsProvider({ children }) {
 
   // Update chartsData when Redux state changes
   useEffect(() => {
-    let a = getChartsConfig(chartData, xData, darkMode).charts;
-    console.log("getChartsConfig(chartData, xData, darkMode).charts:", a);
-    setChartsData(getChartsConfig(chartData, xData, darkMode).charts);
-    console.log("statistics:", statistics);
-    console.log("getDashboardConfig(statistics):", getDashboardConfig(statistics));
-    setDashboardData(getDashboardConfig(statistics));
+    console.log("Updating charts with new data:", { chartData, xData, vpiData, darkMode });
+    const newChartsData = getChartsConfig(chartData, xData, vpiData, darkMode).charts;
+    console.log("New charts data:", newChartsData);
+
+    // Preserve visibility states from current charts
+    setChartsData((prevCharts) => {
+      return newChartsData.map((newChart) => {
+        const existingChart = prevCharts.find((chart) => chart.title === newChart.title);
+        if (existingChart) {
+          return { ...newChart, visible: existingChart.visible };
+        }
+        return newChart;
+      });
+    });
+
+    // If VPI Analysis is visible, refresh its data
+    const vpiChart = chartsData.find((chart) => chart.title === "VPI Analysis");
+    if (vpiChart?.visible) {
+      const fetchVPIData = async () => {
+        try {
+          const response = await api.getVPIData();
+          const transformedData = transformVPIData(response);
+          setVPIData(transformedData);
+        } catch (error) {
+          console.error("Error refreshing VPI data:", error);
+        }
+      };
+      fetchVPIData();
+    }
   }, [chartData, xData, statistics, darkMode]);
 
   const updateInsightVisibility = (id) => {
@@ -41,30 +69,43 @@ export function InsightsProvider({ children }) {
     }));
   };
 
-  const updateChartVisibility = (title) => {
-    setChartsData((prev) =>
-      prev.map((chart) => (chart.title === title ? { ...chart, visible: !chart.visible } : chart))
-    );
+  const updateChartVisibility = (title, isVisible) => {
+    console.log("Updating chart visibility:", { title, isVisible, currentCharts: chartsData });
+    setChartsData((prev) => {
+      const updated = prev.map((chart) => {
+        if (chart.title === title) {
+          const newVisibility = isVisible === undefined ? !chart.visible : isVisible;
+          console.log(
+            `Found chart "${title}", updating visibility from ${chart.visible} to ${newVisibility}`
+          );
+          return { ...chart, visible: newVisibility };
+        }
+        return chart;
+      });
+      console.log("Updated charts:", updated);
+      return updated;
+    });
   };
 
-  return (
-    <InsightsContext.Provider
-      value={{
-        dashboardData,
-        updateInsightVisibility,
-        chartsData,
-        updateChartVisibility,
-      }}
-    >
-      {children}
-    </InsightsContext.Provider>
-  );
+  const value = {
+    dashboardData,
+    chartsData,
+    updateInsightVisibility,
+    updateChartVisibility,
+    setVPIData,
+  };
+
+  return <InsightsContext.Provider value={value}>{children}</InsightsContext.Provider>;
 }
 
 InsightsProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export function useInsights() {
-  return useContext(InsightsContext);
-}
+export const useInsights = () => {
+  const context = useContext(InsightsContext);
+  if (context === undefined) {
+    throw new Error("useInsights must be used within an InsightsProvider");
+  }
+  return context;
+};
