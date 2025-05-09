@@ -490,7 +490,7 @@ function MapContent() {
         try {
           let params = filterParams;
           const coverageData = await api.getCoverageCapacityData(params);
-          updateCoverageCapacity(coverageData);
+          //updateCoverageCapacity(coverageData);
 
           // Fetch and update raw coverage data
           const rawCoverageData = await api.getRawCoverageCapacityData(params);
