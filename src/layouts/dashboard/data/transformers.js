@@ -7,40 +7,33 @@ export const transformVPIData = (data) => {
     };
   }
 
-  // Group data by sector
-  const sectorGroups = data.reduce((acc, item) => {
-    const sect = item.sect || "unknown";
-    if (!acc[sect]) {
-      acc[sect] = [];
-    }
-    acc[sect].push(item);
-    return acc;
-  }, {});
+  // Get unique band groups and sectors
+  const bandGroups = [...new Set(data.map((item) => item.bandgrp))];
+  const sectors = [...new Set(data.map((item) => item.sect))].sort();
 
-  // Get unique bandgrps for labels
-  const labels = [...new Set(data.map((item) => item.bandgrp))].sort();
+  // Map band groups to x-axis values
+  const bandGroupMap = {
+    SUB1: 1,
+    SUB3: 2,
+    MB: 3,
+  };
 
   // Create datasets for each sector
-  const datasets = Object.entries(sectorGroups).map(([sect, items]) => {
-    const sectorData = labels.map((bandgrp) => {
-      const item = items.find((i) => i.bandgrp === bandgrp);
-      return item ? item.computilcurr : null;
-    });
-
+  const datasets = sectors.map((sect) => {
+    const sectorData = data.filter((item) => item.sect === sect);
     return {
       label: `Sector ${sect}`,
-      data: sectorData,
-      borderColor: `hsl(${parseInt(sect) * 30}, 70%, 50%)`,
-      backgroundColor: `hsla(${parseInt(sect) * 30}, 70%, 50%, 0.1)`,
-      tension: 0.4,
-      fill: false,
-      pointRadius: 4,
-      pointHoverRadius: 6,
+      data: sectorData.map((item) => ({
+        x: bandGroupMap[item.bandgrp],
+        y: item.computilcurr,
+      })),
+      backgroundColor: `hsl(${sect * 120}, 70%, 50%)`, // Different color for each sector
+      borderColor: `hsl(${sect * 120}, 70%, 50%)`,
     };
   });
 
   return {
-    labels,
-    datasets,
+    labels: bandGroups,
+    datasets: datasets,
   };
 };

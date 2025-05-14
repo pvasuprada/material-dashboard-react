@@ -51,7 +51,7 @@ import { useChartOrder } from "context/chartOrderContext";
 import { MapProvider } from "context/MapContext";
 import { transformVPIData } from "./data/transformers";
 import api from "services/api";
-import ReportsMultiLineChart from "examples/Charts/LineCharts/ReportsMultiLineChart";
+import ReportsScatterChart from "examples/Charts/ScatterCharts/ReportsScatterChart";
 
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
@@ -309,7 +309,7 @@ function Dashboard({ children }) {
     const ChartComponent = {
       bar: ReportsBarChartComponent,
       line: ReportsLineChartComponent,
-      multiLine: ReportsMultiLineChart,
+      scatterPlot: ReportsScatterChart,
       bubble: BubbleChart,
       doughnut: DoughnutChart,
       pie: PieChart,
@@ -326,17 +326,26 @@ function Dashboard({ children }) {
       return null;
     }
 
+    // Transform data for scatter plot
+    let chartData = chart.data;
+    if (chart.type === "scatterPlot") {
+      chartData = {
+        ...chart.data,
+        datasets: chart.data.datasets.map((dataset) => ({
+          ...dataset,
+          backgroundColor: dataset.color,
+          borderColor: dataset.color,
+        })),
+      };
+    }
+
     return (
       <ChartComponent
         color={chart.color}
         title={chart.title}
-        description={chart.data.description}
-        date={chart.data.date}
-        chart={{
-          labels: chart.data.labels,
-          datasets: chart.data.datasets,
-        }}
-        showLabels={chart.showLabels}
+        description={chart.description}
+        date={chart.date}
+        chart={chartData}
       />
     );
   };

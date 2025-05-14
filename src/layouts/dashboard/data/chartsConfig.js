@@ -142,19 +142,80 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       height: "10rem",
     },
     {
-      type: "multiLine",
-      color: isDarkMode ? "dark" : "light",
-      fontColor: isDarkMode ? "white" : "dark",
-      title: "VPI Analysis",
-      description: "Computation Utilization by Band Group and Sector",
-      visible: false,
-      showLabels: true,
-      gridSize: { xs: 12, md: 6, lg: 4 },
+      type: "scatterPlot",
+      title: "Computation Utilization by Band",
+      color: "white",
+      visible: true,
       data: {
-        labels: vpiData?.labels || [],
-        datasets: Array.isArray(vpiData?.datasets) ? vpiData.datasets : [],
-        description: "Shows computation utilization across different band groups for each sector",
-        date: new Date().toLocaleDateString(),
+        datasets: [
+          {
+            label: "Sector 1",
+            data: [
+              { x: 1, y: 45 },
+              { x: 2, y: 32 },
+              { x: 3, y: 25 },
+            ],
+            color: "#1976d2", // blue
+          },
+          {
+            label: "Sector 2",
+            data: [
+              { x: 1, y: 40 },
+              { x: 2, y: 35 },
+              { x: 3, y: 17 },
+            ],
+            color: "#ff9800", // orange
+          },
+          {
+            label: "Sector 3",
+            data: [
+              { x: 1, y: 38 },
+              { x: 2, y: 45 },
+              { x: 3, y: 45 },
+            ],
+            color: "#4caf50", // green
+          },
+        ],
+      },
+    },
+    {
+      type: "multiLine",
+      title: "Sales vs Orders Analysis",
+      color: "white",
+      visible: true,
+      data: {
+        labels: ["$0", "$300", "$600", "$900", "$1,200", "$1,500"],
+        datasets: [
+          {
+            label: "Cosmetic",
+            data: [
+              { x: 0, y: 12 },
+              { x: 300, y: 25 },
+              { x: 600, y: 45 },
+              { x: 900, y: 32 },
+              { x: 1200, y: 19 },
+            ],
+            color: "#1976d2",
+          },
+          {
+            label: "Electronics",
+            data: [
+              { x: 300, y: 40 },
+              { x: 600, y: 17 },
+              { x: 900, y: 5 },
+            ],
+            color: "#ff9800",
+          },
+          {
+            label: "Garments",
+            data: [
+              { x: 600, y: 11 },
+              { x: 900, y: 45 },
+              { x: 1200, y: 45 },
+            ],
+            color: "#4caf50",
+          },
+        ],
       },
     },
   ],
