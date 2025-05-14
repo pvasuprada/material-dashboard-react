@@ -158,9 +158,12 @@ const AutocompleteSearch = () => {
             // Small delay to ensure VPI data is set before updating visibility
             await new Promise((resolve) => setTimeout(resolve, 100));
 
-            // Update chart visibility
-            console.log("Setting VPI Analysis chart visibility to true");
+            // Update chart visibility for both VPI Analysis and Computation Utilization
+            console.log(
+              "Setting VPI Analysis and Computation Utilization chart visibility to true"
+            );
             updateChartVisibility("VPI Analysis", true);
+            updateChartVisibility("Computation Utilization by Band", true);
           };
 
           // Execute immediately
