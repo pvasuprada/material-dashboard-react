@@ -48,13 +48,19 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
   };
 
   const chartData = useMemo(() => {
+    const sectorColors = {
+      "Sector 1": "hsl(120, 70%, 50%)", // Green
+      "Sector 2": "hsl(240, 70%, 50%)", // Blue
+      "Sector 3": "hsl(360, 70%, 50%)", // Red
+    };
+
     return {
       datasets: Array.isArray(chart?.datasets)
         ? chart.datasets.map((dataset) => ({
             label: dataset.label,
-            data: dataset.data, // Expect data to already be in [{x: number, y: number}] format
-            backgroundColor: dataset.color || dataset.backgroundColor || "#1976d2",
-            borderColor: dataset.color || dataset.backgroundColor || "#1976d2",
+            data: dataset.data,
+            backgroundColor: dataset.backgroundColor || sectorColors[dataset.label] || "#1976d2",
+            borderColor: dataset.borderColor || sectorColors[dataset.label] || "#1976d2",
             pointRadius: 6,
             pointHoverRadius: 10,
             showLine: false,
@@ -80,6 +86,8 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
               lineHeight: 2,
             },
             padding: 15,
+            usePointStyle: true,
+            pointStyle: "circle",
           },
         },
         tooltip: {
@@ -100,7 +108,7 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
               const dataset = context.dataset;
               const point = dataset.data[context.dataIndex];
               const bandMap = { 1: "SUB1", 2: "SUB3", 3: "MB" };
-              return `${dataset.label}: ${bandMap[point.x]}, Utilization: ${point.y.toFixed(1)}%`;
+              return `${dataset.label}: ${bandMap[point.x]}, Utilization: ${point.y}%`;
             },
           },
         },
@@ -163,15 +171,15 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
             display: true,
             color: darkMode ? "#fff" : "#344767",
             padding: 10,
-            callback: function (value) {
-              const bandMap = { 1: "SUB1", 2: "SUB3", 3: "MB" };
-              return bandMap[value] || "";
-            },
             font: {
               size: 11,
               family: "Roboto",
               style: "normal",
               lineHeight: 2,
+            },
+            callback: function (value) {
+              const bandMap = { 1: "SUB1", 2: "SUB3", 3: "MB" };
+              return bandMap[value] || "";
             },
           },
           title: {
