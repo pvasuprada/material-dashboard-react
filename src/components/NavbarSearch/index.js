@@ -454,8 +454,8 @@ const AutocompleteSearch = () => {
     if (option) {
       setSelectedOption(option);
       if (option.id === "vpi_analysis") {
-        // For VPI Analysis, execute immediately without confirmation
-        addTrueCallLayer(option.id);
+        // Show confirmation dialog for VPI Analysis
+        setOpenConfirm(true);
       } else {
         setOpenConfirm(true);
       }
@@ -464,7 +464,11 @@ const AutocompleteSearch = () => {
 
   const handleConfirm = () => {
     if (selectedOption) {
-      addTrueCallLayer(selectedOption.id);
+      if (selectedOption.id === "vpi_analysis") {
+        addTrueCallLayer(selectedOption.id);
+      } else {
+        addTrueCallLayer(selectedOption.id);
+      }
     }
     setOpenConfirm(false);
     setSelectedOption(null);
@@ -534,16 +538,20 @@ const AutocompleteSearch = () => {
       />
 
       <Dialog open={openConfirm} onClose={handleCancel}>
-        <DialogTitle>Add Layer</DialogTitle>
+        <DialogTitle>
+          {selectedOption?.id === "vpi_analysis" ? "Add VPI Chart" : "Add Layer"}
+        </DialogTitle>
         <DialogContent>
-          Are you sure you want to add {selectedOption?.label} to the map and layer list?
+          {selectedOption?.id === "vpi_analysis"
+            ? "Are you sure you want to add VPI Chart?"
+            : `Are you sure you want to add ${selectedOption?.label} to the map and layer list?`}
         </DialogContent>
         <DialogActions>
           <MDButton onClick={handleCancel} variant="outlined" color="dark">
             Cancel
           </MDButton>
           <MDButton onClick={handleConfirm} variant="outlined" color="dark">
-            Add Layer
+            {selectedOption?.id === "vpi_analysis" ? "Add Chart" : "Add Layer"}
           </MDButton>
         </DialogActions>
       </Dialog>

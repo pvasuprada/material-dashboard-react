@@ -75,20 +75,7 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: true,
-          position: "bottom",
-          labels: {
-            color: darkMode ? "#fff" : "#344767",
-            font: {
-              size: 11,
-              family: "Roboto",
-              style: "normal",
-              lineHeight: 2,
-            },
-            padding: 15,
-            usePointStyle: true,
-            pointStyle: "circle",
-          },
+          display: false,
         },
         tooltip: {
           backgroundColor: darkMode ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.95)",
@@ -107,8 +94,11 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
             label: (context) => {
               const dataset = context.dataset;
               const point = dataset.data[context.dataIndex];
-              const bandMap = { 1: "SUB1", 2: "SUB3", 3: "MB" };
-              return `${dataset.label}: ${bandMap[point.x]}, Utilization: ${point.y}%`;
+              let bandName = "";
+              if (point.x === 1) bandName = "SUB1";
+              if (point.x === 2) bandName = "SUB3";
+              if (point.x === 3) bandName = "MB";
+              return `${dataset.label}: ${bandName}, Utilization: ${point.y.toFixed(1)}%`;
             },
           },
         },
@@ -129,13 +119,13 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
             beginAtZero: true,
             stepSize: 20,
             display: true,
-            padding: 10,
+            padding: 5,
             color: darkMode ? "#fff" : "#344767",
             font: {
-              size: 11,
+              size: 9,
               family: "Roboto",
               style: "normal",
-              lineHeight: 2,
+              lineHeight: 1,
             },
             callback: function (value) {
               return `${value}%`;
@@ -146,12 +136,12 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
             text: "Computation Utilization (%)",
             color: darkMode ? "#fff" : "#344767",
             font: {
-              size: 12,
+              size: 9,
               family: "Roboto",
               weight: 500,
               style: "normal",
             },
-            padding: { bottom: 10 },
+            padding: { bottom: 0 },
           },
         },
         x: {
@@ -162,7 +152,7 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
             drawBorder: false,
             display: true,
             drawOnChartArea: true,
-            drawTicks: false,
+            drawTicks: true,
             borderDash: [5, 5],
             color: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
           },
@@ -170,30 +160,32 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
             stepSize: 1,
             display: true,
             color: darkMode ? "#fff" : "#344767",
-            padding: 10,
+            padding: 5,
             font: {
-              size: 11,
+              size: 9,
               family: "Roboto",
               style: "normal",
-              lineHeight: 2,
+              lineHeight: 1,
             },
             callback: function (value) {
-              const bandMap = { 1: "SUB1", 2: "SUB3", 3: "MB" };
-              return bandMap[value] || "";
+              if (value === 1) return "SUB1";
+              if (value === 2) return "SUB3";
+              if (value === 3) return "MB";
+              return "";
             },
+            autoSkip: false,
           },
           title: {
-            display: true,
-            text: "Band Group",
-            color: darkMode ? "#fff" : "#344767",
-            font: {
-              size: 12,
-              family: "Roboto",
-              weight: 500,
-              style: "normal",
-            },
-            padding: { top: 10 },
+            display: false,
           },
+        },
+      },
+      layout: {
+        padding: {
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
         },
       },
     }),
@@ -204,7 +196,7 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
     <>
       <Card sx={{ height: "100%" }} ref={chartRef}>
         <MDBox p={1}>
-          <MDBox display="flex" justifyContent="space-between" alignItems="center">
+          <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={1}>
             <MDTypography
               variant="caption"
               fontWeight="medium"
@@ -248,9 +240,16 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
               bgColor={color}
               borderRadius="lg"
               coloredShadow={color}
-              py={2}
+              py={1}
               pr={0.5}
-              height="16rem"
+              height="10rem"
+              sx={{
+                transition: "all 0.3s",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: 3,
+                },
+              }}
             >
               <Scatter data={chartData} options={chartOptions} />
             </MDBox>
@@ -259,7 +258,7 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
               display="flex"
               justifyContent="center"
               alignItems="center"
-              height="16rem"
+              height="10rem"
               bgcolor={darkMode ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.02)"}
               borderRadius="lg"
             >
