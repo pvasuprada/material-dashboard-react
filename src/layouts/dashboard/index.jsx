@@ -56,7 +56,7 @@ import ReportsScatterChart from "examples/Charts/ScatterCharts/ReportsScatterCha
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
   const { sidenavColor, darkMode, miniSidenav } = controller;
-  const [activeSection, setActiveSection] = useState("dashboards");
+  const [activeSection, setActiveSection] = useState("filters");
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { dashboardData, chartsData } = useInsights();
   const dispatch = useDispatch();
@@ -251,6 +251,9 @@ function Dashboard({ children }) {
   };
 
   const renderChartSkeletons = () => {
+    // Only render skeletons if there are visible charts
+    if (!hasVisibleCharts) return null;
+
     const skeletonCount = viewMode === "row" ? 3 : miniSidenav ? 4 : 3;
     return Array(skeletonCount)
       .fill(0)
@@ -457,13 +460,13 @@ function Dashboard({ children }) {
         <MDBox pt={2} pb={2}>
           <MDBox display="flex" justifyContent="space-between" alignItems="center">
             <MDBox display="flex" gap={1} sx={{ zIndex: 10000 }}>
-              <MDButtonSmall
+              {/* <MDButtonSmall
                 variant={activeSection === "dashboards" ? "contained" : "outlined"}
                 color={sidenavColor}
                 onClick={() => handleSectionChange("dashboards")}
               >
                 Dashboards
-              </MDButtonSmall>
+              </MDButtonSmall> */}
               <MDButtonSmall
                 variant={activeSection === "filters" ? "contained" : "outlined"}
                 color={sidenavColor}
@@ -527,20 +530,18 @@ function Dashboard({ children }) {
           {/* <Insights /> */}
         </MDBox>
         <MDBox>
-          <Grid container spacing={2}>
+          <Grid container spacing={1}>
             <Grid item xs={12} md={6} lg={8}>
               <Map />
             </Grid>
             <Grid item xs={12} md={6} lg={4}>
-              {/* <OrdersOverview /> */}
               <NetworkGenie />
             </Grid>
           </Grid>
         </MDBox>
-        <MDBox mt={4.5}>
+        <MDBox mt={1}>
           <Grid container spacing={2}>
             <Grid item xs={12} md={12} lg={12}>
-              {/* <Projects /> */}
               <SiteGrid />
             </Grid>
           </Grid>

@@ -218,25 +218,31 @@ const Legend = ({ layer, expanded }) => {
           { color: "rgba(255, 255, 0, 0.8)", label: "Medium Drop Rate" },
           { color: "rgba(0, 255, 0, 0.8)", label: "Low Drop Rate" },
         ];
-      case "in_avg_rsrq_db":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Poor RSRQ" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium RSRQ" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "Good RSRQ" },
-        ];
-      case "in_num_of_rrc_connection_attempts":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low Attempts" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Attempts" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High Attempts" },
-        ];
+      // case "in_avg_rsrq_db":
+      //   return [
+      //     { color: "rgba(255, 0, 0, 0.8)", label: "Poor RSRQ" },
+      //     { color: "rgba(255, 255, 0, 0.8)", label: "Medium RSRQ" },
+      //     { color: "rgba(0, 255, 0, 0.8)", label: "Good RSRQ" },
+      //   ];
+      // case "in_num_of_rrc_connection_attempts":
+      //   return [
+      //     { color: "rgba(255, 0, 0, 0.8)", label: "Low Attempts" },
+      //     { color: "rgba(255, 255, 0, 0.8)", label: "Medium Attempts" },
+      //     { color: "rgba(0, 255, 0, 0.8)", label: "High Attempts" },
+      //   ];
       case "in_num_of_drops":
         return [
           { color: "rgba(0, 255, 0, 0.8)", label: "Low Drops" },
           { color: "rgba(255, 255, 0, 0.8)", label: "Medium Drops" },
           { color: "rgba(255, 0, 0, 0.8)", label: "High Drops" },
         ];
-      case "in_sum_rlc_pdu_dl_volume_md":
+      // case "in_sum_rlc_pdu_dl_volume_md":
+      //   return [
+      //     { color: "rgba(255, 0, 0, 0.8)", label: "Low Volume" },
+      //     { color: "rgba(255, 255, 0, 0.8)", label: "Medium Volume" },
+      //     { color: "rgba(0, 255, 0, 0.8)", label: "High Volume" },
+      //   ];
+      case "dl_dv_mbytes":
         return [
           { color: "rgba(255, 0, 0, 0.8)", label: "Low Volume" },
           { color: "rgba(255, 255, 0, 0.8)", label: "Medium Volume" },

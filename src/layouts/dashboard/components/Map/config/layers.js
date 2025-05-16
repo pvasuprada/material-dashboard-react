@@ -218,34 +218,34 @@ const metricConfigs = {
     normalizer: (value) => Math.min(0.8, 0.2 + value * 0.1),
     category: "truecall",
   },
-  vendor: {
-    label: "Vendor",
-    color: [128, 0, 128], // Purple
-    unit: "",
-    visualization: {
-      type: "category",
-      categories: [
-        { value: "Samsung", label: "Samsung", color: [0, 255, 0] },
-        { value: "Nokia", label: "Nokia", color: [255, 0, 0] },
-      ],
-    },
-    category: "truecall",
-  },
-  vendors: {
-    label: "Vendors",
-    color: [128, 0, 128], // Purple
-    unit: "",
-    visualization: {
-      type: "category",
-      categories: [
-        { value: "Samsung", label: "Samsung", color: [0, 255, 0] },
-        { value: "Nokia", label: "Nokia", color: [255, 0, 0] },
-        { value: "Nokia,Samsung", label: "Nokia,Samsung", color: [255, 165, 0] },
-        { value: "Samsung,Nokia", label: "Samsung,Nokia", color: [255, 165, 0] },
-      ],
-    },
-    category: "truecall",
-  },
+  // vendor: {
+  //   label: "Vendor",
+  //   color: [128, 0, 128], // Purple
+  //   unit: "",
+  //   visualization: {
+  //     type: "category",
+  //     categories: [
+  //       { value: "Samsung", label: "Samsung", color: [0, 255, 0] },
+  //       { value: "Nokia", label: "Nokia", color: [255, 0, 0] },
+  //     ],
+  //   },
+  //   category: "truecall",
+  // },
+  // vendors: {
+  //   label: "Vendors",
+  //   color: [128, 0, 128], // Purple
+  //   unit: "",
+  //   visualization: {
+  //     type: "category",
+  //     categories: [
+  //       { value: "Samsung", label: "Samsung", color: [0, 255, 0] },
+  //       { value: "Nokia", label: "Nokia", color: [255, 0, 0] },
+  //       { value: "Nokia,Samsung", label: "Nokia,Samsung", color: [255, 165, 0] },
+  //       { value: "Samsung,Nokia", label: "Samsung,Nokia", color: [255, 165, 0] },
+  //     ],
+  //   },
+  //   category: "truecall",
+  // },
   rsrq_db_avg: {
     label: "RSRQ (dB)",
     color: [128, 0, 128], // Purple
@@ -259,31 +259,31 @@ const metricConfigs = {
     },
     category: "truecall",
   },
-  in_avg_rsrq_db: {
-    label: "Average RSRQ (dB)",
-    color: [75, 0, 130], // Indigo
-    unit: "dB",
-    visualization: {
-      type: "dynamic",
-      minColor: [255, 0, 0], // Red for poor RSRQ
-      midColor: [255, 255, 0], // Yellow for medium RSRQ
-      maxColor: [0, 255, 0], // Green for good RSRQ
-      inverse: true,
-    },
-    category: "truecall",
-  },
-  in_num_of_rrc_connection_attempts: {
-    label: "RRC Connection Attempts",
-    color: [0, 128, 128], // Teal
-    unit: "",
-    visualization: {
-      type: "dynamic",
-      minColor: [255, 0, 0], // Red for low attempts
-      midColor: [255, 255, 0], // Yellow for medium attempts
-      maxColor: [0, 255, 0], // Green for high attempts
-    },
-    category: "truecall",
-  },
+  // in_avg_rsrq_db: {
+  //   label: "Average RSRQ (dB)",
+  //   color: [75, 0, 130], // Indigo
+  //   unit: "dB",
+  //   visualization: {
+  //     type: "dynamic",
+  //     minColor: [255, 0, 0], // Red for poor RSRQ
+  //     midColor: [255, 255, 0], // Yellow for medium RSRQ
+  //     maxColor: [0, 255, 0], // Green for good RSRQ
+  //     inverse: true,
+  //   },
+  //   category: "truecall",
+  // },
+  // in_num_of_rrc_connection_attempts: {
+  //   label: "RRC Connection Attempts",
+  //   color: [0, 128, 128], // Teal
+  //   unit: "",
+  //   visualization: {
+  //     type: "dynamic",
+  //     minColor: [255, 0, 0], // Red for low attempts
+  //     midColor: [255, 255, 0], // Yellow for medium attempts
+  //     maxColor: [0, 255, 0], // Green for high attempts
+  //   },
+  //   category: "truecall",
+  // },
   in_num_of_drops: {
     label: "Number of Drops",
     color: [139, 0, 0], // Dark Red
@@ -297,10 +297,22 @@ const metricConfigs = {
     },
     category: "truecall",
   },
-  in_sum_rlc_pdu_dl_volume_md: {
-    label: "RLC PDU DL Volume",
-    color: [0, 0, 139], // Dark Blue
-    unit: "MB",
+  // in_sum_rlc_pdu_dl_volume_md: {
+  //   label: "RLC PDU DL Volume",
+  //   color: [0, 0, 139], // Dark Blue
+  //   unit: "MB",
+  //   visualization: {
+  //     type: "dynamic",
+  //     minColor: [255, 0, 0], // Red for low volume
+  //     midColor: [255, 255, 0], // Yellow for medium volume
+  //     maxColor: [0, 255, 0], // Green for high volume
+  //   },
+  //   category: "truecall",
+  // },
+  dl_dv_mbytes: {
+    label: "DL DV MB",
+    color: [128, 0, 128], // Purple
+    unit: "",
     visualization: {
       type: "dynamic",
       minColor: [255, 0, 0], // Red for low volume
@@ -309,7 +321,6 @@ const metricConfigs = {
     },
     category: "truecall",
   },
-
   // connection_status: {
   //   label: "Connection Status",
   //   color: [128, 0, 128], // Purple
@@ -708,13 +719,14 @@ const defaultLayers = {
   rec_cnt: createTruecallLayer("Record Count"),
   erab_drop_pct: createTruecallLayer("ERAB Drop Percentage"),
   volte_erab_drop_pct: createTruecallLayer("VoLTE ERAB Drop Percentage"),
-  vendor: createTruecallLayer("Vendor"),
-  vendors: createTruecallLayer("Vendors"),
+  // vendor: createTruecallLayer("Vendor"),
+  // vendors: createTruecallLayer("Vendors"),
   rsrq_db_avg: createTruecallLayer("RSRQ (dB) Avg"),
-  in_avg_rsrq_db: createTruecallLayer("Average RSRQ (dB)"),
-  in_num_of_rrc_connection_attempts: createTruecallLayer("RRC Connection Attempts"),
+  // in_avg_rsrq_db: createTruecallLayer("Average RSRQ (dB)"),
+  // in_num_of_rrc_connection_attempts: createTruecallLayer("RRC Connection Attempts"),
   in_num_of_drops: createTruecallLayer("Number of Drops"),
-  in_sum_rlc_pdu_dl_volume_md: createTruecallLayer("RLC PDU DL Volume"),
+  // in_sum_rlc_pdu_dl_volume_md: createTruecallLayer("RLC PDU DL Volume"),
+  dl_dv_mbytes: createTruecallLayer("DL Data Volume in MB"),
 };
 
 const layerGroups = [
@@ -775,13 +787,14 @@ const layerGroups = [
       { id: "rec_cnt", label: "Record Count" },
       { id: "erab_drop_pct", label: "ERAB Drop Percentage" },
       { id: "volte_erab_drop_pct", label: "VoLTE ERAB Drop Percentage" },
-      { id: "vendor", label: "Vendor" },
-      { id: "vendors", label: "Vendors" },
+      // { id: "vendor", label: "Vendor" },
+      // { id: "vendors", label: "Vendors" },
       { id: "rsrq_db_avg", label: "RSRQ (dB) Avg" },
-      { id: "in_avg_rsrq_db", label: "Average RSRQ (dB)" },
-      { id: "in_num_of_rrc_connection_attempts", label: "RRC Connection Attempts" },
+      //{ id: "in_avg_rsrq_db", label: "Average RSRQ (dB)" },
+      //{ id: "in_num_of_rrc_connection_attempts", label: "RRC Connection Attempts" },
       { id: "in_num_of_drops", label: "Number of Drops" },
-      { id: "in_sum_rlc_pdu_dl_volume_md", label: "RLC PDU DL Volume" },
+      //{ id: "in_sum_rlc_pdu_dl_volume_md", label: "RLC PDU DL Volume" },
+      { id: "dl_dv_mbytes", label: "DL Data Volume in MB" },
     ],
   },
 ];

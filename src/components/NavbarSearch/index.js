@@ -132,7 +132,7 @@ const AutocompleteSearch = () => {
     }
   }, [mapInstance]);
 
-  const addTrueCallLayer = async (layerId) => {
+  const addData = async (layerId) => {
     console.log("Adding layer:", layerId);
 
     // Find the option that matches either by ID or by label
@@ -288,7 +288,8 @@ const AutocompleteSearch = () => {
                 });
 
                 // Add all features to the source
-                source.addFeatures(features);
+                const validFeatures = features.filter((feature) => feature !== null);
+                source.addFeatures(validFeatures);
 
                 // Make sure the layer is visible first
                 layer.setVisible(true);
@@ -465,9 +466,9 @@ const AutocompleteSearch = () => {
   const handleConfirm = () => {
     if (selectedOption) {
       if (selectedOption.id === "vpi_analysis") {
-        addTrueCallLayer(selectedOption.id);
+        addData(selectedOption.id);
       } else {
-        addTrueCallLayer(selectedOption.id);
+        addData(selectedOption.id);
       }
     }
     setOpenConfirm(false);

@@ -21,13 +21,14 @@ export const MapProvider = ({ children }) => {
     rec_cnt: false,
     erab_drop_pct: false,
     volte_erab_drop_pct: false,
-    vendor: false,
-    vendors: false,
+    // vendor: false,
+    // vendors: false,
     rsrq_db_avg: false,
-    in_avg_rsrq_db: false,
-    in_num_of_rrc_connection_attempts: false,
+    // in_avg_rsrq_db: false,
+    // in_num_of_rrc_connection_attempts: false,
     in_num_of_drops: false,
-    in_sum_rlc_pdu_dl_volume_md: false,
+    //in_sum_rlc_pdu_dl_volume_md: false,
+    dl_dv_mbytes: false,
   });
   const [selectedMetric, setSelectedMetric] = useState(null);
 

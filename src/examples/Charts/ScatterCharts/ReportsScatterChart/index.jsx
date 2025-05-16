@@ -98,7 +98,7 @@ function ReportsScatterChart({ color, title, description, chart, showLabels = fa
               if (point.x === 1) bandName = "SUB1";
               if (point.x === 2) bandName = "SUB3";
               if (point.x === 3) bandName = "MB";
-              return `${dataset.label}: ${bandName}, Utilization: ${point.y.toFixed(1)}%`;
+              return `${dataset.label}: ${bandName}, Utilization: ${point.y}%`;
             },
           },
         },

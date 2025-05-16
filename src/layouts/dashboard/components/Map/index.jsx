@@ -1691,12 +1691,12 @@ function MapContent() {
 
   return (
     <Card>
-      <MDBox p={2}>
+      <MDBox p={1}>
         <MDBox
           sx={{
             width: "100%",
-            height: "400px",
-            borderRadius: "12px",
+            height: "440px",
+            borderRadius: 1,
             overflow: "hidden",
             position: "relative",
           }}
