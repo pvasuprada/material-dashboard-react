@@ -34,228 +34,108 @@ const LegendItem = styled(Box)(({ theme }) => ({
   },
 }));
 
+// Default color ranges for dynamic visualization
+const DEFAULT_COLOR_RANGES = {
+  standard: {
+    low: { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
+    medium: { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+    high: { color: "rgba(0, 255, 0, 0.8)", label: "High" },
+  },
+  inverse: {
+    low: { color: "rgba(0, 255, 0, 0.8)", label: "Low" },
+    medium: { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
+    high: { color: "rgba(255, 0, 0, 0.8)", label: "High" },
+  },
+};
+
+// Special layer configurations
+const SPECIAL_LAYER_CONFIGS = {
+  sites_layer: [
+    {
+      icon: "/sector360/towericon.png",
+      label: "Site Location",
+      iconSize: "20px",
+    },
+  ],
+  raw_coverage: [
+    {
+      color: "rgba(255, 165, 0, 0.4)",
+      label: "Raw Coverage Area",
+      borderColor: "rgba(255, 165, 0, 1)",
+      borderWidth: 2,
+    },
+  ],
+  interpolation: [
+    { color: "rgba(255, 0, 0, 0.8)", label: "Poor Signal (-140 dBm)" },
+    { color: "rgba(255, 255, 0, 0.8)", label: "Medium Signal (-105 dBm)" },
+    { color: "rgba(0, 255, 0, 0.8)", label: "Good Signal (-70 dBm)" },
+  ],
+  population: [
+    { color: "rgba(255, 0, 0, 0.8)", label: "Low Population" },
+    { color: "rgba(255, 255, 0, 0.8)", label: "Medium Population" },
+    { color: "rgba(0, 255, 0, 0.8)", label: "High Population" },
+  ],
+  population_wms: [
+    { color: "rgba(0, 47, 161, 0.8)", label: "0-1000" },
+    { color: "rgba(3, 190, 227, 0.8)", label: "1000-2000" },
+    { color: "rgba(123, 255, 87, 0.8)", label: "2000-3000" },
+    { color: "rgba(255, 184, 0, 0.8)", label: "3000-4000" },
+    { color: "rgba(236, 0, 0, 0.8)", label: "4000+" },
+  ],
+};
+
 const Legend = ({ layer, expanded }) => {
   const getLegendContent = () => {
-    // First check if the layer has a visualization config in metricConfigs
-    const config = metricConfigs[layer.id];
-    if (config?.visualization) {
-      switch (config.visualization.type) {
-        case "dynamic": {
-          // For dynamic, show a gradient from min to max
-          const minColor = config.visualization.minColor;
-          const midColor = config.visualization.midColor;
-          const maxColor = config.visualization.maxColor;
-          return [
-            {
-              color: `rgba(${minColor[0]}, ${minColor[1]}, ${minColor[2]}, 0.8)`,
-              label: config.visualization.inverse ? "High" : "Low",
-            },
-            {
-              color: `rgba(${midColor[0]}, ${midColor[1]}, ${midColor[2]}, 0.8)`,
-              label: "Medium",
-            },
-            {
-              color: `rgba(${maxColor[0]}, ${maxColor[1]}, ${maxColor[2]}, 0.8)`,
-              label: config.visualization.inverse ? "Low" : "High",
-            },
-          ];
-        }
-        case "classbreak": {
-          // For classbreak, show each break point
-          return config.visualization.breaks.map((break_) => ({
-            color: `rgba(${break_.color[0]}, ${break_.color[1]}, ${break_.color[2]}, 0.8)`,
-            label: break_.label,
-          }));
-        }
-        case "category": {
-          // For category, show each category
-          return config.visualization.categories.map((cat) => ({
-            color: `rgba(${cat.color[0]}, ${cat.color[1]}, ${cat.color[2]}, 0.8)`,
-            label: cat.label,
-          }));
-        }
-      }
+    // Check for special layer configurations first
+    if (SPECIAL_LAYER_CONFIGS[layer.id]) {
+      return SPECIAL_LAYER_CONFIGS[layer.id];
     }
 
-    // Fallback to original switch case for layers without visualization config
-    switch (layer.id) {
-      case "sites_layer":
+    // Check for metric configurations
+    const config = metricConfigs[layer.id];
+    if (!config?.visualization) {
+      return null;
+    }
+
+    switch (config.visualization.type) {
+      case "dynamic": {
+        const { minColor, midColor, maxColor, inverse } = config.visualization;
         return [
           {
-            icon: "/sector360/towericon.png",
-            label: "Site Location",
-            iconSize: "20px",
+            color: `rgba(${minColor[0]}, ${minColor[1]}, ${minColor[2]}, 0.8)`,
+            label: inverse ? "High" : "Low",
           },
-        ];
-      case "raw_coverage":
-        return [
           {
-            color: "rgba(255, 165, 0, 0.4)",
-            label: "Raw Coverage Area",
-            borderColor: "rgba(255, 165, 0, 1)",
-            borderWidth: 2,
+            color: `rgba(${midColor[0]}, ${midColor[1]}, ${midColor[2]}, 0.8)`,
+            label: "Medium",
+          },
+          {
+            color: `rgba(${maxColor[0]}, ${maxColor[1]}, ${maxColor[2]}, 0.8)`,
+            label: inverse ? "Low" : "High",
           },
         ];
-      case "interpolation":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Poor Signal (-140 dBm)" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Signal (-105 dBm)" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "Good Signal (-70 dBm)" },
-        ];
-      case "population":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low Population" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Population" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High Population" },
-        ];
-      case "population_wms":
-        return [
-          { color: "rgba(0, 47, 161, 0.8)", label: "0-1000" },
-          { color: "rgba(3, 190, 227, 0.8)", label: "1000-2000" },
-          { color: "rgba(123, 255, 87, 0.8)", label: "2000-3000" },
-          { color: "rgba(255, 184, 0, 0.8)", label: "3000-4000" },
-          { color: "rgba(236, 0, 0, 0.8)", label: "4000+" },
-        ];
-      case "coverage_capacity":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low Signal" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Signal" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High Signal" },
-        ];
-      case "user_count":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "avg_dl_latency":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "total_dl_volume":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "avg_nr_dl_colume_share":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "avg_nr_rsrp":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "avg_nr_ul_volume_share":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "dl_connections_count":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "p10_dl_speed":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "p10_ul_speed":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "p50_dl_speed":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "p50_ul_speed":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "total_ul_volume":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "ul_connections_count":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High" },
-        ];
-      case "rec_cnt":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low Count" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Count" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High Count" },
-        ];
-      case "erab_drop_pct":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "High Drop Rate" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Drop Rate" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "Low Drop Rate" },
-        ];
-      case "volte_erab_drop_pct":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "High Drop Rate" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Drop Rate" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "Low Drop Rate" },
-        ];
-      // case "in_avg_rsrq_db":
-      //   return [
-      //     { color: "rgba(255, 0, 0, 0.8)", label: "Poor RSRQ" },
-      //     { color: "rgba(255, 255, 0, 0.8)", label: "Medium RSRQ" },
-      //     { color: "rgba(0, 255, 0, 0.8)", label: "Good RSRQ" },
-      //   ];
-      // case "in_num_of_rrc_connection_attempts":
-      //   return [
-      //     { color: "rgba(255, 0, 0, 0.8)", label: "Low Attempts" },
-      //     { color: "rgba(255, 255, 0, 0.8)", label: "Medium Attempts" },
-      //     { color: "rgba(0, 255, 0, 0.8)", label: "High Attempts" },
-      //   ];
-      case "in_num_of_drops":
-        return [
-          { color: "rgba(0, 255, 0, 0.8)", label: "Low Drops" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Drops" },
-          { color: "rgba(255, 0, 0, 0.8)", label: "High Drops" },
-        ];
-      // case "in_sum_rlc_pdu_dl_volume_md":
-      //   return [
-      //     { color: "rgba(255, 0, 0, 0.8)", label: "Low Volume" },
-      //     { color: "rgba(255, 255, 0, 0.8)", label: "Medium Volume" },
-      //     { color: "rgba(0, 255, 0, 0.8)", label: "High Volume" },
-      //   ];
-      case "dl_dv_mbytes":
-        return [
-          { color: "rgba(255, 0, 0, 0.8)", label: "Low Volume" },
-          { color: "rgba(255, 255, 0, 0.8)", label: "Medium Volume" },
-          { color: "rgba(0, 255, 0, 0.8)", label: "High Volume" },
-        ];
+      }
+
+      case "classbreak":
+        return config.visualization.breaks.map((break_) => ({
+          color: `rgba(${break_.color[0]}, ${break_.color[1]}, ${break_.color[2]}, 0.8)`,
+          label: break_.label,
+        }));
+
+      case "category":
+        return config.visualization.categories.map((cat) => ({
+          color: `rgba(${cat.color[0]}, ${cat.color[1]}, ${cat.color[2]}, 0.8)`,
+          label: cat.label,
+        }));
+
       default:
-        return null;
+        // Use standard color range for metrics without specific visualization
+        return DEFAULT_COLOR_RANGES[config.inverse ? "inverse" : "standard"];
     }
   };
 
   const legendItems = getLegendContent();
-
-  if (legendItems === null) return null;
+  if (!legendItems) return null;
 
   return (
     <Collapse in={expanded}>

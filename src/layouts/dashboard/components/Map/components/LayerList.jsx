@@ -1,3 +1,6 @@
+import { fromLonLat } from "ol/proj";
+import { useState } from "react";
+
 import {
   Menu,
   MenuItem,
@@ -6,15 +9,20 @@ import {
   Divider,
   Typography,
   IconButton,
-  duration,
 } from "@mui/material";
 import Icon from "@mui/material/Icon";
-import { useState } from "react";
 
 import { useMap } from "../../../../../context/MapContext";
 import { metricConfigs } from "../config/layers";
 import Legend from "./Legend";
-import { fromLonLat } from "ol/proj";
+
+// Layer group definitions
+const LAYER_GROUPS = {
+  BASE: "Base Layers",
+  COVERAGE: "Coverage & Infrastructure",
+  UG: "UG Layers",
+  TRUECALL: "Truecall Layers",
+};
 
 const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
   const { layerVisibility, mapInstance, overlayLayers, addedLayers } = useMap();
@@ -28,8 +36,8 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
 
     if (!source) return;
 
-    // For vector layers
     if (source.getFeatures) {
+      // Vector layers
       const features = source.getFeatures();
       if (features.length > 0) {
         const extent = source.getExtent();
@@ -38,9 +46,8 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
           duration: 1000,
         });
       }
-    }
-    // For WMS layers
-    else {
+    } else {
+      // WMS layers
       const layerExtent = layer.getProperties().extent;
       if (layerExtent) {
         const { minX, minY, maxX, maxY } = layerExtent;
@@ -66,67 +73,67 @@ const LayerList = ({ container, anchorEl, onClose, onLayerToggle }) => {
     }));
   };
 
-  // Get the list of UG layers that have been added
-  const addedUGLayers = metricConfigs
-    ? Object.entries(metricConfigs)
-        .filter(([id, config]) => addedLayers.has(id) && config.category !== "truecall") // Filter out truecall layers
-        .map(([id, config]) => ({
-          id,
-          label: config.label,
-        }))
-    : [];
+  // Get layers by category
+  const getLayersByCategory = (category) => {
+    return Object.entries(metricConfigs || {})
+      .filter(([id, config]) => addedLayers.has(id) && config.category === category)
+      .map(([id, config]) => ({
+        id,
+        label: config.label,
+      }));
+  };
 
-  // Get the list of added Truecall layers
-  const addedTruecallLayers = metricConfigs
-    ? Object.entries(metricConfigs)
-        .filter(([id, config]) => addedLayers.has(id) && config.category === "truecall")
-        .map(([id, config]) => ({
-          id,
-          label: config.label,
-        }))
-    : [];
+  // Get coverage and infrastructure layers
+  const getCoverageAndInfraLayers = () => {
+    const layers = [
+      { id: "raw_coverage", label: "Raw Coverage", category: "coverage" },
+      { id: "interpolation", label: "Interpolation", category: "coverage" },
+      { id: "building", label: "Building Layer", category: "infrastructure" },
+      { id: "population_wms", label: "Population WMS Layer", category: "demographics" },
+    ];
+    return layers.filter((layer) => addedLayers.has(layer.id));
+  };
 
-  // Get the list of added coverage and infrastructure layers
-  const addedOnDemandLayers = [
-    { id: "raw_coverage", label: "Raw Coverage", category: "coverage" },
-    { id: "interpolation", label: "Interpolation", category: "coverage" },
-    { id: "building", label: "Building Layer", category: "infrastructure" },
-    { id: "population_wms", label: "Population WMS Layer", category: "demographics" },
-  ].filter((layer) => addedLayers.has(layer.id));
+  // Build layer groups
+  const buildLayerGroups = () => {
+    const groups = [
+      {
+        title: LAYER_GROUPS.BASE,
+        layers: [
+          { id: "network_genie_layer_1", label: "Network Genie Layer 1" },
+          { id: "sites_layer", label: "Sites Layer" },
+        ],
+      },
+    ];
 
-  const layerGroups = [
-    {
-      title: "Base Layers",
-      layers: [
-        { id: "network_genie_layer_1", label: "Network Genie Layer 1" },
-        { id: "sites_layer", label: "Sites Layer" },
-      ],
-    },
-  ];
+    const coverageLayers = getCoverageAndInfraLayers();
+    if (coverageLayers.length > 0) {
+      groups.push({
+        title: LAYER_GROUPS.COVERAGE,
+        layers: coverageLayers,
+      });
+    }
 
-  // Add Coverage & Infrastructure group if there are any added special layers
-  if (addedOnDemandLayers.length > 0) {
-    layerGroups.push({
-      title: "Coverage & Infrastructure",
-      layers: addedOnDemandLayers,
-    });
-  }
+    const ugLayers = getLayersByCategory("ug");
+    if (ugLayers.length > 0) {
+      groups.push({
+        title: LAYER_GROUPS.UG,
+        layers: ugLayers,
+      });
+    }
 
-  // Only add UG Layers group if there are added layers
-  if (addedUGLayers.length > 0) {
-    layerGroups.push({
-      title: "UG Layers",
-      layers: addedUGLayers,
-    });
-  }
+    const truecallLayers = getLayersByCategory("truecall");
+    if (truecallLayers.length > 0) {
+      groups.push({
+        title: LAYER_GROUPS.TRUECALL,
+        layers: truecallLayers,
+      });
+    }
 
-  // Add Truecall Layers group if there are added truecall layers
-  if (addedTruecallLayers.length > 0) {
-    layerGroups.push({
-      title: "Truecall Layers",
-      layers: addedTruecallLayers,
-    });
-  }
+    return groups;
+  };
+
+  const layerGroups = buildLayerGroups();
 
   return (
     <Menu

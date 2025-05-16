@@ -10,29 +10,43 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
-// React and third-party imports
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+// Third-party imports
+import * as h3 from "h3-js";
 import { Feature } from "ol";
 import { Polygon } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import { Style, Fill, Stroke, Text } from "ol/style";
-import * as h3 from "h3-js";
-import dayjs from "dayjs";
+import { useState, useCallback } from "react";
+import { useSelector } from "react-redux";
 
 // Local imports
-import truecallParameters from "layouts/dashboard/components/Map/config/truecall.json";
+import MDButton from "components/MDButton";
+import { useMap } from "context/MapContext";
+import { useInsights } from "context/insightsContext";
+import {
+  SPECIAL_LAYERS,
+  VISUALIZATION_CONFIGS,
+  getVisualizationConfig,
+  getChartTitles,
+} from "layouts/dashboard/components/Map/config/chartAndLayers";
 import {
   metricConfigs,
   defaultLayers,
   getColorForValue,
 } from "layouts/dashboard/components/Map/config/layers";
-import api from "services/api";
-import MDButton from "components/MDButton";
-import { useMap } from "../../context/MapContext";
-import { useInsights } from "context/insightsContext";
+import truecallParameters from "layouts/dashboard/components/Map/config/truecall.json";
 import { transformVPIData } from "layouts/dashboard/data/transformers";
+import api from "services/api";
 
+// Constants
+const DEFAULT_FEATURE_STYLE = {
+  fill: "white",
+  stroke: "black",
+  strokeWidth: 2,
+  font: "12px sans-serif",
+};
+
+// Styled components
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   width: 300,
   "& .MuiInputBase-root": {
@@ -52,6 +66,48 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   },
 }));
 
+// Helper functions
+const createFeatureStyle = (color, text, textStyle) => [
+  new Style({
+    fill: new Fill({ color }),
+    stroke: new Stroke({
+      color: color.replace(/,[^,]+\)/, ",1)"),
+      width: 1,
+    }),
+  }),
+  new Style({
+    text: new Text({
+      text,
+      fill: new Fill({ color: textStyle.fill }),
+      stroke: new Stroke({
+        color: textStyle.stroke,
+        width: textStyle.strokeWidth,
+      }),
+      font: textStyle.font,
+      textAlign: "center",
+      textBaseline: "middle",
+    }),
+  }),
+];
+
+const createFeature = (item, layerId, config) => {
+  const hexCoords = h3.cellToBoundary(item.h3_index, true);
+  const coordinates = [hexCoords.map(([lng, lat]) => fromLonLat([lng, lat]))];
+  const feature = new Feature({ geometry: new Polygon(coordinates) });
+
+  const value = item[layerId];
+  if (!value || !config) return null;
+
+  const [r, g, b] = getColorForValue(value, config);
+  feature.set(layerId, value);
+  feature.set("color", `rgba(${r}, ${g}, ${b})`);
+  feature.set("geobin", item.h3_index);
+  feature.set("text", typeof value === "number" ? value.toFixed(2).toString() : String(value));
+  feature.set("textStyle", DEFAULT_FEATURE_STYLE);
+
+  return feature;
+};
+
 // Simple search box component when MapContext is not available
 const SimpleSearch = () => (
   <TextField
@@ -67,6 +123,36 @@ const SimpleSearch = () => (
   />
 );
 
+// Search options component
+const SearchOptions = () => {
+  const baseOptions = [
+    {
+      id: "vpi_analysis",
+      label: "Add VPI Analysis",
+      description: VISUALIZATION_CONFIGS.vpi_analysis.description,
+      category: VISUALIZATION_CONFIGS.vpi_analysis.category,
+    },
+    ...SPECIAL_LAYERS.map((id) => ({
+      id,
+      label: `Add ${id
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")} Layer`,
+      description: VISUALIZATION_CONFIGS[id]?.description || `Add ${id} layer to map`,
+      category: VISUALIZATION_CONFIGS[id]?.category || "coverage",
+    })),
+  ];
+
+  const metricOptions = Object.entries(metricConfigs).map(([id, config]) => ({
+    id,
+    label: `Add ${config.label}`,
+    description: VISUALIZATION_CONFIGS[id]?.description || `Add ${config.label} layer to map`,
+    category: VISUALIZATION_CONFIGS[id]?.category || config.category || "ug",
+  }));
+
+  return [...baseOptions, ...metricOptions];
+};
+
 // Main search component with autocomplete when MapContext is available
 const AutocompleteSearch = () => {
   const [inputValue, setInputValue] = useState("");
@@ -81,395 +167,181 @@ const AutocompleteSearch = () => {
     setAddedLayers,
   } = useMap();
   const { updateChartVisibility, setVPIData } = useInsights();
-
-  // Get market and gnodeb from Redux state
   const selectedFilters = useSelector((state) => state.filter.selectedFilters);
+  const searchOptions = SearchOptions();
 
-  const searchOptions = [
-    {
-      id: "vpi_analysis",
-      label: "Add VPI Analysis",
-      description: "Add VPI Analysis chart to dashboard",
-      category: "charts",
-    },
-    {
-      id: "raw_coverage",
-      label: "Add Raw Coverage Layer",
-      description: "Add Raw Coverage layer to map",
-      category: "coverage",
-    },
-    {
-      id: "interpolation",
-      label: "Add Interpolation Layer",
-      description: "Add Interpolation layer to map",
-      category: "coverage",
-    },
-    {
-      id: "building",
-      label: "Add Building Layer",
-      description: "Add Building layer to map",
-      category: "infrastructure",
-    },
-    {
-      id: "population_wms",
-      label: "Add Population WMS Layer",
-      description: "Add Population WMS layer to map",
-      category: "demographics",
-    },
-    ...Object.entries(metricConfigs).map(([id, config]) => ({
-      id,
-      label: `Add ${config.label}`,
-      description: `Add ${config.label} layer to map`,
-      category: config.category || "ug",
-    })),
-  ];
-
-  // Debug log when mapInstance changes
-  useEffect(() => {
-    console.log("Map instance updated in NavbarSearch:", mapInstance);
-    if (!mapInstance) {
-      console.warn("Map instance is null/undefined in NavbarSearch");
+  const handleVPIAnalysis = useCallback(async () => {
+    try {
+      const response = await api.getVPIData();
+      const transformedData = transformVPIData(response);
+      setVPIData(transformedData);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      updateChartVisibility("VPI Analysis", true);
+      updateChartVisibility("Computation Utilization by Band", true);
+    } catch (error) {
+      console.error("Error fetching VPI data:", error);
     }
-  }, [mapInstance]);
+  }, [setVPIData, updateChartVisibility]);
 
-  const addData = async (layerId) => {
-    console.log("Adding layer:", layerId);
-
-    // Find the option that matches either by ID or by label
-    const option = searchOptions.find(
-      (opt) => opt.id === layerId || opt.label.toLowerCase().includes(layerId.toLowerCase())
-    );
-
-    if (option) {
-      const id = option.id;
-      console.log("Found matching option:", option);
-
-      // Special handling for VPI Analysis
-      if (id === "vpi_analysis") {
-        try {
-          console.log("Fetching VPI data...");
-          const fetchAndSetVPIData = async () => {
-            const response = await api.getVPIData();
-            console.log("VPI API Response:", response);
-            const transformedData = transformVPIData(response);
-            console.log("Transformed VPI data:", transformedData);
-            setVPIData(transformedData);
-
-            // Small delay to ensure VPI data is set before updating visibility
-            await new Promise((resolve) => setTimeout(resolve, 100));
-
-            // Update chart visibility for both VPI Analysis and Computation Utilization
-            console.log(
-              "Setting VPI Analysis and Computation Utilization chart visibility to true"
-            );
-            updateChartVisibility("VPI Analysis", true);
-            updateChartVisibility("Computation Utilization by Band", true);
-          };
-
-          // Execute immediately
-          await fetchAndSetVPIData();
-
-          setInputValue("");
-          setOpenConfirm(false);
-          return;
-        } catch (error) {
-          console.error("Error fetching VPI data:", error);
-          return;
-        }
+  const handleSpecialLayer = useCallback(
+    (id) => {
+      setAddedLayers((prev) => new Set([...prev, id]));
+      setLayerVisibility((prev) => ({ ...prev, [id]: true }));
+      if (overlayLayers?.[id]) {
+        overlayLayers[id].setVisible(true);
       }
+    },
+    [setAddedLayers, setLayerVisibility, overlayLayers]
+  );
 
-      // Handle special layers (raw_coverage, interpolation, building, population_wms)
-      const specialLayers = ["raw_coverage", "interpolation", "building", "population_wms"];
-      if (specialLayers.includes(id)) {
-        console.log("Adding special layer:", id);
-
-        // Add to added layers set
-        setAddedLayers((prev) => {
-          const newSet = new Set(prev);
-          newSet.add(id);
-          return newSet;
-        });
-
-        // Update visibility
-        setLayerVisibility((prev) => ({
-          ...prev,
-          [id]: true,
-        }));
-
-        // If the layer exists in overlayLayers, make it visible
-        if (overlayLayers?.[id]) {
-          overlayLayers[id].setVisible(true);
-        }
-
-        setInputValue("");
-        setOpenConfirm(false);
+  const handleTruecallLayer = useCallback(
+    async (id) => {
+      if (!selectedFilters.market || !selectedFilters.gnodeb) {
+        console.warn("Market or GNodeB not selected");
         return;
       }
 
-      // Check if it's a Truecall layer
-      const isTruecallLayer = Object.keys(truecallParameters).includes(id);
+      try {
+        const response = await api.getTruecallData({
+          market: selectedFilters.market.value,
+          gnodeb: selectedFilters.gnodeb.value,
+          kpi_name: id,
+          startdate: selectedFilters.dateRange.startDate.toISOString().split("T")[0],
+          enddate: selectedFilters.dateRange.endDate.toISOString().split("T")[0],
+        });
 
-      if (isTruecallLayer) {
-        // Validate required parameters
-        if (!selectedFilters.market || !selectedFilters.gnodeb) {
-          console.warn("Market or GNodeB not selected");
-          return;
-        }
+        if (!response || !overlayLayers?.[id]) return;
 
-        try {
-          const response = await api.getTruecallData({
-            market: selectedFilters.market.value,
-            gnodeb: selectedFilters.gnodeb.value,
-            kpi_name: id,
-            startdate: selectedFilters.dateRange.startDate.toISOString().split("T")[0],
-            enddate: selectedFilters.dateRange.endDate.toISOString().split("T")[0],
-          });
+        const layer = overlayLayers[id];
+        const source = layer.getSource();
+        if (!source?.clear) return;
 
-          // Update the layer with the received data
-          if (response && overlayLayers?.[id]) {
-            const layer = overlayLayers[id];
-            if (layer && typeof layer.getSource === "function") {
-              const source = layer.getSource();
-              if (source && typeof source.clear === "function") {
-                source.clear(); // Clear existing features
+        source.clear();
+        const features = response
+          .map((item) => createFeature(item, id, metricConfigs[id]))
+          .filter(Boolean);
 
-                // Calculate min and max values for color scaling
-                const values = response.map((item) => item[id]); // Use the layer id (rec_cnt, erab_drop_pct, etc.)
-                // const minValue = Math.min(...values);
-                // const maxValue = Math.max(...values);
-                const minValue = values.reduce((min, value) => Math.min(min, value), Infinity);
-                const maxValue = values.reduce((max, value) => Math.max(max, value), -Infinity);
-                const midValue = (minValue + maxValue) / 2;
+        source.addFeatures(features);
+        layer.setVisible(true);
+        layer.setStyle((feature) => {
+          const color = feature.get("color");
+          const text = feature.get("text");
+          const textStyle = feature.get("textStyle");
+          return color ? createFeatureStyle(color, text, textStyle) : null;
+        });
 
-                console.log("Value ranges for", id, ":", { minValue, maxValue, midValue, values });
-
-                // Create and add features for each h3 index
-                const features = response.map((item) => {
-                  // Get h3 hexagon coordinates
-                  const hexCoords = h3.cellToBoundary(item.h3_index, true); // true for GeoJSON format
-
-                  // Convert coordinates to OpenLayers format
-                  const coordinates = [hexCoords.map(([lng, lat]) => fromLonLat([lng, lat]))];
-
-                  // Create feature
-                  const feature = new Feature({
-                    geometry: new Polygon(coordinates),
-                  });
-
-                  const value = item[id]; // Use the layer id to get the correct value
-                  // Calculate normalized value between 0 and 1
-                  const normalizedValue = (value - minValue) / (maxValue - minValue);
-
-                  // Set the metric value as a property
-                  feature.set(id, value);
-
-                  if (!value) return null;
-                  const config = metricConfigs[layerId];
-                  if (!config) return null;
-                  const [r, g, b] = getColorForValue(value, config);
-                  // Set color and text style properties
-                  feature.set("color", `rgba(${r}, ${g}, ${b})`);
-                  feature.set("geobin", item.h3_index);
-                  if (typeof value === "number") {
-                    feature.set("text", value.toFixed(2).toString());
-                  } else if (typeof value === "string") {
-                    feature.set("text", value);
-                  } else {
-                    feature.set("text", "Invalid value");
-                  }
-                  feature.set("textStyle", {
-                    fill: "white",
-                    stroke: "black",
-                    strokeWidth: 2,
-                    font: "12px sans-serif",
-                  });
-
-                  return feature;
-                });
-
-                // Add all features to the source
-                const validFeatures = features.filter((feature) => feature !== null);
-                source.addFeatures(validFeatures);
-
-                // Make sure the layer is visible first
-                layer.setVisible(true);
-
-                // Update layer style to include text
-                layer.setStyle((feature) => {
-                  const color = feature.get("color");
-                  const text = feature.get("text");
-                  const textStyle = feature.get("textStyle");
-
-                  if (color) {
-                    const fillColor = color;
-                    const strokeColor = color.replace(/,[^,]+\)/, ",1)"); // Set full opacity for stroke
-
-                    return [
-                      new Style({
-                        fill: new Fill({
-                          color: fillColor,
-                        }),
-                        stroke: new Stroke({
-                          color: strokeColor,
-                          width: 1,
-                        }),
-                      }),
-                      new Style({
-                        text: new Text({
-                          text: text,
-                          fill: new Fill({
-                            color: textStyle.fill,
-                          }),
-                          stroke: new Stroke({
-                            color: textStyle.stroke,
-                            width: textStyle.strokeWidth,
-                          }),
-                          font: textStyle.font,
-                          textAlign: "center",
-                          textBaseline: "middle",
-                        }),
-                      }),
-                    ];
-                  }
-                });
-
-                // Wait for the next frame to ensure features are rendered
-                setTimeout(() => {
-                  // Calculate extent from all features
-                  const extent = source.getExtent();
-                  console.log("Calculated extent:", extent);
-
-                  // Check if extent is valid (not empty/infinite)
-                  if (extent && extent.every((coord) => Number.isFinite(coord))) {
-                    console.log("Fitting to extent:", extent);
-                    mapInstance.getView().fit(extent, {
-                      padding: [50, 50, 50, 50],
-                      duration: 1000,
-                      maxZoom: 15, // Prevent zooming in too far
-                    });
-                  } else {
-                    console.warn("Invalid extent:", extent);
-                  }
-                }, 100);
-              }
-            }
+        setTimeout(() => {
+          const extent = source.getExtent();
+          if (extent?.every((coord) => Number.isFinite(coord))) {
+            mapInstance.getView().fit(extent, {
+              padding: [50, 50, 50, 50],
+              duration: 1000,
+              maxZoom: 15,
+            });
           }
-        } catch (error) {
-          console.error("Error fetching Truecall data:", error);
-          return;
-        }
+        }, 100);
+      } catch (error) {
+        console.error("Error fetching Truecall data:", error);
       }
+    },
+    [selectedFilters, overlayLayers, mapInstance]
+  );
 
-      // Add to added layers set
-      setAddedLayers((prev) => {
-        const newSet = new Set(prev);
-        newSet.add(id);
-        return newSet;
-      });
-
-      // Update visibility
-      setLayerVisibility((prev) => {
-        const newState = {
-          ...prev,
-          [id]: true,
-        };
-        console.log("Updated layer visibility state:", newState);
-        return newState;
-      });
-      setSelectedMetric(id);
-
-      // Update chart visibility for UG layers
-      if (option && option.category === "ug") {
-        // Map layer IDs to chart titles
-        const chartTitleMap = {
-          user_count: "User Count",
-          avg_dl_latency: "Avg DL Latency",
-          total_dl_volume: "Total DL Volume",
-          total_ul_volume: "Total UL Volume",
-          avg_nr_dl_colume_share: "Avg NR DL Volume Share",
-          avg_nr_ul_volume_share: "Avg NR UL Volume Share",
-          dl_connections_count: "DL Connections Count",
-          ul_connections_count: "UL Connections Count",
-          p10_dl_speed: "P10 DL Speed",
-          p10_ul_speed: "P10 UL Speed",
-          p50_dl_speed: "P50 DL Speed",
-          p50_ul_speed: "P50 UL Speed",
-        };
-
-        const chartTitle = chartTitleMap[id];
-        if (chartTitle) {
-          updateChartVisibility(chartTitle);
-        }
-      }
-
-      // Handle the layer
+  const handleLayerAdd = useCallback(
+    (id) => {
       if (!overlayLayers?.[id]) {
-        console.log("Layer not in overlayLayers, adding from defaultLayers");
         const layer = defaultLayers[id];
         if (layer) {
-          try {
-            // Set visibility before adding to map
-            layer.setVisible(true);
-            console.log("Layer visibility set to true");
-
-            // Add layer to map
-            mapInstance.addLayer(layer);
-            console.log("Layer added to map successfully");
-
-            // Update overlayLayers
-            setOverlayLayers((prev) => {
-              const newLayers = {
-                ...prev,
-                [id]: layer,
-              };
-              console.log("Updated overlay layers:", newLayers);
-              return newLayers;
-            });
-
-            // Force a re-render of the layer
-            layer.changed();
-          } catch (error) {
-            console.error("Error adding layer to map:", error);
-          }
-        } else {
-          console.warn("Layer not found in defaultLayers:", id);
-        }
-      } else {
-        console.log("Layer already exists in overlayLayers");
-        if (overlayLayers[id]) {
-          const layer = overlayLayers[id];
           layer.setVisible(true);
-          console.log("Layer visibility set to true for existing layer");
-          // Force a re-render of the layer
+          mapInstance.addLayer(layer);
+          setOverlayLayers((prev) => ({ ...prev, [id]: layer }));
           layer.changed();
         }
+      } else if (overlayLayers[id]) {
+        overlayLayers[id].setVisible(true);
+        overlayLayers[id].changed();
+      }
+    },
+    [overlayLayers, mapInstance, setOverlayLayers]
+  );
+
+  const addData = useCallback(
+    async (layerId) => {
+      const option = searchOptions.find(
+        (opt) => opt.id === layerId || opt.label.toLowerCase().includes(layerId.toLowerCase())
+      );
+
+      if (!option) {
+        console.warn("No matching option found for:", layerId);
+        return;
+      }
+
+      const { id } = option;
+      const config = getVisualizationConfig(id);
+      let chartTitles;
+
+      // Handle different modes
+      switch (config.mode) {
+        case "chart":
+          // Handle chart-only visualizations (e.g., VPI Analysis)
+          await handleVPIAnalysis();
+          break;
+
+        case "chartandmap":
+          // Handle combined chart and map visualizations (UG metrics)
+          setAddedLayers((prev) => new Set([...prev, id]));
+          setLayerVisibility((prev) => ({ ...prev, [id]: true }));
+          setSelectedMetric(id);
+          handleLayerAdd(id);
+
+          // Update associated chart
+          chartTitles = getChartTitles(id);
+          chartTitles.forEach((title) => updateChartVisibility(title));
+          break;
+
+        case "map":
+          // Handle map-only visualizations (Special layers and Truecall)
+          if (SPECIAL_LAYERS.includes(id)) {
+            handleSpecialLayer(id);
+          } else if (Object.keys(truecallParameters).includes(id)) {
+            await handleTruecallLayer(id);
+          }
+          setAddedLayers((prev) => new Set([...prev, id]));
+          setLayerVisibility((prev) => ({ ...prev, [id]: true }));
+          setSelectedMetric(id);
+          handleLayerAdd(id);
+          break;
+
+        default:
+          console.warn("Unknown visualization mode:", config.mode);
+          return;
       }
 
       setInputValue("");
-    } else {
-      console.warn("No matching option found for:", layerId);
-    }
-  };
+    },
+    [
+      searchOptions,
+      handleVPIAnalysis,
+      handleSpecialLayer,
+      handleTruecallLayer,
+      handleLayerAdd,
+      setAddedLayers,
+      setLayerVisibility,
+      setSelectedMetric,
+      updateChartVisibility,
+    ]
+  );
 
   const handleOptionSelect = (event, option) => {
     if (option) {
       setSelectedOption(option);
-      if (option.id === "vpi_analysis") {
-        // Show confirmation dialog for VPI Analysis
-        setOpenConfirm(true);
-      } else {
-        setOpenConfirm(true);
-      }
+      setOpenConfirm(true);
     }
   };
 
   const handleConfirm = () => {
     if (selectedOption) {
-      if (selectedOption.id === "vpi_analysis") {
-        addData(selectedOption.id);
-      } else {
-        addData(selectedOption.id);
-      }
+      addData(selectedOption.id);
     }
     setOpenConfirm(false);
     setSelectedOption(null);
@@ -540,19 +412,22 @@ const AutocompleteSearch = () => {
 
       <Dialog open={openConfirm} onClose={handleCancel}>
         <DialogTitle>
-          {selectedOption?.id === "vpi_analysis" ? "Add VPI Chart" : "Add Layer"}
+          {getVisualizationConfig(selectedOption?.id).mode === "chart" ? "Add Chart" : "Add Layer"}
         </DialogTitle>
         <DialogContent>
-          {selectedOption?.id === "vpi_analysis"
-            ? "Are you sure you want to add VPI Chart?"
-            : `Are you sure you want to add ${selectedOption?.label} to the map and layer list?`}
+          {selectedOption?.id
+            ? VISUALIZATION_CONFIGS[selectedOption.id]?.description ||
+              `Are you sure you want to add ${selectedOption.label}?`
+            : ""}
         </DialogContent>
         <DialogActions>
           <MDButton onClick={handleCancel} variant="outlined" color="dark">
             Cancel
           </MDButton>
           <MDButton onClick={handleConfirm} variant="outlined" color="dark">
-            {selectedOption?.id === "vpi_analysis" ? "Add Chart" : "Add Layer"}
+            {getVisualizationConfig(selectedOption?.id).mode === "chart"
+              ? "Add Chart"
+              : "Add Layer"}
           </MDButton>
         </DialogActions>
       </Dialog>

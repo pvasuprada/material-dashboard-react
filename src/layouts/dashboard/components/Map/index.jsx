@@ -13,16 +13,16 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
+// MUI imports
+import { CircularProgress, Fab } from "@mui/material";
+import Card from "@mui/material/Card";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { useTheme } from "@mui/material/styles";
+
 // React and Redux imports
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
-// Material UI imports
-import Card from "@mui/material/Card";
-import { CircularProgress, Fab } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 // OpenLayers imports
 import "ol/ol.css";
@@ -51,7 +51,7 @@ import { useMaterialUIController } from "context";
 import { MapControls } from "./components";
 import { createBasemaps } from "./config/basemaps";
 import { defaultLayers, metricConfigs, getColorForValue } from "./config/layers";
-import { MapProvider, useMap } from "../../../../context/MapContext";
+import { useMap } from "../../../../context/MapContext";
 import SiteGrid from "../SiteGrid";
 
 // Redux actions and selectors
@@ -72,33 +72,27 @@ import {
 // Material Dashboard 2 React components
 import MDTypography from "components/MDTypography";
 import MDAlert from "components/MDAlert";
-import { Menu, MenuItem, Checkbox, FormControlLabel, Radio } from "@mui/material";
 import { MapProvider as MapProviderContext } from "../../../../context/MapContext";
 import { MAPBOX_API_KEY } from "./config/keys";
 
-// Custom styles for the controls
-const controlStyle = {
-  background: "rgba(255,255,255,0.9)",
-  padding: "2px",
-  margin: "5px",
-  borderRadius: "4px",
-  cursor: "pointer",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-  border: "none",
-  width: "32px",
-  height: "32px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-};
-
-const controlsContainerStyle = {
-  position: "absolute",
-  top: "10px",
-  right: "10px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "5px",
+// Constants
+const POPUP_STYLES = {
+  base: {
+    display: "none",
+    position: "absolute",
+    padding: "10px",
+    borderRadius: "4px",
+    minWidth: "150px",
+    zIndex: 1000,
+    fontSize: "10px",
+  },
+  closeButton: {
+    position: "absolute",
+    right: "5px",
+    top: "5px",
+    cursor: "pointer",
+    fontSize: "16px",
+  },
 };
 
 function MapContent() {
