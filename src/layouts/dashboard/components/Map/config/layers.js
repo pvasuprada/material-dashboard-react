@@ -421,9 +421,4 @@ const metricConfigs = Object.entries(layerConfigs).reduce((acc, [id, config]) =>
   return acc;
 }, {});
 
-// Export special layers list
-export const SPECIAL_LAYERS = Object.entries(layerConfigs)
-  .filter(([, config]) => config.type === "vector" || config.type === "wms")
-  .map(([id]) => id);
-
 export { metricConfigs, defaultLayers, layerGroups, getColorForValue, layerConfigs };

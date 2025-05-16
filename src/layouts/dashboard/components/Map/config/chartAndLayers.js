@@ -1,4 +1,9 @@
-import { SPECIAL_LAYERS, layerConfigs } from "./layers";
+import { layerConfigs } from "./layers";
+
+// Special layer types that don't have associated charts
+export const SPECIAL_LAYERS = Object.entries(layerConfigs)
+  .filter(([, config]) => config.type === "vector" || config.type === "wms")
+  .map(([id]) => id);
 
 // Chart title mappings for UG metrics
 export const CHART_TITLE_MAP = {
@@ -59,5 +64,3 @@ export const getChartTitles = (id) => {
   }
   return CHART_TITLE_MAP[id] ? [CHART_TITLE_MAP[id]] : [];
 };
-
-export { SPECIAL_LAYERS };
