@@ -289,15 +289,120 @@ export const api = {
 
       console.log("Sample VPI data:", sampleData);
       return sampleData;
+    } catch (error) {
+      console.error("Error in getVPIData:", error);
+      throw error;
+    }
+  },
 
-      // Uncomment the below code and remove the sample data when the API is ready
-      /*const response = await apiClient.post("/minerva-service/vpidata", {
-        enodeb: 68793,
-        sec: 2,
+  getNQESScores: async (params) => {
+    console.log("Getting nQES scores with params:", params);
+    try {
+      // Sample data instead of API call
+      const sampleData = {
+        data: [
+          // Overall Score
+          {
+            rpt_dt: "2024-01-01",
+            scorename: "gnb_du_sect_carr_score",
+            score_value: 85.5,
+          },
+          {
+            rpt_dt: "2024-01-02",
+            scorename: "gnb_du_sect_carr_score",
+            score_value: 87.2,
+          },
+          {
+            rpt_dt: "2024-01-03",
+            scorename: "gnb_du_sect_carr_score",
+            score_value: 86.8,
+          },
+          // 5G Subscore
+          {
+            rpt_dt: "2024-01-01",
+            scorename: "gnb_du_sect_carr_subscore_5g",
+            score_value: 92.1,
+          },
+          {
+            rpt_dt: "2024-01-02",
+            scorename: "gnb_du_sect_carr_subscore_5g",
+            score_value: 91.8,
+          },
+          {
+            rpt_dt: "2024-01-03",
+            scorename: "gnb_du_sect_carr_subscore_5g",
+            score_value: 93.2,
+          },
+          // Capacity Subscore
+          {
+            rpt_dt: "2024-01-01",
+            scorename: "gnb_du_sect_carr_subscore_capacity",
+            score_value: 78.4,
+          },
+          {
+            rpt_dt: "2024-01-02",
+            scorename: "gnb_du_sect_carr_subscore_capacity",
+            score_value: 80.1,
+          },
+          {
+            rpt_dt: "2024-01-03",
+            scorename: "gnb_du_sect_carr_subscore_capacity",
+            score_value: 79.5,
+          },
+          // Backhaul Score
+          {
+            rpt_dt: "2024-01-01",
+            scorename: "gnb_du_sect_carr_subscore_ethernet_backhaul",
+            score_value: 88.9,
+          },
+          {
+            rpt_dt: "2024-01-02",
+            scorename: "gnb_du_sect_carr_subscore_ethernet_backhaul",
+            score_value: 89.2,
+          },
+          {
+            rpt_dt: "2024-01-03",
+            scorename: "gnb_du_sect_carr_subscore_ethernet_backhaul",
+            score_value: 88.7,
+          },
+          // Reliability Score
+          {
+            rpt_dt: "2024-01-01",
+            scorename: "gnb_du_sect_carr_subscore_reliability",
+            score_value: 94.2,
+          },
+          {
+            rpt_dt: "2024-01-02",
+            scorename: "gnb_du_sect_carr_subscore_reliability",
+            score_value: 93.8,
+          },
+          {
+            rpt_dt: "2024-01-03",
+            scorename: "gnb_du_sect_carr_subscore_reliability",
+            score_value: 94.5,
+          },
+        ],
+      };
+
+      // Simulate network delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      console.log("Returning sample nQES data:", sampleData);
+      return sampleData;
+
+      // Original API call code commented out
+      /*const response = await apiClient.post("/nqes-scores-analysis", {
+        market: params?.market || "0",
+        gnbId: params?.gnbId || "00000001",
+        sector: params?.sector || "1",
+        carrier: params?.carrier || "1",
+        startDate: params?.startDate,
+        endDate: params?.endDate,
+        kpiName: params?.kpiName || "gnb_du_sect_carr",
       });
       return response.data;*/
     } catch (error) {
-      console.error("Error in getVPIData:", error);
+      console.error("Error fetching nQES scores:", error);
       throw error;
     }
   },

@@ -148,5 +148,90 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       visible: false,
       data: vpiData,
     },
+    {
+      type: "line",
+      color: isDarkMode ? "dark" : "light",
+      fontColor: isDarkMode ? "white" : "dark",
+      title: "nQES Overall Score",
+      visible: false,
+      showLabels: true,
+      gridSize: { xs: 12, md: 6, lg: 4 },
+      data: {
+        labels: chartData.find((chart) => chart.categoryName === "nQES_Score")?.dates || [],
+        datasets: {
+          label: "Score",
+          data: chartData.find((chart) => chart.categoryName === "nQES_Score")?.data || [],
+        },
+      },
+    },
+    {
+      type: "line",
+      color: isDarkMode ? "dark" : "light",
+      fontColor: isDarkMode ? "white" : "dark",
+      title: "nQES 5G Subscore",
+      visible: false,
+      showLabels: true,
+      gridSize: { xs: 12, md: 6, lg: 4 },
+      data: {
+        labels: chartData.find((chart) => chart.categoryName === "nQES_5G_Subscore")?.dates || [],
+        datasets: {
+          label: "5G Subscore",
+          data: chartData.find((chart) => chart.categoryName === "nQES_5G_Subscore")?.data || [],
+        },
+      },
+    },
+    {
+      type: "line",
+      color: isDarkMode ? "dark" : "light",
+      fontColor: isDarkMode ? "white" : "dark",
+      title: "nQES Capacity Subscore",
+      visible: false,
+      showLabels: true,
+      gridSize: { xs: 12, md: 6, lg: 4 },
+      data: {
+        labels:
+          chartData.find((chart) => chart.categoryName === "nQES_Capacity_Subscore")?.dates || [],
+        datasets: {
+          label: "Capacity Subscore",
+          data:
+            chartData.find((chart) => chart.categoryName === "nQES_Capacity_Subscore")?.data || [],
+        },
+      },
+    },
+    {
+      type: "line",
+      color: isDarkMode ? "dark" : "light",
+      fontColor: isDarkMode ? "white" : "dark",
+      title: "nQES Backhaul Score",
+      visible: false,
+      showLabels: true,
+      gridSize: { xs: 12, md: 6, lg: 4 },
+      data: {
+        labels:
+          chartData.find((chart) => chart.categoryName === "nQES_Backhaul_Score")?.dates || [],
+        datasets: {
+          label: "Backhaul Score",
+          data: chartData.find((chart) => chart.categoryName === "nQES_Backhaul_Score")?.data || [],
+        },
+      },
+    },
+    {
+      type: "line",
+      color: isDarkMode ? "dark" : "light",
+      fontColor: isDarkMode ? "white" : "dark",
+      title: "nQES Reliability Score",
+      visible: false,
+      showLabels: true,
+      gridSize: { xs: 12, md: 6, lg: 4 },
+      data: {
+        labels:
+          chartData.find((chart) => chart.categoryName === "nQES_Reliability_Score")?.dates || [],
+        datasets: {
+          label: "Reliability Score",
+          data:
+            chartData.find((chart) => chart.categoryName === "nQES_Reliability_Score")?.data || [],
+        },
+      },
+    },
   ],
 });

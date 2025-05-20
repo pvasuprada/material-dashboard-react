@@ -15,6 +15,7 @@ export function InsightsProvider({ children }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const [vpiData, setVPIData] = useState(null);
+  const [nqesData, setNQESData] = useState(null);
 
   const [chartsData, setChartsData] = useState(
     getChartsConfig(chartData, xData, null, darkMode).charts
@@ -29,8 +30,64 @@ export function InsightsProvider({ children }) {
 
   // Update chartsData when Redux state changes
   useEffect(() => {
-    console.log("Updating charts with new data:", { chartData, xData, vpiData, darkMode });
-    const newChartsData = getChartsConfig(chartData, xData, vpiData, darkMode).charts;
+    console.log("Updating charts with new data:", {
+      chartData,
+      xData,
+      vpiData,
+      nqesData,
+      darkMode,
+    });
+
+    // Transform nQES data if available
+    let transformedChartData = [...(chartData || [])];
+    if (nqesData?.data) {
+      const nqesScores = {
+        nQES_Score: [],
+        nQES_5G_Subscore: [],
+        nQES_Capacity_Subscore: [],
+        nQES_Backhaul_Score: [],
+        nQES_Reliability_Score: [],
+        dates: [],
+      };
+
+      nqesData.data.forEach((item) => {
+        const date = new Date(item.rpt_dt).toLocaleDateString();
+        if (!nqesScores.dates.includes(date)) {
+          nqesScores.dates.push(date);
+        }
+
+        switch (item.scorename) {
+          case "gnb_du_sect_carr_score":
+            nqesScores.nQES_Score.push(item.score_value);
+            break;
+          case "gnb_du_sect_carr_subscore_5g":
+            nqesScores.nQES_5G_Subscore.push(item.score_value);
+            break;
+          case "gnb_du_sect_carr_subscore_capacity":
+            nqesScores.nQES_Capacity_Subscore.push(item.score_value);
+            break;
+          case "gnb_du_sect_carr_subscore_ethernet_backhaul":
+            nqesScores.nQES_Backhaul_Score.push(item.score_value);
+            break;
+          case "gnb_du_sect_carr_subscore_reliability":
+            nqesScores.nQES_Reliability_Score.push(item.score_value);
+            break;
+        }
+      });
+
+      // Add nQES data to transformedChartData
+      Object.entries(nqesScores).forEach(([key, data]) => {
+        if (key !== "dates") {
+          transformedChartData.push({
+            categoryName: key,
+            data: data,
+            dates: nqesScores.dates,
+          });
+        }
+      });
+    }
+
+    const newChartsData = getChartsConfig(transformedChartData, xData, vpiData, darkMode).charts;
     console.log("New charts data:", newChartsData);
 
     // Preserve visibility states from current charts
@@ -47,7 +104,16 @@ export function InsightsProvider({ children }) {
 
     // Update dashboard data
     setDashboardData(getDashboardConfig(statistics));
-  }, [chartData, xData, vpiData, darkMode, statistics]);
+  }, [chartData, xData, vpiData, nqesData, darkMode, statistics]);
+
+  const fetchNQESData = async (params) => {
+    try {
+      const response = await api.getNQESScores(params);
+      setNQESData(response);
+    } catch (error) {
+      console.error("Error fetching nQES data:", error);
+    }
+  };
 
   const updateInsightVisibility = (id) => {
     setDashboardData((prev) => ({
@@ -82,6 +148,8 @@ export function InsightsProvider({ children }) {
     updateInsightVisibility,
     updateChartVisibility,
     setVPIData,
+    fetchNQESData,
+    nqesData,
   };
 
   return <InsightsContext.Provider value={value}>{children}</InsightsContext.Provider>;

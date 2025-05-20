@@ -28,6 +28,9 @@ import {
   VISUALIZATION_CONFIGS,
   getVisualizationConfig,
   getChartTitles,
+  NQES_CHARTS,
+  NQES_KPI_MAPPING,
+  NQES_VISUALIZATION_CONFIG,
 } from "layouts/dashboard/components/Map/config/chartAndLayers";
 import {
   metricConfigs,
@@ -141,6 +144,7 @@ const SearchOptions = () => {
       description: VISUALIZATION_CONFIGS[id]?.description || `Add ${id} layer to map`,
       category: VISUALIZATION_CONFIGS[id]?.category || "coverage",
     })),
+    ...NQES_CHARTS,
   ];
 
   const metricOptions = Object.entries(metricConfigs).map(([id, config]) => ({
@@ -166,9 +170,51 @@ const AutocompleteSearch = () => {
     setSelectedMetric,
     setAddedLayers,
   } = useMap();
-  const { updateChartVisibility, setVPIData } = useInsights();
+  const { updateChartVisibility, setVPIData, fetchNQESData } = useInsights();
   const selectedFilters = useSelector((state) => state.filter.selectedFilters);
   const searchOptions = SearchOptions();
+
+  const handleNQESCharts = useCallback(
+    async (chartId) => {
+      try {
+        const kpiName = NQES_KPI_MAPPING[chartId];
+        if (!kpiName) {
+          console.error("No KPI mapping found for chart:", chartId);
+          return;
+        }
+
+        console.log("Fetching nQES data for:", {
+          chartId,
+          kpiName,
+          filters: selectedFilters,
+        });
+
+        await fetchNQESData({
+          market: selectedFilters.market?.value || "0",
+          gnbId: selectedFilters.gnodeb?.value || "00000001",
+          sector: selectedFilters.sector?.value || "1",
+          carrier: "1",
+          startDate:
+            selectedFilters.dateRange?.startDate?.toISOString().split("T")[0] || "2024-01-01",
+          endDate: selectedFilters.dateRange?.endDate?.toISOString().split("T")[0] || "2024-01-03",
+          kpiName: "gnb_du_sect_carr", // Base KPI name
+        });
+
+        // Find the corresponding chart configuration
+        const chartConfig = NQES_CHARTS.find((chart) => chart.id === chartId);
+        if (chartConfig) {
+          console.log("Making chart visible:", chartConfig.label);
+          // Use the exact chart title from the configuration
+          updateChartVisibility(chartConfig.label, true);
+        } else {
+          console.error("Chart configuration not found for:", chartId);
+        }
+      } catch (error) {
+        console.error("Error in handleNQESCharts:", error);
+      }
+    },
+    [selectedFilters, fetchNQESData, updateChartVisibility]
+  );
 
   const handleVPIAnalysis = useCallback(async () => {
     try {
@@ -277,30 +323,35 @@ const AutocompleteSearch = () => {
       }
 
       const { id } = option;
+
+      // Handle nQES charts
+      if (id.startsWith("nqes_")) {
+        console.log("Handling nQES chart:", id);
+        await handleNQESCharts(id);
+        setInputValue("");
+        return;
+      }
+
       const config = getVisualizationConfig(id);
       let chartTitles;
 
       // Handle different modes
       switch (config.mode) {
         case "chart":
-          // Handle chart-only visualizations (e.g., VPI Analysis)
           await handleVPIAnalysis();
           break;
 
         case "chartandmap":
-          // Handle combined chart and map visualizations (UG metrics)
           setAddedLayers((prev) => new Set([...prev, id]));
           setLayerVisibility((prev) => ({ ...prev, [id]: true }));
           setSelectedMetric(id);
           handleLayerAdd(id);
 
-          // Update associated chart
           chartTitles = getChartTitles(id);
           chartTitles.forEach((title) => updateChartVisibility(title));
           break;
 
         case "map":
-          // Handle map-only visualizations (Special layers and Truecall)
           if (SPECIAL_LAYERS.includes(id)) {
             handleSpecialLayer(id);
           } else if (Object.keys(truecallParameters).includes(id)) {
@@ -325,6 +376,7 @@ const AutocompleteSearch = () => {
       handleSpecialLayer,
       handleTruecallLayer,
       handleLayerAdd,
+      handleNQESCharts,
       setAddedLayers,
       setLayerVisibility,
       setSelectedMetric,
@@ -337,6 +389,13 @@ const AutocompleteSearch = () => {
       setSelectedOption(option);
       setOpenConfirm(true);
     }
+  };
+
+  const getVisualizationModeForOption = (option) => {
+    if (option.id.startsWith("nqes_")) {
+      return NQES_VISUALIZATION_CONFIG;
+    }
+    return getVisualizationConfig(option.id);
   };
 
   const handleConfirm = () => {
@@ -412,20 +471,19 @@ const AutocompleteSearch = () => {
 
       <Dialog open={openConfirm} onClose={handleCancel}>
         <DialogTitle>
-          {getVisualizationConfig(selectedOption?.id).mode === "chart" ? "Add Chart" : "Add Layer"}
+          {selectedOption && getVisualizationModeForOption(selectedOption).mode === "chart"
+            ? "Add Chart"
+            : "Add Layer"}
         </DialogTitle>
         <DialogContent>
-          {selectedOption?.id
-            ? VISUALIZATION_CONFIGS[selectedOption.id]?.description ||
-              `Are you sure you want to add ${selectedOption.label}?`
-            : ""}
+          {selectedOption?.description || "Are you sure you want to add this visualization?"}
         </DialogContent>
         <DialogActions>
           <MDButton onClick={handleCancel} variant="outlined" color="dark">
             Cancel
           </MDButton>
           <MDButton onClick={handleConfirm} variant="outlined" color="dark">
-            {getVisualizationConfig(selectedOption?.id).mode === "chart"
+            {selectedOption && getVisualizationModeForOption(selectedOption).mode === "chart"
               ? "Add Chart"
               : "Add Layer"}
           </MDButton>
