@@ -197,7 +197,7 @@ const AutocompleteSearch = () => {
           startDate:
             selectedFilters.dateRange?.startDate?.toISOString().split("T")[0] || "2024-01-01",
           endDate: selectedFilters.dateRange?.endDate?.toISOString().split("T")[0] || "2024-01-03",
-          kpiName: "gnb_du_sect_carr", // Base KPI name
+          kpiName: kpiName,
         });
 
         // Find the corresponding chart configuration

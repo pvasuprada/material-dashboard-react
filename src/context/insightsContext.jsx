@@ -56,7 +56,7 @@ export function InsightsProvider({ children }) {
           nqesScores.dates.push(date);
         }
 
-        switch (item.scorename) {
+        switch (item.score_name) {
           case "gnb_du_sect_carr_score":
             nqesScores.nQES_Score.push(item.score_value);
             break;

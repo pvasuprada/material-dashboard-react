@@ -298,96 +298,49 @@ export const api = {
   getNQESScores: async (params) => {
     console.log("Getting nQES scores with params:", params);
     try {
-      // Sample data instead of API call
+      // Sample data generator based on KPI name
+      const generateSampleData = (kpiName) => {
+        const dates = ["2024-01-01", "2024-01-02", "2024-01-03"];
+        let baseValue;
+
+        // Set base value based on KPI type
+        switch (kpiName) {
+          case "gnb_du_sect_carr_score":
+            baseValue = 85;
+            break;
+          case "gnb_du_sect_carr_subscore_5g":
+            baseValue = 92;
+            break;
+          case "gnb_du_sect_carr_subscore_capacity":
+            baseValue = 78;
+            break;
+          case "gnb_du_sect_carr_subscore_ethernet_backhaul":
+            baseValue = 88;
+            break;
+          case "gnb_du_sect_carr_subscore_reliability":
+            baseValue = 94;
+            break;
+          default:
+            baseValue = 80;
+        }
+
+        // Generate data points with small variations
+        return dates.map((date) => ({
+          rpt_dt: date,
+          score_name: kpiName,
+          score_value: baseValue + (Math.random() * 2 - 1), // Add random variation of ±1
+        }));
+      };
+
+      // Generate data only for the requested KPI
       const sampleData = {
-        data: [
-          // Overall Score
-          {
-            rpt_dt: "2024-01-01",
-            scorename: "gnb_du_sect_carr_score",
-            score_value: 85.5,
-          },
-          {
-            rpt_dt: "2024-01-02",
-            scorename: "gnb_du_sect_carr_score",
-            score_value: 87.2,
-          },
-          {
-            rpt_dt: "2024-01-03",
-            scorename: "gnb_du_sect_carr_score",
-            score_value: 86.8,
-          },
-          // 5G Subscore
-          {
-            rpt_dt: "2024-01-01",
-            scorename: "gnb_du_sect_carr_subscore_5g",
-            score_value: 92.1,
-          },
-          {
-            rpt_dt: "2024-01-02",
-            scorename: "gnb_du_sect_carr_subscore_5g",
-            score_value: 91.8,
-          },
-          {
-            rpt_dt: "2024-01-03",
-            scorename: "gnb_du_sect_carr_subscore_5g",
-            score_value: 93.2,
-          },
-          // Capacity Subscore
-          {
-            rpt_dt: "2024-01-01",
-            scorename: "gnb_du_sect_carr_subscore_capacity",
-            score_value: 78.4,
-          },
-          {
-            rpt_dt: "2024-01-02",
-            scorename: "gnb_du_sect_carr_subscore_capacity",
-            score_value: 80.1,
-          },
-          {
-            rpt_dt: "2024-01-03",
-            scorename: "gnb_du_sect_carr_subscore_capacity",
-            score_value: 79.5,
-          },
-          // Backhaul Score
-          {
-            rpt_dt: "2024-01-01",
-            scorename: "gnb_du_sect_carr_subscore_ethernet_backhaul",
-            score_value: 88.9,
-          },
-          {
-            rpt_dt: "2024-01-02",
-            scorename: "gnb_du_sect_carr_subscore_ethernet_backhaul",
-            score_value: 89.2,
-          },
-          {
-            rpt_dt: "2024-01-03",
-            scorename: "gnb_du_sect_carr_subscore_ethernet_backhaul",
-            score_value: 88.7,
-          },
-          // Reliability Score
-          {
-            rpt_dt: "2024-01-01",
-            scorename: "gnb_du_sect_carr_subscore_reliability",
-            score_value: 94.2,
-          },
-          {
-            rpt_dt: "2024-01-02",
-            scorename: "gnb_du_sect_carr_subscore_reliability",
-            score_value: 93.8,
-          },
-          {
-            rpt_dt: "2024-01-03",
-            scorename: "gnb_du_sect_carr_subscore_reliability",
-            score_value: 94.5,
-          },
-        ],
+        data: generateSampleData(params.kpiName),
       };
 
       // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      console.log("Returning sample nQES data:", sampleData);
+      console.log("Returning sample nQES data for KPI:", params.kpiName, sampleData);
       return sampleData;
 
       // Original API call code commented out
