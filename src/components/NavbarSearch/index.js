@@ -177,6 +177,9 @@ const AutocompleteSearch = () => {
   const handleNQESCharts = useCallback(
     async (chartId) => {
       try {
+        console.log("Starting handleNQESCharts with chartId:", chartId);
+
+        // Get the KPI name from the mapping
         const kpiName = NQES_KPI_MAPPING[chartId];
         if (!kpiName) {
           console.error("No KPI mapping found for chart:", chartId);
@@ -189,6 +192,7 @@ const AutocompleteSearch = () => {
           filters: selectedFilters,
         });
 
+        // Fetch new data for this specific chart
         await fetchNQESData({
           market: selectedFilters.market?.value || "0",
           gnbId: selectedFilters.gnodeb?.value || "00000001",
@@ -198,6 +202,7 @@ const AutocompleteSearch = () => {
             selectedFilters.dateRange?.startDate?.toISOString().split("T")[0] || "2024-01-01",
           endDate: selectedFilters.dateRange?.endDate?.toISOString().split("T")[0] || "2024-01-03",
           kpiName: kpiName,
+          chartId: chartId, // Pass chartId to identify which chart we're updating
         });
 
         // Find the corresponding chart configuration

@@ -1,11 +1,11 @@
 import PropTypes from "prop-types";
 import { createContext, useContext, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+
 import { useMaterialUIController } from "context";
 import { getChartsConfig } from "layouts/dashboard/data/chartsConfig";
 import { getDashboardConfig } from "layouts/dashboard/data/dashboardConfig";
 import api from "services/api";
-import { transformVPIData } from "layouts/dashboard/data/transformers";
 
 const InsightsContext = createContext();
 
@@ -15,7 +15,7 @@ export function InsightsProvider({ children }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const [vpiData, setVPIData] = useState(null);
-  const [nqesData, setNQESData] = useState(null);
+  const [nqesData, setNQESData] = useState({});
 
   const [chartsData, setChartsData] = useState(
     getChartsConfig(chartData, xData, null, darkMode).charts
@@ -40,54 +40,70 @@ export function InsightsProvider({ children }) {
 
     // Transform nQES data if available
     let transformedChartData = [...(chartData || [])];
-    if (nqesData?.data) {
-      const nqesScores = {
-        nQES_Score: [],
-        nQES_5G_Subscore: [],
-        nQES_Capacity_Subscore: [],
-        nQES_Backhaul_Score: [],
-        nQES_Reliability_Score: [],
-        dates: [],
-      };
 
-      nqesData.data.forEach((item) => {
-        const date = new Date(item.rpt_dt).toLocaleDateString();
-        if (!nqesScores.dates.includes(date)) {
-          nqesScores.dates.push(date);
-        }
+    // Handle all nQES data sets
+    if (Object.keys(nqesData).length > 0) {
+      console.log("Processing nQES data:", nqesData);
 
-        switch (item.score_name) {
-          case "gnb_du_sect_carr_score":
-            nqesScores.nQES_Score.push(item.score_value);
-            break;
-          case "gnb_du_sect_carr_subscore_5g":
-            nqesScores.nQES_5G_Subscore.push(item.score_value);
-            break;
-          case "gnb_du_sect_carr_subscore_capacity":
-            nqesScores.nQES_Capacity_Subscore.push(item.score_value);
-            break;
-          case "gnb_du_sect_carr_subscore_ethernet_backhaul":
-            nqesScores.nQES_Backhaul_Score.push(item.score_value);
-            break;
-          case "gnb_du_sect_carr_subscore_reliability":
-            nqesScores.nQES_Reliability_Score.push(item.score_value);
-            break;
+      // First collect all unique dates
+      const allDates = new Set();
+      Object.entries(nqesData).forEach(([chartId, dataset]) => {
+        if (dataset?.data) {
+          console.log(`Processing data for chart ${chartId}:`, dataset.data);
+          dataset.data.forEach((item) => {
+            allDates.add(new Date(item.rpt_dt).toLocaleDateString());
+          });
         }
       });
+      const sortedDates = Array.from(allDates).sort();
+      console.log("Collected dates:", sortedDates);
 
-      // Add nQES data to transformedChartData
-      Object.entries(nqesScores).forEach(([key, data]) => {
-        if (key !== "dates") {
+      // Process each nQES dataset separately
+      Object.entries(nqesData).forEach(([chartId, dataset]) => {
+        if (!dataset?.data) return;
+
+        console.log(`Processing dataset for ${chartId}`);
+
+        // Initialize data array for this chart
+        const chartValues = new Array(sortedDates.length).fill(null);
+
+        // Fill in the values
+        dataset.data.forEach((item) => {
+          const date = new Date(item.rpt_dt).toLocaleDateString();
+          const dateIndex = sortedDates.indexOf(date);
+          if (dateIndex === -1) return;
+
+          chartValues[dateIndex] = item.score_value;
+        });
+
+        // Create category name from the chart ID
+        const categoryName = chartId
+          .replace("nqes_", "NQES_")
+          .split("_")
+          .map((word) => {
+            if (word === "5g") return "5G";
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          })
+          .join("_");
+
+        console.log(`Adding data for ${categoryName}:`, {
+          values: chartValues,
+          dates: sortedDates,
+        });
+
+        // Add to transformed data if we have any non-null values
+        if (chartValues.some((value) => value !== null)) {
           transformedChartData.push({
-            categoryName: key,
-            data: data,
-            dates: nqesScores.dates,
+            categoryName: categoryName,
+            data: chartValues,
+            dates: sortedDates,
           });
         }
       });
     }
 
     const newChartsData = getChartsConfig(transformedChartData, xData, vpiData, darkMode).charts;
+    console.log("Final transformed chart data:", transformedChartData);
     console.log("New charts data:", newChartsData);
 
     // Preserve visibility states from current charts
@@ -95,10 +111,12 @@ export function InsightsProvider({ children }) {
       const updatedCharts = newChartsData.map((newChart) => {
         const existingChart = prevCharts.find((chart) => chart.title === newChart.title);
         if (existingChart) {
+          console.log(`Preserving visibility for ${newChart.title}: ${existingChart.visible}`);
           return { ...newChart, visible: existingChart.visible };
         }
         return newChart;
       });
+      console.log("Final updated charts:", updatedCharts);
       return updatedCharts;
     });
 
@@ -108,8 +126,19 @@ export function InsightsProvider({ children }) {
 
   const fetchNQESData = async (params) => {
     try {
+      console.log("Fetching nQES data with params:", params);
       const response = await api.getNQESScores(params);
-      setNQESData(response);
+      console.log("Received nQES response:", response);
+
+      // Store data by chartId to maintain multiple datasets
+      setNQESData((prev) => {
+        const newData = {
+          ...prev,
+          [params.chartId]: response,
+        };
+        console.log("Updated nqesData state:", newData);
+        return newData;
+      });
     } catch (error) {
       console.error("Error fetching nQES data:", error);
     }

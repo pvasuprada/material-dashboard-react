@@ -157,10 +157,10 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        labels: chartData.find((chart) => chart.categoryName === "nQES_Score")?.dates || [],
+        labels: chartData.find((chart) => chart.categoryName === "NQES_Overall_Score")?.dates || [],
         datasets: {
           label: "Score",
-          data: chartData.find((chart) => chart.categoryName === "nQES_Score")?.data || [],
+          data: chartData.find((chart) => chart.categoryName === "NQES_Overall_Score")?.data || [],
         },
       },
     },
@@ -173,10 +173,10 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       showLabels: true,
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
-        labels: chartData.find((chart) => chart.categoryName === "nQES_5G_Subscore")?.dates || [],
+        labels: chartData.find((chart) => chart.categoryName === "NQES_5G_Subscore")?.dates || [],
         datasets: {
           label: "5G Subscore",
-          data: chartData.find((chart) => chart.categoryName === "nQES_5G_Subscore")?.data || [],
+          data: chartData.find((chart) => chart.categoryName === "NQES_5G_Subscore")?.data || [],
         },
       },
     },
@@ -190,11 +190,11 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
         labels:
-          chartData.find((chart) => chart.categoryName === "nQES_Capacity_Subscore")?.dates || [],
+          chartData.find((chart) => chart.categoryName === "NQES_Capacity_Subscore")?.dates || [],
         datasets: {
           label: "Capacity Subscore",
           data:
-            chartData.find((chart) => chart.categoryName === "nQES_Capacity_Subscore")?.data || [],
+            chartData.find((chart) => chart.categoryName === "NQES_Capacity_Subscore")?.data || [],
         },
       },
     },
@@ -208,10 +208,10 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
         labels:
-          chartData.find((chart) => chart.categoryName === "nQES_Backhaul_Score")?.dates || [],
+          chartData.find((chart) => chart.categoryName === "NQES_Backhaul_Score")?.dates || [],
         datasets: {
           label: "Backhaul Score",
-          data: chartData.find((chart) => chart.categoryName === "nQES_Backhaul_Score")?.data || [],
+          data: chartData.find((chart) => chart.categoryName === "NQES_Backhaul_Score")?.data || [],
         },
       },
     },
@@ -225,11 +225,11 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       gridSize: { xs: 12, md: 6, lg: 4 },
       data: {
         labels:
-          chartData.find((chart) => chart.categoryName === "nQES_Reliability_Score")?.dates || [],
+          chartData.find((chart) => chart.categoryName === "NQES_Reliability_Score")?.dates || [],
         datasets: {
           label: "Reliability Score",
           data:
-            chartData.find((chart) => chart.categoryName === "nQES_Reliability_Score")?.data || [],
+            chartData.find((chart) => chart.categoryName === "NQES_Reliability_Score")?.data || [],
         },
       },
     },
