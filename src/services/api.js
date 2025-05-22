@@ -300,35 +300,35 @@ export const api = {
     try {
       // Sample data generator based on KPI name
       const generateSampleData = (kpiName) => {
-        const dates = ["2024-01-01", "2024-01-02", "2024-01-03"];
+        const dates = ["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05"];
         let baseValue;
 
         // Set base value based on KPI type
         switch (kpiName) {
           case "gnb_du_sect_carr_score":
-            baseValue = 85;
+            baseValue = 4; // Good range
             break;
           case "gnb_du_sect_carr_subscore_5g":
-            baseValue = 92;
+            baseValue = 5; // Very good range
             break;
           case "gnb_du_sect_carr_subscore_capacity":
-            baseValue = 78;
+            baseValue = 6; // Bad range
             break;
           case "gnb_du_sect_carr_subscore_ethernet_backhaul":
-            baseValue = 88;
+            baseValue = 8; // Very good range
             break;
           case "gnb_du_sect_carr_subscore_reliability":
-            baseValue = 94;
+            baseValue = 8.5; // Excellent range
             break;
           default:
-            baseValue = 80;
+            baseValue = 7.0; // Good range
         }
 
-        // Generate data points with small variations
+        // Generate data points with smaller variations to stay within ranges
         return dates.map((date) => ({
           rpt_dt: date,
           score_name: kpiName,
-          score_value: baseValue + (Math.random() * 2 - 1), // Add random variation of ±1
+          score_value: Math.min(10, Math.max(1, baseValue + (Math.random() * 0.4 - 0.2))), // Add random variation of ±0.2, clamped between 1 and 10
         }));
       };
 

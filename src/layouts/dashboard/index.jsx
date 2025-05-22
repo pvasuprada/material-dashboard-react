@@ -1,17 +1,17 @@
-import { useEffect, useState, useMemo } from "react";
+import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import ViewStreamIcon from "@mui/icons-material/ViewStream";
+import { Grid, IconButton, Skeleton } from "@mui/material";
+import zIndex from "@mui/material/styles/zIndex";
+
+import { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
-import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
-import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
-import MDBox from "components/MDBox";
-import MDButton from "components/MDButton";
-import { useMaterialUIController } from "context";
-import Grid from "@mui/material/Grid";
-import ReportsBarChart from "examples/Charts/BarCharts/ReportsBarChart";
-import ReportsLineChart from "examples/Charts/LineCharts/ReportsLineChart";
+import { useDispatch, useSelector } from "react-redux";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import Carousel from "react-multi-carousel";
+import "react-multi-carousel/lib/styles.css";
+
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
-import { useInsights } from "context/insightsContext";
-import { getChartsConfig } from "layouts/dashboard/data/chartsConfig";
 import {
   ReportsBarChart as ReportsBarChartComponent,
   ReportsLineChart as ReportsLineChartComponent,
@@ -24,34 +24,31 @@ import {
   MixedChart,
   PolarChart,
   RadarChart,
+  AreaChart,
 } from "examples/Charts";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchFilteredData } from "store/slices/filterSlice";
-import Skeleton from "@mui/material/Skeleton";
-import { Card } from "@mui/material";
-import MDTypography from "components/MDTypography";
-import Icon from "@mui/material/Icon";
+import ReportsScatterChart from "examples/Charts/ScatterCharts/ReportsScatterChart";
+import Footer from "examples/Footer";
+import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
+import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+
+import MDBox from "components/MDBox";
+import MDButton from "components/MDButton";
 import MDButtonSmall from "components/MDButtonSmall";
-import ViewModuleIcon from "@mui/icons-material/ViewModule";
-import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
-import ViewStreamIcon from "@mui/icons-material/ViewStream";
-import IconButton from "@mui/material/IconButton";
-import Carousel from "react-multi-carousel";
-import "react-multi-carousel/lib/styles.css";
-import "assets/css/carousel.css";
-import Projects from "layouts/dashboard/components/Projects";
-import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
-import Map from "layouts/dashboard/components/Map";
+import MDTypography from "components/MDTypography";
+
+import { useMaterialUIController } from "context";
+import { useSidenav } from "context/SidenavContext";
+import { useChartOrder } from "context/chartOrderContext";
+import { useInsights } from "context/insightsContext";
+import { MapProvider } from "context/MapContext";
+
 import NetworkGenie from "layouts/dashboard/components/NetworkGenie";
 import SiteGrid from "layouts/dashboard/components/SiteGrid";
-import { useSidenav } from "context/SidenavContext";
-import zIndex from "@mui/material/styles/zIndex";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { useChartOrder } from "context/chartOrderContext";
-import { MapProvider } from "context/MapContext";
+import MapComponent from "layouts/dashboard/components/Map";
 import { transformVPIData } from "./data/transformers";
+import { getChartsConfig } from "layouts/dashboard/data/chartsConfig";
 import api from "services/api";
-import ReportsScatterChart from "examples/Charts/ScatterCharts/ReportsScatterChart";
+import { fetchFilteredData } from "store/slices/filterSlice";
 
 function Dashboard({ children }) {
   const [controller] = useMaterialUIController();
@@ -322,6 +319,7 @@ function Dashboard({ children }) {
       mixed: MixedChart,
       polar: PolarChart,
       radar: RadarChart,
+      area: AreaChart,
     }[chart.type];
 
     if (!ChartComponent) {
@@ -532,7 +530,7 @@ function Dashboard({ children }) {
         <MDBox>
           <Grid container spacing={1}>
             <Grid item xs={12} md={6} lg={8}>
-              <Map />
+              <MapComponent />
             </Grid>
             <Grid item xs={12} md={6} lg={4}>
               <NetworkGenie />

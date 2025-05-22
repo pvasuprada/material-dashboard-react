@@ -149,7 +149,7 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       data: vpiData,
     },
     {
-      type: "line",
+      type: "area",
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "nQES Overall Score",
@@ -165,7 +165,7 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       },
     },
     {
-      type: "line",
+      type: "area",
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "nQES 5G Subscore",
@@ -181,7 +181,7 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       },
     },
     {
-      type: "line",
+      type: "area",
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "nQES Capacity Subscore",
@@ -199,7 +199,7 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       },
     },
     {
-      type: "line",
+      type: "area",
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "nQES Backhaul Score",
@@ -216,7 +216,7 @@ export const getChartsConfig = (chartData = [], xData = [], vpiData, isDarkMode 
       },
     },
     {
-      type: "line",
+      type: "area",
       color: isDarkMode ? "dark" : "light",
       fontColor: isDarkMode ? "white" : "dark",
       title: "nQES Reliability Score",
