@@ -457,7 +457,7 @@ function Dashboard({ children }) {
         <DashboardNavbar />
         <MDBox pt={2} pb={2}>
           <MDBox display="flex" justifyContent="space-between" alignItems="center">
-            <MDBox display="flex" gap={1} sx={{ zIndex: 10000 }}>
+            <MDBox display="flex" gap={1} sx={{ zIndex: 1 }}>
               {/* <MDButtonSmall
                 variant={activeSection === "dashboards" ? "contained" : "outlined"}
                 color={sidenavColor}

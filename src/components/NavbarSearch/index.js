@@ -197,7 +197,7 @@ const AutocompleteSearch = () => {
           market: selectedFilters.market?.value || "0",
           gnbId: selectedFilters.gnodeb?.value || "00000001",
           sector: selectedFilters.sector?.value || "1",
-          carrier: "1",
+          //carrier: "1",
           startDate:
             selectedFilters.dateRange?.startDate?.toISOString().split("T")[0] || "2024-01-01",
           endDate: selectedFilters.dateRange?.endDate?.toISOString().split("T")[0] || "2024-01-03",
@@ -223,7 +223,11 @@ const AutocompleteSearch = () => {
 
   const handleVPIAnalysis = useCallback(async () => {
     try {
-      const response = await api.getVPIData();
+      let params = {
+        "enodeb" : Number(selectedFilters.gnodeb?.value);
+        "sec" : Number(selectedFilters.sector?.value)
+      }
+      const response = await api.getVPIData(params);
       const transformedData = transformVPIData(response);
       setVPIData(transformedData);
       await new Promise((resolve) => setTimeout(resolve, 100));
